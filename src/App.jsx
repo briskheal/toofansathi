@@ -237,7 +237,9 @@ export default function App() {
     distanceKm,
     currentWind,
     currentGusts,
-    bearing.text
+    bearing.text,
+    minTemp,
+    maxTemp
   );
 
   return (

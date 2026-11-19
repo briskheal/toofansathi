@@ -1,10 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, MapPin, X, Wind, CloudRain, Zap, ShieldCheck, AlertTriangle, ShieldAlert, CheckCircle2, Info } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Calendar, MapPin, X, Wind, CloudRain, Zap, ShieldCheck, AlertTriangle, ShieldAlert, CheckCircle2, Info, Search, Building2, Store } from 'lucide-react';
 import { ALL_INDIA_REGIONS } from '../data/districts';
 import { fetchTravelForecast, getWeatherCodeDetails } from '../services/travelWeatherApi';
 
+// Alphabetical letters available across Indian cities/markets
+const ALPHABET_LETTERS = ['All', 'A', 'B', 'C', 'D', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'T', 'U', 'V', 'W'];
+
 export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId }) {
   const [selectedDestId, setSelectedDestId] = useState(initialDistrictId || 'kolkata');
+  const [searchLetter, setSearchLetter] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isCityPickerOpen, setIsCityPickerOpen] = useState(false);
+
   const [forecastDays, setForecastDays] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -12,6 +19,30 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
 
   const selectedDest = ALL_INDIA_REGIONS.find((d) => d.id === selectedDestId) || ALL_INDIA_REGIONS[0];
 
+  // Letter-wise & inline text search filter
+  const filteredMarkets = useMemo(() => {
+    return ALL_INDIA_REGIONS.filter((item) => {
+      // 1. Letter filter
+      if (searchLetter !== 'All') {
+        const firstLetter = item.name.trim().charAt(0).toUpperCase();
+        if (firstLetter !== searchLetter) return false;
+      }
+
+      // 2. Query search (city name, state, market name, category)
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesName = item.name.toLowerCase().includes(q);
+        const matchesState = item.state.toLowerCase().includes(q);
+        const matchesMarket = item.market ? item.market.toLowerCase().includes(q) : false;
+        const matchesCategory = item.category ? item.category.toLowerCase().includes(q) : false;
+        return matchesName || matchesState || matchesMarket || matchesCategory;
+      }
+
+      return true;
+    });
+  }, [searchLetter, searchQuery]);
+
+  // Fetch forecast whenever selected destination changes
   useEffect(() => {
     if (!isOpen) return;
 
@@ -33,7 +64,7 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
             const maxWind = Math.round(daily.wind_speed_10m_max[idx] || 0);
             const weather = getWeatherCodeDetails(daily.weather_code[idx]);
 
-            // Determine travel safety rating
+            // Travel safety rating
             let safety = {
               level: 'SAFE',
               badge: 'bg-emerald-950 text-emerald-400 border-emerald-800',
@@ -57,6 +88,33 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
               };
             }
 
+            // Winter coat / jacket recommendation according to minimum temperature
+            let winterAdvice = {
+              level: 'NORMAL',
+              badge: 'bg-slate-800 text-slate-300 border-slate-700',
+              text: 'Standard field attire'
+            };
+
+            if (minTemp <= 10) {
+              winterAdvice = {
+                level: 'SEVERE_COLD',
+                badge: 'bg-cyan-950 text-cyan-300 border-cyan-700 font-bold',
+                text: '🧥 Heavy Winter Coat / Thermal Jacket Required'
+              };
+            } else if (minTemp <= 16) {
+              winterAdvice = {
+                level: 'CHILLY',
+                badge: 'bg-sky-950 text-sky-300 border-sky-800',
+                text: '🧥 Warm Jacket or Coat Advised for Morning/Night'
+              };
+            } else if (minTemp <= 20) {
+              winterAdvice = {
+                level: 'MILD',
+                badge: 'bg-slate-800 text-slate-300 border-slate-700',
+                text: '🧥 Light Jacket or Windcheater'
+              };
+            }
+
             return {
               dateStr: timeStr,
               dayName,
@@ -68,7 +126,8 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
               maxGusts,
               maxWind,
               weather,
-              safety
+              safety,
+              winterAdvice
             };
           });
 
@@ -87,9 +146,13 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
 
   if (!isOpen) return null;
 
+  // Selected visit date's weather
+  const targetDay = forecastDays?.find((d) => d.dateStr === highlightDate) || forecastDays?.[0];
+
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-end sm:items-center justify-center p-2.5 sm:p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="bg-slate-900 border-t sm:border border-slate-800 rounded-t-2xl sm:rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in duration-200">
+        
         {/* Header */}
         <div className="p-3.5 sm:p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
           <div className="flex items-center gap-2">
@@ -97,11 +160,14 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
               <Calendar className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-white">
-                Field Visit & Travel Planner
+              <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
+                <span>Field Visit & Travel Planner</span>
+                <span className="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-1.5 py-0.2 rounded font-normal">
+                  5–7 Day Outlook
+                </span>
               </h3>
               <p className="text-[11px] text-slate-400">
-                Check coming 5–7 days weather & storm risk for any destination
+                Search letter-wise important markets & cities with winter jacket/coat advisories
               </p>
             </div>
           </div>
@@ -114,55 +180,177 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
           </button>
         </div>
 
-        {/* Destination & Date Picker Bar */}
-        <div className="p-3 sm:p-4 bg-slate-950/60 border-b border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          {/* Destination Selector */}
-          <div>
-            <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
-              Planned Destination City/District:
-            </label>
-            <div className="relative">
-              <MapPin className="w-4 h-4 text-sky-400 absolute left-2.5 top-2.5" />
-              <select
-                value={selectedDestId}
-                onChange={(e) => setSelectedDestId(e.target.value)}
-                className="w-full bg-slate-800 text-slate-100 text-xs font-semibold rounded-lg pl-8 pr-2.5 py-2 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-sky-500 truncate"
+        {/* Inline Search Bar & Controls */}
+        <div className="p-3 sm:p-4 bg-slate-950/70 border-b border-slate-800 space-y-2.5">
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {/* Active Destination Trigger */}
+            <div>
+              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                Destination Market / City:
+              </label>
+              <button
+                type="button"
+                onClick={() => setIsCityPickerOpen(!isCityPickerOpen)}
+                className="w-full flex items-center justify-between bg-slate-800 hover:bg-slate-750 text-slate-100 text-xs font-semibold rounded-xl px-3 py-2 border border-slate-700 transition-colors text-left"
               >
-                <optgroup label="Popular Destinations">
-                  <option value="kolkata">Kolkata (West Bengal)</option>
-                  <option value="digha">Digha (West Bengal)</option>
-                  <option value="puri">Puri (Odisha)</option>
-                  <option value="bhubaneswar">Bhubaneswar (Odisha)</option>
-                  <option value="balasore">Balasore (Odisha)</option>
-                  <option value="visakhapatnam">Visakhapatnam (Andhra Pradesh)</option>
-                  <option value="mumbai">Mumbai (Maharashtra)</option>
-                  <option value="delhi">New Delhi</option>
-                </optgroup>
-                <optgroup label="All Coastal & Interior Zones">
-                  {ALL_INDIA_REGIONS.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.name} ({d.state})
-                    </option>
-                  ))}
-                </optgroup>
-              </select>
+                <div className="flex items-center gap-2 min-w-0 truncate">
+                  <MapPin className="w-4 h-4 text-sky-400 flex-shrink-0" />
+                  <div className="truncate">
+                    <span className="font-bold text-white">{selectedDest.name}</span>
+                    <span className="text-[10px] text-slate-400 ml-1">({selectedDest.state})</span>
+                  </div>
+                </div>
+                <span className="text-[10px] text-sky-400 font-bold ml-1 flex-shrink-0">
+                  {isCityPickerOpen ? '▲ Close' : '▼ Change'}
+                </span>
+              </button>
             </div>
-          </div>
 
-          {/* Planned Date Selector */}
-          <div>
-            <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
-              Select Your Visit Date:
-            </label>
-            <div className="relative">
+            {/* Visit Date Picker */}
+            <div>
+              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                Planned Date of Visit:
+              </label>
               <input
                 type="date"
                 value={highlightDate}
                 onChange={(e) => setHighlightDate(e.target.value)}
-                className="w-full bg-slate-800 text-slate-100 text-xs font-semibold rounded-lg px-3 py-2 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                className="w-full bg-slate-800 text-slate-100 text-xs font-semibold rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-sky-500"
               />
             </div>
           </div>
+
+          {/* Letter-Wise & Inline Search Dropdown Box (Collapsible or Always Active) */}
+          {isCityPickerOpen && (
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-2.5 space-y-2 mt-1 shadow-lg">
+              
+              {/* Inline Search Input */}
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    if (searchLetter !== 'All') setSearchLetter('All');
+                  }}
+                  placeholder="Type letter or market (e.g. Kolkata, Guntur, Burrabazar, Malgodown)..."
+                  className="w-full bg-slate-800 text-slate-100 text-xs rounded-lg pl-8 pr-7 py-1.5 border border-slate-700 focus:outline-none focus:border-sky-500 placeholder-slate-500"
+                  autoFocus
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2.5 top-2 text-slate-400 hover:text-white"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Alphabetical A-Z Filter Bar */}
+              <div>
+                <div className="text-[9px] uppercase tracking-wider text-slate-400 font-bold mb-1">
+                  Letter-Wise Quick Filter:
+                </div>
+                <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none text-[10px]">
+                  {ALPHABET_LETTERS.map((letter) => (
+                    <button
+                      key={letter}
+                      onClick={() => {
+                        setSearchLetter(letter);
+                        setSearchQuery('');
+                      }}
+                      className={`px-2 py-0.5 rounded font-bold transition-colors ${
+                        searchLetter === letter
+                          ? 'bg-sky-600 text-white'
+                          : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      {letter}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Filtered Markets / Cities List */}
+              <div className="max-h-48 overflow-y-auto space-y-1 divide-y divide-slate-800/60 pr-1">
+                {filteredMarkets.length === 0 ? (
+                  <div className="py-4 text-center text-xs text-slate-500">
+                    No matching markets or cities found.
+                  </div>
+                ) : (
+                  filteredMarkets.map((m) => (
+                    <button
+                      key={m.id}
+                      onClick={() => {
+                        setSelectedDestId(m.id);
+                        setIsCityPickerOpen(false);
+                      }}
+                      className={`w-full flex items-start justify-between p-2 rounded-lg text-left transition-colors ${
+                        selectedDestId === m.id
+                          ? 'bg-sky-950/70 border border-sky-500 text-white'
+                          : 'hover:bg-slate-800/80 text-slate-200'
+                      }`}
+                    >
+                      <div className="min-w-0">
+                        <div className="text-xs font-bold flex items-center gap-1.5 flex-wrap">
+                          <span>{m.name}</span>
+                          <span className="text-[10px] text-slate-400 font-normal">({m.state})</span>
+                          {m.highRisk && (
+                            <span className="text-[9px] bg-red-950 text-red-300 border border-red-800/60 px-1 rounded">
+                              Cyclone Coast
+                            </span>
+                          )}
+                        </div>
+                        {m.market && (
+                          <div className="text-[10px] text-amber-300/90 flex items-center gap-1 mt-0.5">
+                            <Store className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">{m.market}</span>
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-sky-400 font-semibold flex-shrink-0 ml-2">
+                        Select
+                      </span>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Active Market & Winter Jacket Advisory Badge for Planned Date */}
+          {targetDay && (
+            <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] font-bold text-slate-300">
+                    Planned Visit: {targetDay.dayName}, {targetDay.dateFormatted} at {selectedDest.name}
+                  </span>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${targetDay.safety.badge}`}>
+                    {targetDay.safety.label}
+                  </span>
+                </div>
+                {selectedDest.market && (
+                  <div className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
+                    <Store className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                    <span>Market: <strong className="text-slate-300">{selectedDest.market}</strong></span>
+                  </div>
+                )}
+              </div>
+
+              {/* Dynamic Winter Jacket / Coat Advisory for Planned Day */}
+              <div className="w-full sm:w-auto">
+                <div className={`p-1.5 sm:px-2.5 rounded-lg border text-[11px] flex items-center gap-1.5 ${targetDay.winterAdvice.badge}`}>
+                  <span>{targetDay.winterAdvice.text}</span>
+                  <span className="font-mono text-[10px] opacity-80">(Low: {targetDay.minTemp}°C)</span>
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
 
         {/* Body Content - Daily Outlook */}
@@ -184,7 +372,7 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
                 <span>Coming 7-Day Outlook for <strong className="text-white">{selectedDest.name}</strong>:</span>
-                <span className="text-[10px] text-sky-400">Tap any day for details</span>
+                <span className="text-[10px] text-sky-400 font-medium">Click any day to inspect</span>
               </div>
 
               {forecastDays.map((day) => {
@@ -193,24 +381,26 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
                 return (
                   <div
                     key={day.dateStr}
-                    className={`rounded-xl border p-3 transition-all ${
+                    onClick={() => setHighlightDate(day.dateStr)}
+                    className={`rounded-xl border p-3 transition-all cursor-pointer ${
                       isTargetDate
                         ? 'bg-sky-950/50 border-sky-500/80 ring-1 ring-sky-500/40 shadow-lg'
                         : 'bg-slate-800/60 border-slate-700/60 hover:bg-slate-800'
                     }`}
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                      {/* Date & Condition */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                      
+                      {/* Date & Weather Condition */}
                       <div className="flex items-center gap-3">
                         <span className="text-2xl">{day.weather.icon}</span>
                         <div>
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="text-xs font-bold text-white">
                               {day.dayName}, {day.dateFormatted}
                             </span>
                             {isTargetDate && (
                               <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-sky-500 text-slate-950">
-                                Selected Visit
+                                Target Visit Date
                               </span>
                             )}
                           </div>
@@ -218,12 +408,12 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
                         </div>
                       </div>
 
-                      {/* Temperature & Winds */}
-                      <div className="flex items-center gap-4 text-xs">
+                      {/* Temperature Range & Winter Clothing Pill */}
+                      <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
                         <div>
-                          <span className="text-[10px] text-slate-400 block">Temp:</span>
+                          <span className="text-[10px] text-slate-400 block">Day / Night:</span>
                           <span className="font-bold text-white">
-                            {day.maxTemp}°C <span className="text-slate-400 font-normal">/ {day.minTemp}°</span>
+                            <span className="text-amber-400">{day.maxTemp}°C</span> / <span className="text-cyan-300">{day.minTemp}°C</span>
                           </span>
                         </div>
 
@@ -244,47 +434,38 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
                         </div>
                       </div>
 
-                      {/* Safety Rating Badge */}
-                      <div className="sm:text-right">
-                        <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border ${day.safety.badge}`}>
+                      {/* Safety & Winter Coat Badges */}
+                      <div className="flex flex-col items-start sm:items-end gap-1">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${day.safety.badge}`}>
                           {day.safety.label}
                         </span>
+                        <span className={`text-[9px] px-1.5 py-0.2 rounded border ${day.winterAdvice.badge}`}>
+                          {day.winterAdvice.text}
+                        </span>
                       </div>
+
                     </div>
                   </div>
                 );
               })}
             </div>
           )}
-
-          {/* Actionable Field Checklist for Visits */}
-          <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1.5 text-xs text-slate-300">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-sky-400 block">
-              Field Visit Planning Rules:
-            </span>
-            <div className="space-y-1 text-[11px]">
-              <p>• If wind gusts exceed <strong>50 km/h</strong>, avoid highway driving (NH-16 / NH-116) due to fallen trees & low visibility.</p>
-              <p>• For coastal locations (Digha, Puri, Sagar Island), verify low/high tide timings and high surf advisories.</p>
-              <p>• Keep a 20,000 mAh power bank charged as rural coastal power is disconnected during depressions.</p>
-            </div>
-          </div>
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t border-slate-800 bg-slate-950 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] text-slate-400">
+        <div className="p-3 bg-slate-950/80 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <Info className="w-3.5 h-3.5 text-sky-400 flex-shrink-0" />
-            <span>
-              <strong className="text-slate-300">Courtesy:</strong> Open-Meteo High-Resolution 7-Day Ensemble Weather Models (ECMWF & GFS).
-            </span>
+            <span>Courtesy: Open-Meteo High-Resolution Multi-Model Ensemble (ECMWF IFS / GFS).</span>
           </div>
           <button
             onClick={onClose}
-            className="w-full sm:w-auto px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg transition-colors"
+            className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg font-bold text-xs transition-colors"
           >
-            Close Planner
+            Close
           </button>
         </div>
+
       </div>
     </div>
   );
