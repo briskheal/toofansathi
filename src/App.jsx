@@ -91,42 +91,49 @@ export default function App() {
 
   // Handle single GPS refresh
   const handleUseGps = useCallback(() => {
-    if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser.');
-      return;
-    }
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        alert('Geolocation is not supported by your browser.');
+        reject(new Error('Geolocation not supported'));
+        return;
+      }
 
-    setIsLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        const accuracy = pos.coords.accuracy;
-        const nearest = findNearestDistrict(lat, lon);
+      setIsLoading(true);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          const accuracy = pos.coords.accuracy;
+          const nearest = findNearestDistrict(lat, lon);
 
-        setGpsAccuracy(accuracy);
-        setGpsTimestamp(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+          setGpsAccuracy(accuracy);
+          setGpsTimestamp(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
 
-        setCustomGpsLocation({
-          id: 'gps_device',
-          name: `Live GPS (Near ${nearest.name})`,
-          state: nearest.state,
-          basin: nearest.basin,
-          lat: lat,
-          lon: lon,
-          accuracy: accuracy,
-          highRisk: true,
-          deoc: nearest.deoc
-        });
-        setIsLoading(false);
-      },
-      (err) => {
-        console.warn('GPS error:', err);
-        alert('Could not access GPS. Please check location permissions in your browser or select your district manually.');
-        setIsLoading(false);
-      },
-      { timeout: 12000, enableHighAccuracy: true }
-    );
+          const newLoc = {
+            id: 'gps_device',
+            name: `Live GPS (Near ${nearest.name})`,
+            state: nearest.state,
+            basin: nearest.basin,
+            lat: lat,
+            lon: lon,
+            accuracy: accuracy,
+            highRisk: true,
+            deoc: nearest.deoc
+          };
+
+          setCustomGpsLocation(newLoc);
+          setIsLoading(false);
+          resolve(newLoc);
+        },
+        (err) => {
+          console.warn('GPS error:', err);
+          setIsLoading(false);
+          alert('Could not access GPS. Please check location permissions in your browser or select your district manually.');
+          reject(err);
+        },
+        { timeout: 12000, enableHighAccuracy: true, maximumAge: 0 }
+      );
+    });
   }, []);
 
   // Continuous live GPS tracking toggle

@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { MapPin, Radio, Satellite, ExternalLink, Info, Crosshair, RefreshCw } from 'lucide-react';
+import { MapPin, Radio, Satellite, ExternalLink, Info, Crosshair, RefreshCw, Check } from 'lucide-react';
 
 // Custom icons using CSS
 const userIcon = L.divIcon({
   className: 'custom-user-marker',
   html: `<div style="position:relative; width:18px; height:18px;">
-          <div style="position:absolute; inset:0; border-radius:50%; background:#38bdf8; opacity:0.5; animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
-          <div style="position:absolute; inset:2px; border-radius:50%; background:#0284c7; border:2px solid white; box-shadow:0 0 10px #38bdf8;"></div>
+          <div style="position:absolute; inset:0; border-radius:50%; background:#38bdf8; opacity:0.6; animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+          <div style="position:absolute; inset:2px; border-radius:50%; background:#0284c7; border:2px solid white; box-shadow:0 0 12px #38bdf8;"></div>
          </div>`,
   iconSize: [18, 18],
   iconAnchor: [9, 9]
@@ -17,27 +17,30 @@ const userIcon = L.divIcon({
 const cycloneIcon = L.divIcon({
   className: 'custom-cyclone-marker',
   html: `<div style="position:relative; width:28px; height:28px;">
-          <div style="position:absolute; inset:0; border-radius:50%; background:#ef4444; opacity:0.4; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+          <div style="position:absolute; inset:0; border-radius:50%; background:#ef4444; opacity:0.5; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
           <div style="position:absolute; inset:4px; border-radius:50%; background:#dc2626; border:2px solid #ffffff; display:flex; align-items:center; justify-content:center; color:white; font-size:10px; font-weight:bold;">🌀</div>
          </div>`,
   iconSize: [28, 28],
   iconAnchor: [14, 14]
 });
 
-// Component to handle pan to user
-function MapRecenterController({ centerCoords }) {
+// Component to handle smooth pan/fly to coordinates
+function MapRecenterController({ centerCoords, triggerKey }) {
   const map = useMap();
-  React.useEffect(() => {
-    if (centerCoords) {
-      map.flyTo(centerCoords, map.getZoom(), { duration: 1.2 });
+  useEffect(() => {
+    if (centerCoords && centerCoords[0] && centerCoords[1]) {
+      map.flyTo(centerCoords, Math.max(map.getZoom(), 7), { duration: 1.4 });
     }
-  }, [centerCoords, map]);
+  }, [centerCoords, triggerKey, map]);
   return null;
 }
 
 export default function CycloneMap({ userLocation, stormCenter, landfallArea, onRefreshLocation, isGpsActive }) {
   const [activeTab, setActiveTab] = useState('trajectory'); // 'trajectory' | 'radar' | 'satellite'
   const [flyTarget, setFlyTarget] = useState(null);
+  const [flyTrigger, setFlyTrigger] = useState(0);
+  const [isLocating, setIsLocating] = useState(false);
+  const [justUpdated, setJustUpdated] = useState(false);
 
   const mapCenter = [
     (userLocation.lat + stormCenter.lat) / 2,
@@ -46,14 +49,37 @@ export default function CycloneMap({ userLocation, stormCenter, landfallArea, on
 
   // Projected trajectory track to coast
   const trackLine = [
-    [stormCenter.lat - 1.2, stormCenter.lon + 0.8], // 12 hours ago
-    [stormCenter.lat, stormCenter.lon],              // Current center
-    [20.80, 87.05],                                  // Forecast Landfall ~Dhamra/Bhadrak
-    [21.60, 86.80]                                   // Inland dissipation
+    [stormCenter.lat - 1.2, stormCenter.lon + 0.8],
+    [stormCenter.lat, stormCenter.lon],
+    [20.80, 87.05],
+    [21.60, 86.80]
   ];
 
+  // Center map immediately on user's current pin
   const handleCenterOnUser = () => {
     setFlyTarget([userLocation.lat, userLocation.lon]);
+    setFlyTrigger((prev) => prev + 1);
+  };
+
+  // Re-fetch GPS and auto-fly map to new position
+  const handleRefreshGps = async () => {
+    if (!onRefreshLocation) return;
+    setIsLocating(true);
+    setJustUpdated(false);
+
+    try {
+      const newLoc = await onRefreshLocation();
+      if (newLoc && newLoc.lat && newLoc.lon) {
+        setFlyTarget([newLoc.lat, newLoc.lon]);
+        setFlyTrigger((prev) => prev + 1);
+        setJustUpdated(true);
+        setTimeout(() => setJustUpdated(false), 3000);
+      }
+    } catch (err) {
+      console.warn('Map refresh GPS failed:', err);
+    } finally {
+      setIsLocating(false);
+    }
   };
 
   return (
@@ -68,7 +94,7 @@ export default function CycloneMap({ userLocation, stormCenter, landfallArea, on
           {isGpsActive && (
             <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-800">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-              Live GPS
+              Live GPS Active
             </span>
           )}
         </div>
@@ -116,7 +142,7 @@ export default function CycloneMap({ userLocation, stormCenter, landfallArea, on
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
 
-            <MapRecenterController centerCoords={flyTarget} />
+            <MapRecenterController centerCoords={flyTarget} triggerKey={flyTrigger} />
 
             {/* User Marker */}
             <Marker position={[userLocation.lat, userLocation.lon]} icon={userIcon}>
@@ -124,8 +150,8 @@ export default function CycloneMap({ userLocation, stormCenter, landfallArea, on
                 <div className="text-xs text-slate-900 font-sans">
                   <strong>Your Location:</strong> {userLocation.name}
                   <div className="text-[10px] text-slate-600 mt-0.5">
-                    Lat: {userLocation.lat.toFixed(3)}°, Lon: {userLocation.lon.toFixed(3)}°
-                    {userLocation.accuracy && ` (±${Math.round(userLocation.accuracy)}m)`}
+                    Lat: {userLocation.lat.toFixed(4)}°, Lon: {userLocation.lon.toFixed(4)}°
+                    {userLocation.accuracy && ` (Accuracy: ±${Math.round(userLocation.accuracy)}m)`}
                   </div>
                 </div>
               </Popup>
@@ -135,8 +161,8 @@ export default function CycloneMap({ userLocation, stormCenter, landfallArea, on
             {userLocation.accuracy && (
               <Circle
                 center={[userLocation.lat, userLocation.lon]}
-                radius={Math.min(userLocation.accuracy, 25000)}
-                pathOptions={{ color: '#0284c7', fillColor: '#38bdf8', fillOpacity: 0.15, weight: 1 }}
+                radius={Math.min(userLocation.accuracy, 20000)}
+                pathOptions={{ color: '#0284c7', fillColor: '#38bdf8', fillOpacity: 0.18, weight: 1.5 }}
               />
             )}
 
@@ -170,12 +196,12 @@ export default function CycloneMap({ userLocation, stormCenter, landfallArea, on
             />
           </MapContainer>
 
-          {/* Floating Re-center / Locate Me Button */}
+          {/* Floating Action Controls on Map */}
           <div className="absolute top-2.5 right-2.5 z-[400] flex flex-col gap-1.5">
             <button
               onClick={handleCenterOnUser}
               className="px-2.5 py-1.5 bg-slate-900/90 hover:bg-slate-800 text-sky-400 border border-slate-700 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-md backdrop-blur-sm transition-all"
-              title="Focus map on my position"
+              title="Focus and zoom map directly to my location"
             >
               <Crosshair className="w-3.5 h-3.5 text-sky-400" />
               <span>Center Me</span>
@@ -183,12 +209,28 @@ export default function CycloneMap({ userLocation, stormCenter, landfallArea, on
 
             {onRefreshLocation && (
               <button
-                onClick={onRefreshLocation}
-                className="px-2.5 py-1.5 bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-md backdrop-blur-sm transition-all"
-                title="Refresh GPS Coordinates"
+                onClick={handleRefreshGps}
+                disabled={isLocating}
+                className={`px-2.5 py-1.5 border rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-md backdrop-blur-sm transition-all ${
+                  justUpdated
+                    ? 'bg-emerald-950/90 text-emerald-400 border-emerald-600'
+                    : isLocating
+                    ? 'bg-sky-950/90 text-sky-300 border-sky-600'
+                    : 'bg-slate-900/90 hover:bg-slate-800 text-slate-100 border-slate-700'
+                }`}
+                title="Scan latest GPS coordinates and fly map to location"
               >
-                <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
-                <span>Refresh GPS</span>
+                {justUpdated ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Updated!</span>
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin text-sky-400' : 'text-slate-300'}`} />
+                    <span>{isLocating ? 'Locating...' : 'Refresh GPS'}</span>
+                  </>
+                )}
               </button>
             )}
           </div>
