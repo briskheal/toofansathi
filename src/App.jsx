@@ -84,6 +84,23 @@ export default function App() {
 
   const activeStorm = liveAllStorms.find(s => s.id === baseStorm.id) || getLiveEstimatedStorm(baseStorm, liveClock);
 
+  // Fetch weather data for the active location
+  const loadWeather = useCallback(async () => {
+    setIsLoading(true);
+    setErrorMsg(null);
+    try {
+      const res = await fetchLiveWeather(activeLocation.lat, activeLocation.lon);
+      setWeatherData(res.data);
+      setIsOffline(res.isOffline);
+      setLastUpdated(new Date(res.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    } catch (err) {
+      console.error(err);
+      setErrorMsg(err.message || 'Unable to retrieve weather. Please check connection.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [activeLocation.lat, activeLocation.lon]);
+
   // Online / Offline & Auto-Sync listeners
   useEffect(() => {
     const handleOnline = () => {
@@ -106,23 +123,6 @@ export default function App() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [loadWeather]);
-
-  // Fetch weather data for the active location
-  const loadWeather = useCallback(async () => {
-    setIsLoading(true);
-    setErrorMsg(null);
-    try {
-      const res = await fetchLiveWeather(activeLocation.lat, activeLocation.lon);
-      setWeatherData(res.data);
-      setIsOffline(res.isOffline);
-      setLastUpdated(new Date(res.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-    } catch (err) {
-      console.error(err);
-      setErrorMsg(err.message || 'Unable to retrieve weather. Please check connection.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [activeLocation.lat, activeLocation.lon]);
 
   // Periodic Auto-Refresh: fetch fresh weather observations every 2 minutes
   useEffect(() => {
