@@ -115,38 +115,42 @@ export default function LiveMetricsGrid({
             <CloudRain className="w-4 h-4 text-blue-400" />
           </div>
           <div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-xl sm:text-2xl font-black text-white">
-                {rainMm} <span className="text-xs font-semibold text-slate-400">mm</span>
+            <div className="flex items-baseline justify-between gap-1 flex-wrap">
+              <div className="flex items-baseline gap-1 whitespace-nowrap">
+                <span className="text-xl sm:text-2xl font-black text-white">{rainMm}</span>
+                <span className="text-xs font-semibold text-slate-400">mm</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap">
+                {currentRain > 0 ? `${currentRain} mm/h now` : '0 mm now'}
               </span>
-              {currentRain > 0 ? (
-                <span className="text-[10px] text-blue-300 font-semibold truncate">
-                  ({currentRain} mm/h now)
-                </span>
-              ) : (
-                <span className="text-[10px] text-slate-500 font-normal">
-                  (0 mm now)
-                </span>
-              )}
             </div>
-            <p className="text-[11px] text-blue-400 font-medium truncate mt-0.5">
+            
+            <p className="text-[11px] text-blue-400 font-bold truncate mt-0.5">
               {rainMm >= 25 ? '⚠️ Heavy Downpour' : rainMm >= 10 ? 'Moderate Rain' : rainMm >= 0.5 ? 'Light Showers' : rainMm > 0 ? 'Passing Drizzle' : 'Dry / Clear'}
             </p>
+
             {heavyRainArrival && (
-              <div className="mt-1.5 pt-1.5 border-t border-slate-800/80 text-[10px] space-y-0.5">
-                <div className="text-amber-400 font-bold truncate">
-                  ⚡ Heavy rain: {heavyRainArrival.time} ({heavyRainArrival.rate} mm/h)
+              <div className="mt-1.5 pt-1.5 border-t border-slate-800/80 text-[10px] leading-snug space-y-0.5">
+                <div className="text-amber-400 font-bold flex items-center justify-between">
+                  <span>⚡ Deluge:</span>
+                  <span className="text-white font-extrabold">{heavyRainArrival.time}</span>
+                </div>
+                <div className="text-slate-300 text-[9px] flex items-center justify-between">
+                  <span>Peak Rate:</span>
+                  <span className="text-amber-300 font-semibold">{heavyRainArrival.rate} mm/h</span>
                 </div>
                 {next12hRain > 0 && (
-                  <div className="text-slate-400 text-[9px]">
-                    12-hr total: ~{next12hRain} mm
+                  <div className="text-slate-400 text-[9px] flex items-center justify-between pt-0.5 border-t border-slate-800/50">
+                    <span>12h Total:</span>
+                    <span className="text-slate-200 font-semibold">~{next12hRain} mm</span>
                   </div>
                 )}
               </div>
             )}
             {!heavyRainArrival && next12hRain > 5 && (
-              <div className="mt-1 pt-1 border-t border-slate-800/80 text-[9px] text-slate-400 truncate">
-                12-hr outlook: ~{next12hRain} mm
+              <div className="mt-1.5 pt-1.5 border-t border-slate-800/80 text-[10px] flex items-center justify-between text-slate-400">
+                <span>12h Total:</span>
+                <span className="text-slate-200 font-semibold">~{next12hRain} mm</span>
               </div>
             )}
           </div>
@@ -165,6 +169,12 @@ export default function LiveMetricsGrid({
             <p className={`text-[11px] font-medium truncate mt-0.5 ${pressureHpa < 1000 ? 'text-red-400 font-bold' : 'text-slate-400'}`}>
               {pressureHpa < 995 ? 'Deep Depression Low' : pressureHpa < 1005 ? 'Falling Barometer' : 'Normal Pressure'}
             </p>
+            {humidity !== undefined && (
+              <div className="mt-1.5 pt-1.5 border-t border-slate-800/80 text-[10px] flex items-center justify-between text-slate-400">
+                <span>Humidity:</span>
+                <span className="text-slate-200 font-semibold">{humidity}%</span>
+              </div>
+            )}
           </div>
         </div>
 

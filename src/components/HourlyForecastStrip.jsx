@@ -30,7 +30,7 @@ export default function HourlyForecastStrip({ hourlyData }) {
       windGusts,
       rain,
       temp,
-      isHighRisk: windGusts >= 55 || rain >= 15
+      isHighRisk: windGusts >= 45 || rain >= 10 || windSpeed >= 35
     };
   });
 
@@ -124,7 +124,9 @@ export default function HourlyForecastStrip({ hourlyData }) {
                 <CloudRain className="w-3 h-3 text-blue-400" />
                 <span>Rain:</span>
               </span>
-              <span className="font-bold text-blue-300">{item.rain} <span className="text-[9px] text-slate-400 font-normal">mm</span></span>
+              <span className={`font-bold ${item.rain >= 10 ? 'text-rose-400 font-extrabold animate-pulse' : item.rain >= 5 ? 'text-amber-300 font-bold' : 'text-blue-300'}`}>
+                {item.rain} <span className="text-[9px] text-slate-400 font-normal">mm</span>
+              </span>
             </div>
           </div>
         ))}

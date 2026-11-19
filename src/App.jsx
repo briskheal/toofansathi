@@ -267,7 +267,7 @@ export default function App() {
       if (p >= 3.0) {
         const timeObj = new Date(weatherData.hourly.time[startIndex + i]);
         heavyRainArrival = {
-          time: timeObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+          time: timeObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }),
           rate: Math.round(p * 10) / 10
         };
         break;
