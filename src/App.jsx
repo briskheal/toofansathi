@@ -236,7 +236,51 @@ export default function App() {
 
   const currentWind = weatherData ? Math.round(weatherData.current.wind_speed_10m) : 42;
   const currentGusts = weatherData ? Math.round(weatherData.current.wind_gusts_10m) : 58;
-  const rainMm = weatherData ? Math.round(weatherData.current.precipitation * 10) / 10 : 12;
+  const currentRain = weatherData?.current?.precipitation !== undefined ? Math.round(weatherData.current.precipitation * 10) / 10 : 0;
+
+  // Calculate true accumulated forecast rain for the next 3 hours & overnight outlook
+  let next3hRain = 0;
+  let next12hRain = 0;
+  let heavyRainArrival = null;
+
+  if (weatherData?.hourly?.precipitation && weatherData?.hourly?.time) {
+    const nowMs = Date.now();
+    let startIndex = weatherData.hourly.time.findIndex((t) => {
+      const d = new Date(t);
+      return d.getTime() >= nowMs - 45 * 60 * 1000;
+    });
+    if (startIndex === -1) startIndex = 0;
+
+    // Sum next 3 hours forecast
+    const slice3h = weatherData.hourly.precipitation.slice(startIndex, startIndex + 3);
+    const sum3h = slice3h.reduce((acc, val) => acc + (val || 0), 0);
+    next3hRain = Math.round(sum3h * 10) / 10;
+
+    // Sum next 12 hours forecast
+    const slice12h = weatherData.hourly.precipitation.slice(startIndex, startIndex + 12);
+    const sum12h = slice12h.reduce((acc, val) => acc + (val || 0), 0);
+    next12hRain = Math.round(sum12h * 10) / 10;
+
+    // Detect earliest hour with heavy downpour (>= 3.0 mm/h)
+    for (let i = 0; i < Math.min(12, weatherData.hourly.precipitation.length - startIndex); i++) {
+      const p = weatherData.hourly.precipitation[startIndex + i] || 0;
+      if (p >= 3.0) {
+        const timeObj = new Date(weatherData.hourly.time[startIndex + i]);
+        heavyRainArrival = {
+          time: timeObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+          rate: Math.round(p * 10) / 10
+        };
+        break;
+      }
+    }
+  } else if (weatherData) {
+    next3hRain = currentRain;
+    next12hRain = currentRain * 4;
+  } else {
+    next3hRain = 12;
+    next12hRain = 45;
+  }
+
   const pressureHpa = weatherData ? Math.round(weatherData.current.surface_pressure) : 998;
   const currentTemp = weatherData?.current?.temperature_2m !== undefined ? Math.round(weatherData.current.temperature_2m) : 26;
   const apparentTemp = weatherData?.current?.apparent_temperature !== undefined ? Math.round(weatherData.current.apparent_temperature) : 25;
@@ -244,7 +288,7 @@ export default function App() {
   const minTemp = weatherData?.daily?.temperature_2m_min?.[0] !== undefined ? Math.round(weatherData.daily.temperature_2m_min[0]) : 17;
   const humidity = weatherData?.current?.relative_humidity_2m !== undefined ? Math.round(weatherData.current.relative_humidity_2m) : 68;
 
-  const threat = evaluateThreatLevel(distanceKm, currentWind, currentGusts, rainMm);
+  const threat = evaluateThreatLevel(distanceKm, currentWind, currentGusts, next3hRain);
   const voiceBriefing = generateVoiceBriefing(
     selectedLang,
     threat,
@@ -438,7 +482,10 @@ export default function App() {
           movementDirection={activeStorm.movement?.direction}
           windSpeed={currentWind}
           windGusts={currentGusts}
-          rainMm={rainMm}
+          rainMm={next3hRain}
+          currentRain={currentRain}
+          next12hRain={next12hRain}
+          heavyRainArrival={heavyRainArrival}
           pressureHpa={pressureHpa}
           currentTemp={currentTemp}
           maxTemp={maxTemp}
