@@ -438,6 +438,7 @@ export default function App() {
           onRefreshLocation={handleUseGps}
           isGpsActive={!!customGpsLocation}
           activeStorm={activeStorm}
+          allStorms={ALL_INDIA_ACTIVE_STORMS}
         />
 
         {/* 7. Install PWA Prompt for Mobile Home Screen */}
