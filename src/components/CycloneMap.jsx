@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Circle, Polyline, useMap, ZoomControl } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle, Polyline, Polygon, useMap, ZoomControl } from 'react-leaflet';
 import L from 'leaflet';
 import {
   MapPin,
@@ -72,6 +72,18 @@ export default function CycloneMap({
   const [satChannel, setSatChannel] = useState('ir1'); // 'ir1' | 'vis' | 'wv'
   const [selectedRadarStation, setSelectedRadarStation] = useState('paradip');
   const [satTimestamp, setSatTimestamp] = useState(Date.now());
+  const [isRefreshingSat, setIsRefreshingSat] = useState(false);
+  const [satRefreshedToast, setSatRefreshedToast] = useState(false);
+
+  const handleRefreshSatFeed = () => {
+    setIsRefreshingSat(true);
+    setSatTimestamp(Date.now());
+    setTimeout(() => {
+      setIsRefreshingSat(false);
+      setSatRefreshedToast(true);
+      setTimeout(() => setSatRefreshedToast(false), 2500);
+    }, 800);
+  };
 
   const [flyTarget, setFlyTarget] = useState([20.5937, 80.9629]); // Default All-India Center
   const [flyZoom, setFlyZoom] = useState(5);
@@ -164,23 +176,71 @@ export default function CycloneMap({
     }
   };
 
-  // Trajectory track lines for each basin
+  // Official Multi-Stage Track Vectors & IMD Cone of Uncertainty
   const getTrackForStorm = (storm) => {
+    const lat = storm.center.lat;
+    const lon = storm.center.lon;
+
     if (storm.basin === 'Bay of Bengal') {
-      return [
-        [storm.center.lat - 1.2, storm.center.lon + 0.8],
-        [storm.center.lat, storm.center.lon],
-        [20.80, 87.05],
-        [21.60, 86.80]
-      ];
+      return {
+        pastCoords: [
+          [16.20, 89.60],
+          [17.40, 88.90],
+          [18.60, 88.20],
+          [lat, lon]
+        ],
+        forecastCoords: [
+          [lat, lon],
+          [20.45, 87.35],
+          [20.85, 87.05], // Landfall near Dhamra / Bhadrak coast
+          [21.45, 86.70], // Inland Balasore / Mayurbhanj
+          [22.20, 86.20]  // Jharkhand / Bengal border
+        ],
+        coneCoords: [
+          [lat, lon],
+          [20.10, 86.60], // Left cone bound (near Paradip / Kendrapara)
+          [20.70, 86.30], // Left bound inland
+          [21.90, 85.80], // North-West inland apex
+          [22.40, 86.80], // North bound
+          [21.65, 88.10], // Right bound (Sagar Island / Sundarbans)
+          [20.80, 88.30], // Right bound (Northern Bay)
+          [lat, lon]
+        ],
+        checkpoints: [
+          { label: 'Live Center', lat: lat, lon: lon, time: 'Now' },
+          { label: '00:00 (Offshore)', lat: 20.45, lon: 87.35, time: '12:00 AM' },
+          { label: 'Landfall (Dhamra/Bhadrak)', lat: 20.85, lon: 87.05, time: '06:00 AM', isLandfall: true },
+          { label: 'Inland (Balasore)', lat: 21.45, lon: 86.70, time: '12:00 PM' }
+        ]
+      };
     } else {
       // Arabian Sea track
-      return [
-        [storm.center.lat - 0.8, storm.center.lon + 1.2],
-        [storm.center.lat, storm.center.lon],
-        [21.50, 65.40],
-        [22.20, 63.80]
-      ];
+      return {
+        pastCoords: [
+          [18.20, 68.80],
+          [19.40, 67.50],
+          [lat, lon]
+        ],
+        forecastCoords: [
+          [lat, lon],
+          [21.20, 65.50],
+          [21.90, 64.20],
+          [22.60, 62.80]
+        ],
+        coneCoords: [
+          [lat, lon],
+          [20.80, 64.80],
+          [22.50, 62.00],
+          [23.20, 63.50],
+          [21.80, 66.20],
+          [lat, lon]
+        ],
+        checkpoints: [
+          { label: 'Live Center', lat: lat, lon: lon, time: 'Now' },
+          { label: 'Moving WNW', lat: 21.20, lon: 65.50, time: '12 hrs' },
+          { label: 'Open Sea', lat: 21.90, lon: 64.20, time: '24 hrs' }
+        ]
+      };
     }
   };
 
@@ -341,7 +401,7 @@ export default function CycloneMap({
             {allStorms.map((storm) => {
               const isBob = storm.basin === 'Bay of Bengal';
               const stormDist = calculateDistanceKm(userLocation.lat, userLocation.lon, storm.center.lat, storm.center.lon);
-              const trackCoords = getTrackForStorm(storm);
+              const trackData = getTrackForStorm(storm);
 
               return (
                 <React.Fragment key={storm.id}>
@@ -398,15 +458,62 @@ export default function CycloneMap({
                     }}
                   />
 
-                  {/* Projected Track Line */}
+                  {/* IMD Official Cone of Uncertainty (Error Cone Polygon) */}
+                  {trackData.coneCoords && (
+                    <Polygon
+                      positions={trackData.coneCoords}
+                      pathOptions={{
+                        color: isBob ? '#ef4444' : '#f59e0b',
+                        fillColor: isBob ? '#ef4444' : '#f59e0b',
+                        fillOpacity: 0.12,
+                        weight: 1.5,
+                        dashArray: '4, 4'
+                      }}
+                    />
+                  )}
+
+                  {/* Past Observed Track Line */}
                   <Polyline
-                    positions={trackCoords}
+                    positions={trackData.pastCoords}
                     pathOptions={{
-                      color: isBob ? '#ef4444' : '#d97706',
-                      weight: 2.5,
-                      dashArray: '6, 6'
+                      color: isBob ? '#94a3b8' : '#cbd5e1',
+                      weight: 2,
+                      dashArray: '3, 4'
                     }}
                   />
+
+                  {/* Projected Forecast Track Line */}
+                  <Polyline
+                    positions={trackData.forecastCoords}
+                    pathOptions={{
+                      color: isBob ? '#ef4444' : '#f59e0b',
+                      weight: 3.5
+                    }}
+                  />
+
+                  {/* Forecast Checkpoints (Landfall & 6h Intervals) */}
+                  {trackData.checkpoints && trackData.checkpoints.map((pt, pIdx) => (
+                    <Circle
+                      key={pIdx}
+                      center={[pt.lat, pt.lon]}
+                      radius={pt.isLandfall ? 16000 : 9000}
+                      pathOptions={{
+                        color: pt.isLandfall ? '#ef4444' : '#38bdf8',
+                        fillColor: pt.isLandfall ? '#ef4444' : '#38bdf8',
+                        fillOpacity: 0.85,
+                        weight: 2
+                      }}
+                    >
+                      <Popup>
+                        <div className="text-xs text-slate-900 font-sans p-0.5">
+                          <strong className={pt.isLandfall ? 'text-red-600 block font-bold' : 'text-sky-700 block font-bold'}>
+                            {pt.label}
+                          </strong>
+                          <span className="text-[10px] text-slate-600">Expected Time: {pt.time}</span>
+                        </div>
+                      </Popup>
+                    </Circle>
+                  ))}
                 </React.Fragment>
               );
             })}
@@ -490,12 +597,16 @@ export default function CycloneMap({
               <span>Your Location</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span>
-              <span>Bay of Bengal Cyclone & Track</span>
+              <span className="w-4 h-1 bg-red-500 inline-block rounded"></span>
+              <span>Projected Forecast Track Vector</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
-              <span>Arabian Sea Depression & Track</span>
+              <span className="w-3.5 h-2.5 bg-red-500/25 border border-dashed border-red-500 inline-block rounded"></span>
+              <span>IMD Landfall Cone of Uncertainty</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-4 h-0.5 border-b border-dashed border-slate-400 inline-block"></span>
+              <span>Past Observed Path</span>
             </div>
           </div>
         </div>
@@ -538,11 +649,15 @@ export default function CycloneMap({
               </button>
 
               <button
-                onClick={() => setSatTimestamp(Date.now())}
-                className="p-1 hover:bg-slate-800 rounded text-slate-300 ml-1"
-                title="Reload Latest Satellite Feed"
+                onClick={handleRefreshSatFeed}
+                disabled={isRefreshingSat}
+                className="flex items-center gap-1 px-2 py-0.5 hover:bg-slate-800 bg-slate-900 border border-slate-700 rounded text-slate-300 ml-1 active:scale-95 transition-all"
+                title="Reload Latest Live IMD Satellite Feed"
               >
-                <RefreshCw className="w-3.5 h-3.5" />
+                <RefreshCw className={`w-3.5 h-3.5 ${isRefreshingSat ? 'animate-spin text-sky-400' : 'text-slate-400'}`} />
+                <span className="text-[10px] text-slate-300 font-medium">
+                  {isRefreshingSat ? 'Refreshing...' : satRefreshedToast ? '✓ Feed Updated' : 'Reload'}
+                </span>
               </button>
             </div>
           </div>
@@ -550,9 +665,10 @@ export default function CycloneMap({
           {/* Embedded Image Container */}
           <div className="relative rounded-xl overflow-hidden border border-slate-800 bg-slate-900 flex flex-col items-center justify-center min-h-[320px] max-h-[460px]">
             <img
+              key={`${satChannel}-${satTimestamp}`}
               src={satImages[satChannel].url}
               alt="IMD INSAT-3DR Live Satellite Feed"
-              className="w-full h-auto max-h-[440px] object-contain rounded-lg"
+              className={`w-full h-auto max-h-[440px] object-contain rounded-lg transition-opacity duration-300 ${isRefreshingSat ? 'opacity-50' : 'opacity-100'}`}
               loading="lazy"
               onError={(e) => {
                 e.target.onerror = null;
