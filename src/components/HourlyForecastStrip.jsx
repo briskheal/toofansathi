@@ -75,7 +75,14 @@ export default function HourlyForecastStrip({ hourlyData }) {
             <div className="flex items-center justify-between border-b border-slate-700/60 pb-1.5 mb-1.5">
               <span className="font-mono text-xs font-bold text-white">{item.hourLabel}</span>
               {item.isHighRisk ? (
-                <span className="text-[9px] font-bold uppercase text-red-400 bg-red-900/60 px-1 rounded">
+                <span
+                  className="text-[9px] font-bold uppercase text-red-400 bg-red-900/60 px-1 rounded cursor-help border border-red-700/50"
+                  title={`Field Danger Threshold Triggered: ${
+                    item.windGusts >= 45 ? `Gale Gusts ${item.windGusts} km/h (≥45 km/h)` : ''
+                  }${item.rain >= 10 ? ` Heavy Rain ${item.rain} mm/h (≥10 mm/h)` : ''}${
+                    item.windSpeed >= 35 ? ` Sustained Wind ${item.windSpeed} km/h (≥35 km/h)` : ''
+                  }`}
+                >
                   Risk
                 </span>
               ) : item.temp !== null ? (
@@ -137,7 +144,7 @@ export default function HourlyForecastStrip({ hourlyData }) {
         <div className="flex items-center gap-1.5">
           <Info className="w-3 h-3 text-sky-400 flex-shrink-0" />
           <span>
-            <strong className="text-slate-300">Courtesy:</strong> Open-Meteo High-Resolution Weather Models (ECMWF IFS / GFS Integration).
+            <strong className="text-slate-300">Courtesy:</strong> Open-Meteo High-Res Models (ECMWF IFS / GFS). <span className="text-slate-500">• [RISK] triggers when Gusts ≥ 45 km/h, Rain ≥ 10 mm/h, or Wind ≥ 35 km/h.</span>
           </span>
         </div>
         <span className="font-mono text-slate-500 hidden sm:inline">10-Hour Forecast</span>

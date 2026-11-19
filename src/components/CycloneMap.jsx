@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Circle, Polyline, Polygon, useMap, ZoomControl } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, Circle, Polyline, Polygon, useMap, ZoomControl } from 'react-leaflet';
 import L from 'leaflet';
 import {
   MapPin,
@@ -16,61 +16,38 @@ import {
 } from 'lucide-react';
 import { calculateDistanceKm } from '../services/cycloneEngine';
 
-// Custom icons using CSS
-// Distinctive User Location Pin with permanent visible label badge
-const createUserIcon = (locationName) => {
-  const cleanName = (locationName || 'You')
-    .replace(/^Live GPS \(Near (.*)\)$/, '$1')
-    .replace(/^Live Tracking \((.*)\)$/, '$1');
-
-  return L.divIcon({
-    className: 'custom-user-marker',
-    html: `<div style="position:relative; display:flex; flex-direction:column; align-items:center; transform: translate(-50%, -100%); pointer-events:auto;">
-            <div style="background:#0284c7; color:#ffffff; font-size:10px; font-weight:800; padding:2px 7px; border-radius:12px; border:1.5px solid white; box-shadow:0 3px 10px rgba(0,0,0,0.6); white-space:nowrap; margin-bottom:2px; font-family:Inter,sans-serif; display:flex; align-items:center; gap:4px; letter-spacing:0.2px;">
-              <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#38bdf8; box-shadow:0 0 6px #38bdf8;"></span>
-              YOU (${cleanName})
-            </div>
-            <div style="position:relative; width:22px; height:22px;">
-              <div style="position:absolute; inset:0; border-radius:50%; background:#0284c7; opacity:0.45; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
-              <div style="position:absolute; inset:2px; border-radius:50%; background:#0284c7; border:2.5px solid #ffffff; box-shadow:0 0 12px #38bdf8; display:flex; align-items:center; justify-content:center;">
-                <div style="width:6px; height:6px; border-radius:50%; background:#ffffff;"></div>
-              </div>
-            </div>
-            <div style="width:2px; height:6px; background:#0284c7;"></div>
-           </div>`,
-    iconSize: [0, 0],
-    iconAnchor: [0, 0]
-  });
-};
-
-// Landfall Marker Icon (Red Hazard Target)
-const createLandfallIcon = (time) => L.divIcon({
-  className: 'custom-landfall-marker',
-  html: `<div style="position:relative; display:flex; flex-direction:column; align-items:center; transform: translate(-50%, -100%); pointer-events:auto;">
-          <div style="background:#b91c1c; color:#ffffff; font-size:9px; font-weight:800; padding:2px 6px; border-radius:8px; border:1.5px solid white; box-shadow:0 3px 10px rgba(0,0,0,0.6); white-space:nowrap; margin-bottom:2px; font-family:Inter,sans-serif; display:flex; align-items:center; gap:3px;">
-            <span>⚠️</span> LANDFALL (${time || '06:00 AM'})
+// Clean Minimalist Map Dot Icons - Clutter-Free with Hover/Tap Details
+const userDotIcon = L.divIcon({
+  className: 'custom-user-dot',
+  html: `<div style="position:relative; width:18px; height:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+          <div style="position:absolute; inset:-4px; border-radius:50%; background:#38bdf8; opacity:0.5; animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+          <div style="width:14px; height:14px; border-radius:50%; background:#0284c7; border:2.5px solid #ffffff; box-shadow:0 0 10px #38bdf8; display:flex; align-items:center; justify-content:center;">
+            <div style="width:4px; height:4px; border-radius:50%; background:#ffffff;"></div>
           </div>
-          <div style="position:relative; width:20px; height:20px;">
-            <div style="position:absolute; inset:0; border-radius:50%; background:#ef4444; opacity:0.55; animation: ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
-            <div style="position:absolute; inset:2px; border-radius:50%; background:#dc2626; border:2px solid #ffffff; box-shadow:0 0 10px #ef4444; display:flex; align-items:center; justify-content:center; color:white; font-size:10px; font-weight:bold;">🎯</div>
-          </div>
-          <div style="width:2px; height:5px; background:#dc2626;"></div>
          </div>`,
-  iconSize: [0, 0],
-  iconAnchor: [0, 0]
+  iconSize: [18, 18],
+  iconAnchor: [9, 9]
 });
 
-// Milestone Marker Icon (Orange/Dark Slate Milestone - Zero blue/green to prevent confusion)
-const createForecastMilestoneIcon = (time) => L.divIcon({
-  className: 'custom-milestone-marker',
-  html: `<div style="position:relative; display:flex; flex-direction:column; align-items:center; transform: translate(-50%, -100%); pointer-events:auto;">
-          <div style="background:#0f172a; color:#fdba74; font-size:8px; font-weight:700; padding:1px 5px; border-radius:6px; border:1px solid #ea580c; white-space:nowrap; margin-bottom:2px; font-family:Inter,sans-serif; box-shadow:0 2px 5px rgba(0,0,0,0.6);">
-            ⏱️ ${time}
+const landfallDotIcon = L.divIcon({
+  className: 'custom-landfall-dot',
+  html: `<div style="position:relative; width:20px; height:20px; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+          <div style="position:absolute; inset:-4px; border-radius:50%; background:#ef4444; opacity:0.5; animation: ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+          <div style="width:16px; height:16px; border-radius:50%; background:#dc2626; border:2.5px solid #ffffff; box-shadow:0 0 10px #ef4444; display:flex; align-items:center; justify-content:center; color:white; font-size:9px; font-weight:bold;">
+            🎯
           </div>
-          <div style="width:10px; height:10px; border-radius:50%; background:#f97316; border:2px solid #ffffff; box-shadow:0 0 6px rgba(249, 115, 22, 0.9);"></div>
          </div>`,
-  iconSize: [0, 0],
-  iconAnchor: [0, 0]
+  iconSize: [20, 20],
+  iconAnchor: [10, 10]
+});
+
+const milestoneDotIcon = L.divIcon({
+  className: 'custom-milestone-dot',
+  html: `<div style="position:relative; width:12px; height:12px; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+          <div style="width:10px; height:10px; border-radius:50%; background:#ea580c; border:2px solid #ffffff; box-shadow:0 0 6px rgba(0,0,0,0.6);"></div>
+         </div>`,
+  iconSize: [12, 12],
+  iconAnchor: [6, 6]
 });
 
 const cycloneBobIcon = L.divIcon({
@@ -419,17 +396,19 @@ export default function CycloneMap({
 
             <MapRecenterController centerCoords={flyTarget} zoomLevel={flyZoom} triggerKey={flyTrigger} />
 
-            {/* User Marker with Distinct Pin & Label */}
-            <Marker position={[userLocation.lat, userLocation.lon]} icon={createUserIcon(userLocation.name)}>
-              <Popup>
-                <div className="text-xs text-slate-900 font-sans">
-                  <strong className="text-sky-700">📍 Your Location:</strong> {userLocation.name}
-                  <div className="text-[10px] text-slate-600 mt-0.5">
-                    Lat: {userLocation.lat.toFixed(4)}°, Lon: {userLocation.lon.toFixed(4)}°
-                    {userLocation.accuracy && ` (Accuracy: ±${Math.round(userLocation.accuracy)}m)`}
-                  </div>
+            {/* User Location Marker (Clean, clutter-free dot with hover/tap tooltip) */}
+            <Marker position={[userLocation.lat, userLocation.lon]} icon={userDotIcon}>
+              <Tooltip direction="top" offset={[0, -10]} opacity={0.96} className="custom-map-tooltip">
+                <div className="font-bold text-xs text-sky-400 flex items-center gap-1">
+                  <span>📍</span>
+                  <span>Your Location</span>
                 </div>
-              </Popup>
+                <div className="text-sm font-extrabold text-white mt-0.5">{userLocation.name}</div>
+                <div className="text-[10px] text-slate-300 mt-0.5">
+                  Lat: {userLocation.lat.toFixed(4)}°N, Lon: {userLocation.lon.toFixed(4)}°E
+                  {userLocation.accuracy && ` (Accuracy: ±${Math.round(userLocation.accuracy)}m)`}
+                </div>
+              </Tooltip>
             </Marker>
 
             {/* GPS Accuracy Circle */}
@@ -449,11 +428,29 @@ export default function CycloneMap({
 
               return (
                 <React.Fragment key={storm.id}>
-                  {/* Storm Center Marker */}
+                  {/* Storm Center Marker with hover/tap description */}
                   <Marker
                     position={[storm.center.lat, storm.center.lon]}
                     icon={isBob ? cycloneBobIcon : cycloneArbIcon}
                   >
+                    <Tooltip direction="top" offset={[0, -16]} opacity={0.96} className="custom-map-tooltip">
+                      <div className="text-xs font-extrabold text-red-400 flex items-center gap-1">
+                        <span>🌀</span>
+                        <span>{storm.name} ({storm.basin})</span>
+                      </div>
+                      <div className="text-[11px] font-semibold text-white mt-0.5">{storm.center.locationDesc}</div>
+                      <div className="text-[10px] text-sky-300 mt-1">
+                        📍 To You ({userLocation.name}): <strong>{stormDist} km</strong>
+                      </div>
+                      {storm.distanceToCoastKm && (
+                        <div className="text-[10px] text-emerald-300">
+                          🌊 To Coast: ~<strong>{storm.distanceToCoastKm} km</strong> ({storm.nearestCoastName})
+                        </div>
+                      )}
+                      <div className="text-[10px] text-amber-300">
+                        ⏱️ Advancing at {storm.movement?.speedKmph || 18} km/h {storm.movement?.direction || 'NNW'}
+                      </div>
+                    </Tooltip>
                     <Popup>
                       <div className="text-xs text-slate-900 font-sans p-1">
                         <strong className="block text-red-600 text-sm font-bold">{storm.name}</strong>
@@ -535,13 +532,47 @@ export default function CycloneMap({
                     }}
                   />
 
-                  {/* Forecast Checkpoints (Landfall & Milestone Markers - NO blue/green dots) */}
+                  {/* Forecast Checkpoints (Clean clutter-free dots with hover/tap description) */}
                   {trackData.checkpoints && trackData.checkpoints.map((pt, pIdx) => (
                     <Marker
                       key={pIdx}
                       position={[pt.lat, pt.lon]}
-                      icon={pt.isLandfall ? createLandfallIcon(pt.time) : createForecastMilestoneIcon(pt.time)}
+                      icon={pt.isLandfall ? landfallDotIcon : milestoneDotIcon}
                     >
+                      <Tooltip direction="top" offset={[0, -10]} opacity={0.96} className="custom-map-tooltip">
+                        {pt.isLandfall ? (
+                          <div className="space-y-0.5">
+                            <div className="text-xs font-extrabold text-red-400 flex items-center gap-1">
+                              <span>⚠️</span>
+                              <span>Expected Landfall Point</span>
+                            </div>
+                            <div className="text-sm font-bold text-white">{pt.label}</div>
+                            <div className="text-[11px] font-bold text-amber-300">
+                              Estimated Time: {pt.time}
+                            </div>
+                            <div className="text-[10px] text-slate-300">
+                              Direct eyewall crossing • High gale wind & tidal risk
+                            </div>
+                            <div className="text-[9px] text-slate-400">
+                              Coords: {pt.lat.toFixed(2)}°N, {pt.lon.toFixed(2)}°E
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-0.5">
+                            <div className="text-xs font-bold text-orange-400 flex items-center gap-1">
+                              <span>⏱️</span>
+                              <span>Forecast Milestone: {pt.time}</span>
+                            </div>
+                            <div className="text-sm font-bold text-white">{pt.label}</div>
+                            <div className="text-[10px] text-slate-300">
+                              Projected track position at {pt.time}
+                            </div>
+                            <div className="text-[9px] text-slate-400">
+                              Coords: {pt.lat.toFixed(2)}°N, {pt.lon.toFixed(2)}°E
+                            </div>
+                          </div>
+                        )}
+                      </Tooltip>
                       <Popup>
                         <div className="text-xs text-slate-900 font-sans p-0.5">
                           <strong className={pt.isLandfall ? 'text-red-600 block font-bold' : 'text-amber-800 block font-bold'}>
@@ -633,11 +664,11 @@ export default function CycloneMap({
           <div className="absolute bottom-2 left-2 z-[400] bg-slate-950/95 backdrop-blur-md border border-slate-800 rounded-lg p-2 text-[10px] text-slate-300 space-y-1.5 shadow-xl">
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-sky-500 border border-white inline-block shadow-sm"></span>
-              <span className="font-semibold text-white">Your Location (📍 YOU)</span>
+              <span className="font-semibold text-white">Your Location (Hover/tap dot)</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-red-600 border border-white inline-block"></span>
-              <span className="text-red-400 font-semibold">⚠️ Expected Landfall</span>
+              <span className="text-red-400 font-semibold">🎯 Expected Landfall</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-orange-500 border border-white inline-block"></span>
