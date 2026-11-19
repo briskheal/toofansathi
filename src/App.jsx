@@ -9,6 +9,7 @@ import HourlyForecastStrip from './components/HourlyForecastStrip';
 import EmergencyDirectoryModal from './components/EmergencyDirectoryModal';
 import SafetyModal from './components/SafetyModal';
 import PwaInstallPrompt from './components/PwaInstallPrompt';
+import BottomNav from './components/BottomNav';
 
 import { ALL_INDIA_REGIONS, findNearestDistrict } from './data/districts';
 import { fetchLiveWeather } from './services/weatherApi';
@@ -44,6 +45,15 @@ export default function App() {
   // Modals
   const [isEmergencyOpen, setIsEmergencyOpen] = useState(false);
   const [isSafetyOpen, setIsSafetyOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('alert');
+
+  const scrollToSection = (sectionId) => {
+    setActiveSection(sectionId);
+    const element = document.getElementById(`${sectionId}-section`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   // Active location object (either GPS or selected district)
   const activeLocation = customGpsLocation ||
@@ -407,7 +417,9 @@ export default function App() {
         )}
 
         {/* 1. Main Actionable Threat Banner (Red/Orange/Yellow/Green) */}
-        <ThreatBanner threat={threat} districtName={activeLocation.name} />
+        <div id="alert-section" className="scroll-mt-16">
+          <ThreatBanner threat={threat} districtName={activeLocation.name} />
+        </div>
 
         {/* 2. One-Tap 30-Second Audio Briefing (Odia/Bengali/Hindi/English) */}
         <VoiceBriefingCard briefing={voiceBriefing} selectedLang={selectedLang} />
@@ -427,30 +439,42 @@ export default function App() {
 
         {/* 5. 10-Hour Forecast Timeline */}
         {weatherData && (
-          <HourlyForecastStrip hourlyData={weatherData.hourly} />
+          <div id="forecast-section" className="scroll-mt-16">
+            <HourlyForecastStrip hourlyData={weatherData.hourly} />
+          </div>
         )}
 
         {/* 6. Leaflet Radar & Cyclone Track Map with Center Me & Refresh */}
-        <CycloneMap
-          userLocation={activeLocation}
-          stormCenter={activeStorm.center}
-          landfallArea={activeStorm.landfall.predictedArea}
-          onRefreshLocation={handleUseGps}
-          isGpsActive={!!customGpsLocation}
-          activeStorm={activeStorm}
-          allStorms={ALL_INDIA_ACTIVE_STORMS}
-        />
+        <div id="radar-section" className="scroll-mt-16">
+          <CycloneMap
+            userLocation={activeLocation}
+            stormCenter={activeStorm.center}
+            landfallArea={activeStorm.landfall.predictedArea}
+            onRefreshLocation={handleUseGps}
+            isGpsActive={!!customGpsLocation}
+            activeStorm={activeStorm}
+            allStorms={ALL_INDIA_ACTIVE_STORMS}
+          />
+        </div>
 
         {/* 7. Install PWA Prompt for Mobile Home Screen */}
         <PwaInstallPrompt />
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950/80 p-4 text-center text-xs text-slate-500">
+      <footer className="border-t border-slate-900 bg-slate-950/80 p-4 text-center text-xs text-slate-500 mb-14 sm:mb-0">
         <p className="font-semibold text-slate-400">ToofanSathi.in • Pan-India Cyclone & Weather Alert PWA</p>
         <p className="text-[11px] mt-1">Covering Bay of Bengal, Arabian Sea & Inland Depression Belts (IMD RSMC & Open-Meteo High-Res Models).</p>
         <p className="text-[10px] text-slate-600 mt-1">Designed for agricultural, utility, coastal & relief teams operating with low connectivity across India.</p>
       </footer>
+
+      {/* Native Mobile Bottom Navigation Bar */}
+      <BottomNav
+        activeSection={activeSection}
+        onSelectSection={scrollToSection}
+        onOpenEmergency={() => setIsEmergencyOpen(true)}
+        onOpenSafety={() => setIsSafetyOpen(true)}
+      />
 
       {/* Modals */}
       <EmergencyDirectoryModal
