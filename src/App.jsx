@@ -39,7 +39,7 @@ export default function App() {
   const [isWatchActive, setIsWatchActive] = useState(false);
   const watchIdRef = useRef(null);
 
-  const [selectedLang, setSelectedLang] = useState('odia'); // Default to Odia for Eastern coast
+  const [selectedLang, setSelectedLang] = useState('english'); // Default to English as primary language
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [lastUpdated, setLastUpdated] = useState('');
   const [isLoading, setIsLoading] = useState(false);

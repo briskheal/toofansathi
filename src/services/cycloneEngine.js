@@ -447,6 +447,236 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
       };
     }
 
+    case 'gujarati': {
+      const winterSpeech = isSevereCold
+        ? `શિયાળાની ચેતવણી: રાત અને વહેલી સવારે લઘુત્તમ તાપમાન ${minTemp}°C સુધી ઘટી શકે છે. ઠંડા પવનોથી બચવા માટે ગરમ કોટ (Coat) અથવા ભારે જેકેટ (Heavy Jacket) પહેરવું જરૂરી છે.`
+        : isChillyWinter
+        ? `શિયાળાની સલાહ: લઘુત્તમ તાપમાન ${minTemp}°C રહેવાની સંભાવના છે. સવાર અને રાત્રિ દરમિયાન ઠંડીથી બચવા માટે ફીલ્ડ સ્ટાફે જેકેટ કે કોટ સાથે રાખવો.`
+        : isMildWinter
+        ? `વહેલી સવારે હળવી ઠંડી (${minTemp}°C) રહેશે, હળવું જેકેટ સાથે રાખો.`
+        : '';
+
+      const winterPhonetic = isSevereCold
+        ? `Thandi thi bachva mate garam coat ke heavy jacket pehro.`
+        : isChillyWinter
+        ? `Thandi thi bachva mate jacket ke coat sathe rakho.`
+        : '';
+
+      const winterAction = isSevereCold
+        ? `ગરમ કોટ અથવા ભારે જેકેટ પહેરો (${minTemp}°C)`
+        : isChillyWinter
+        ? `જેકેટ અથવા કોટ સાથે રાખો (${minTemp}°C)`
+        : isMildWinter
+        ? `હળવું જેકેટ સાથે રાખો (${minTemp}°C)`
+        : 'હવામાન મુજબ સાવચેત રહો';
+
+      return {
+        headline: `તૂફાન સાથી ચેતવણી: ${isRed ? 'રેડ એલર્ટ (ભારે ખતરો)' : isOrange ? 'ઓરેન્જ એલર્ટ (સાવધાન)' : 'યલો એલર્ટ'} - ${districtName}`,
+        speech: `કટોકટી હવામાન ચેતવણી. ${districtName} વિસ્તારમાં વાવાઝોડા અને ઊંડા દબાણની ગંભીર અસર છે. વાવાઝોડાનું કેન્દ્ર તમારાથી આશરે ${distanceKm} કિલોમીટર દૂર છે. પવનની ઝડપ ${windSpeed} કિમી/કલાક અને ઝાપટાં ${gustSpeed} કિમી/કલાક સુધી પહોંચી શકે છે. ${
+          isRed
+            ? 'તરત જ ખેતર અને બહારના તમામ કામો બંધ કરો. પાકા મકાન કે સલામત આશ્રયસ્થાનમાં ખસી જાઓ. વીજળીના થાંભલા અને ઝાડથી દૂર રહો.'
+            : isOrange
+            ? 'બહારના કામો ઝડપથી પતાવી સલામત સ્થળે પહોંચો. મોબાઈલ ફોન ચાર્જ રાખો અને પીવાનું ચોખ્ખું પાણી સંગ્રહ કરો.'
+            : 'આવતા કલાકોમાં ભારે પવન અને વરસાદની શક્યતા છે. સાવચેત રહો અને સત્તાવાર બુલેટિન સાંભળતા રહો.'
+        } ${winterSpeech}`,
+        phoneticSpeech: `Vavazodu chetavani. ${districtName} vistar ma toofan no asar. Kendra tamara thi ${distanceKm} kilometer door che. Pavan ni zadap ${windSpeed} thi ${gustSpeed} kilometer pahuche shake che. ${
+          isRed
+            ? 'Khetar na kamo turant bandh karo ane pakka makan ma aashray lyo.'
+            : 'Bahar na kamo bandh rakho ane surakshit sthale raho.'
+        } ${winterPhonetic}`,
+        actionSteps: [
+          isRed ? 'તરત જ ખેતી અને બહારનું કામ બંધ કરો' : 'બહારનું કામ સ્થગિત કરો',
+          'પાકા મકાન કે વાવાઝોડા આશ્રયમાં જાઓ',
+          winterAction,
+          'પીવાનું પાણી અને ટોર્ચ તૈયાર રાખો'
+        ]
+      };
+    }
+
+    case 'telugu': {
+      const winterSpeech = isSevereCold
+        ? `శీతాకాల హెచ్చరిక: రాత్రి మరియు తెల్లవారుజామున కనిష్ట ఉష్ణోగ్రత ${minTemp}°C కి పడిపోవచ్చు. చలిగాలుల నుండి రక్షణ కోసం మందపాటి కోట్ (Coat) లేదా భారీ జాకెట్ (Heavy Jacket) ధరించడం తప్పనిసరి.`
+        : isChillyWinter
+        ? `శీతాకాల సూచన: కనిష్ట ఉష్ణోగ్రత ${minTemp}°C గా నమోదయ్యే అవకాశం ఉంది. ఉదయం మరియు రాత్రి వేళల్లో చలి నుండి రక్షణ కోసం ఫీల్డ్ సిబ్బంది జాకెట్ లేదా కోట్ వెంట ఉంచుకోవాలి.`
+        : isMildWinter
+        ? `ఉదయం వేళ స్వల్ప చలి (${minTemp}°C) ఉంటుంది, తేలికపాటి జాకెట్ ఉంచుకోండి.`
+        : '';
+
+      const winterPhonetic = isSevereCold
+        ? `Chali gaalula nundi rakshana kosam garam coat leda heavy jacket dharinchandi.`
+        : isChillyWinter
+        ? `Chali nundi rakshana kosam jacket leda coat ventane unchukondi.`
+        : '';
+
+      const winterAction = isSevereCold
+        ? `మందపాటి కోట్ లేదా జాకెట్ ధరించండి (${minTemp}°C)`
+        : isChillyWinter
+        ? `జాకెట్ లేదా కోట్ వెంట ఉంచుకోండి (${minTemp}°C)`
+        : isMildWinter
+        ? `తేలికపాటి జాకెట్ ఉంచుకోండి (${minTemp}°C)`
+        : 'వాతావరణం ప్రకారం జాగ్రత్త వహించండి';
+
+      return {
+        headline: `తూఫాన్ సాథీ హెచ్చరిక: ${isRed ? 'రెడ్ అలర్ట్ (తీవ్ర ప్రమాదం)' : isOrange ? 'ఆరెంజ్ అలర్ట్ (అప్రమత్తం)' : 'ఎల్లో అలర్ట్'} - ${districtName}`,
+        speech: `అత్యవసర వాతావరణ హెచ్చరిక. ${districtName} ప్రాంతంలో తుఫాను మరియు తీవ్ర వాయుగుండం ప్రభావం ఉంది. తుఫాను కేంద్రం మీకు సుమారు ${distanceKm} కిలోమీటర్ల దూరంలో ఉంది. గాలి వేగం గంటకు ${windSpeed} కిలోమీటర్లు మరియు ఈదురుగాలులు ${gustSpeed} కిలోమీటర్ల వరకు పెరిగే అవకాశం ఉంది. ${
+          isRed
+            ? 'వెంటనే పొలం మరియు బహిరంగ పనులన్నీ నిలిపివేయండి. పక్కా భవనాలు లేదా తుఫాను పునరావాస కేంద్రాలకు చేరుకోండి. విద్యుత్ స్తంభాలు, చెట్ల కింద ఉండకండి.'
+            : isOrange
+            ? 'బయటి పనులు త్వరగా ముగించి సురక్షిత ప్రాంతాలకు చేరుకోండి. మొబైల్ ఫోన్లు ఛార్జ్ చేసుకోండి, తాగునీరు నిల్వ చేసుకోండి.'
+            : 'రాబోయే గంటల్లో భారీ వర్షాలు, ఈదురుగాలులు వీచే అవకాశం ఉంది. జాగ్రత్తగా ఉండండి.'
+        } ${winterSpeech}`,
+        phoneticSpeech: `Toofan hecharika. ${districtName} pranthamlo toofanu prabhavam. Kendra meelanti ${distanceKm} kilometerla dooramlo undi. Gaali vegam ${windSpeed} nundi ${gustSpeed} kilometerla varaku peruguthundi. ${
+          isRed
+            ? 'Ventane polam panulu aapandi. Pakka bhavanamuloki vellandi.'
+            : 'Bayata panulu aapi surakshitanga undandi.'
+        } ${winterPhonetic}`,
+        actionSteps: [
+          isRed ? 'వెంటనే వ్యవసాయ మరియు బయటి పనులు ఆపండి' : 'బయటి పనులను వాయిదా వేయండి',
+          'పక్కా భవనం లేదా తుఫాను షెల్టర్‌కు వెళ్లండి',
+          winterAction,
+          'తాగునీరు, టార్చ్ లైట్ సిద్ధంగా ఉంచుకోండి'
+        ]
+      };
+    }
+
+    case 'tamil': {
+      const winterSpeech = isSevereCold
+        ? `குளிர்கால எச்சரிக்கை: இரவு மற்றும் அதிகாலை குறைந்தபட்ச வெப்பநிலை ${minTemp}°C ஆக குறையும். கடுமையான குளிரில் இருந்து பாதுகாக்க கனமான கோட் (Coat) அல்லது ஜாக்கெட் (Heavy Jacket) அணியவும்.`
+        : isChillyWinter
+        ? `குளிர்கால ஆலோசனை: குறைந்தபட்ச வெப்பநிலை ${minTemp}°C ஆக இருக்கும். அதிகாலை மற்றும் இரவு பணிகளில் குளிரில் இருந்து பாதுகாக்க களப்பணியாளர்கள் ஜாக்கெட் அல்லது கோட் உடன் வைத்திருக்கவும்.`
+        : isMildWinter
+        ? `அதிகாலையில் லேசான குளிர் (${minTemp}°C) நிலவும், லேசான ஜாக்கெட் உடன் வைக்கவும்.`
+        : '';
+
+      const winterPhonetic = isSevereCold
+        ? `Kulir kaatril irunthu paathukaaka ganamana coat allathu jacket aniyavum.`
+        : isChillyWinter
+        ? `Kuliril irunthu paathukaaka jacket allathu coat udan vaithirukavum.`
+        : '';
+
+      const winterAction = isSevereCold
+        ? `கனமான கோட் அல்லது ஜாக்கெட் அணியவும் (${minTemp}°C)`
+        : isChillyWinter
+        ? `ஜாக்கெட் அல்லது கோட் உடன் வைக்கவும் (${minTemp}°C)`
+        : isMildWinter
+        ? `லேசான ஜாக்கெட் உடன் வைக்கவும் (${minTemp}°C)`
+        : 'வானிலைக்கு ஏற்ப பாதுகாப்பாக இருங்கள்';
+
+      return {
+        headline: `தூபான் சாதி அவசர எச்சரிக்கை: ${isRed ? 'சிவப்பு எச்சரிக்கை (ரெட் அலர்ட்)' : isOrange ? 'ஆரஞ்சு எச்சரிக்கை' : 'மஞ்சள் எச்சரிக்கை'} - ${districtName}`,
+        speech: `அவசர வானிலை எச்சரிக்கை. ${districtName} பகுதியில் புயல் மற்றும் தீவிர காற்றழுத்த தாழ்வு மண்டலத்தின் தாக்கம் தொடங்கியுள்ளது. புயலின் மையம் உங்களிலிருந்து சுமார் ${distanceKm} கி.மீ தொலைவில் உள்ளது. காற்றின் வேகம் மணிக்கு ${windSpeed} கி.மீ மற்றும் பலத்த காற்று ${gustSpeed} கி.மீ வரை வீசக்கூடும். ${
+          isRed
+            ? 'விவசாயம் மற்றும் வெளிப்புற பணிகளை உடனடியாக நிறுத்துங்கள். கான்கிரீட் கட்டிடங்கள் அல்லது புயல் பாதுகாப்பு மையங்களுக்கு செல்லுங்கள். மின்கம்பங்கள் மற்றும் மரங்களின் கீழ் நிற்காதீர்கள்.'
+            : isOrange
+            ? 'வெளிப்புற வேலைகளை முடித்து பாதுகாப்பான இடத்திற்கு செல்லுங்கள். மொபைல் போன்களை சார்ஜ் செய்து குடிநீர் சேமித்து வைக்கவும்.'
+            : 'அடுத்த சில மணிநேரங்களில் பலத்த காற்றுடன் கனமழை பெய்யக்கூடும். எச்சரிக்கையுடன் இருங்கள்.'
+        } ${winterSpeech}`,
+        phoneticSpeech: `Puyal echarikkai. ${districtName} paguthiyil puyalin thakkam. Puyal maiyam ungalil irunthu ${distanceKm} kilometer tholaivil ullathu. Kaatrin vegam ${windSpeed} mudhal ${gustSpeed} kilometer varai veesalam. ${
+          isRed
+            ? 'Velaiyai udanadiyaga niruthi pakka veetirku sellavum.'
+            : 'Veliyil selvathai thavirthu paathukaapaga irungal.'
+        } ${winterPhonetic}`,
+        actionSteps: [
+          isRed ? 'வெளிப்புற மற்றும் விவசாய பணிகளை உடனே நிறுத்துங்கள்' : 'வெளிப்புற பணிகளை ஒத்திவையுங்கள்',
+          'பாதுகாப்பான கான்கிரீட் கட்டிடத்திற்கு செல்லுங்கள்',
+          winterAction,
+          'குடிநீர் மற்றும் டார்ச் லைட் தயார் நிலையில் வைக்கவும்'
+        ]
+      };
+    }
+
+    case 'malayalam': {
+      const winterSpeech = isSevereCold
+        ? `ശൈത്യകാല മുന്നറിയിപ്പ്: രാത്രിയിലും പുലർച്ചെയും കുറഞ്ഞ താപനില ${minTemp}°C ആയി കുറയും. കഠിനമായ തണുപ്പിൽ നിന്നും കാറ്റിൽ നിന്നും രക്ഷനേടാൻ കട്ടിയുള്ള കോട്ട് (Coat) അല്ലെങ്കിൽ ജാക്കറ്റ് (Heavy Jacket) ധരിക്കുക.`
+        : isChillyWinter
+        ? `ശൈത്യകാല നിർദ്ദേശം: കുറഞ്ഞ താപനില ${minTemp}°C ആയിരിക്കും. അതിരാവിലെയും രാത്രിയിലുമുള്ള തണുപ്പിൽ നിന്നും രക്ഷനേടാൻ ഫീൽഡ് ജീവനക്കാർ ജാക്കറ്റോ കോട്ടോ കരുതുക.`
+        : isMildWinter
+        ? `പുലർച്ചെ നേരിയ തണുപ്പ് (${minTemp}°C) അനുഭവപ്പെടും, നേർത്ത ജാക്കറ്റ് കരുതുക.`
+        : '';
+
+      const winterPhonetic = isSevereCold
+        ? `Thanuppedukkathirikkan kattiulla coat allengil heavy jacket dharikkuka.`
+        : isChillyWinter
+        ? `Thanuppedukkathirikkan jacket allengil coat koode karuthuka.`
+        : '';
+
+      const winterAction = isSevereCold
+        ? `കട്ടിയുള്ള കോട്ട് അല്ലെങ്കിൽ ജാക്കറ്റ് ധരിക്കുക (${minTemp}°C)`
+        : isChillyWinter
+        ? `ജാക്കറ്റ് അല്ലെങ്കിൽ കോട്ട് കരുതുക (${minTemp}°C)`
+        : isMildWinter
+        ? `നേർത്ത ജാക്കറ്റ് കരുതുക (${minTemp}°C)`
+        : 'കാലാവസ്ഥയ്ക്കനുസരിച്ച് ജാഗ്രത പാലിക്കുക';
+
+      return {
+        headline: `തൂഫാൻ സാഥി അടിയന്തര മുന്നറിയിപ്പ്: ${isRed ? 'റെഡ് അലർട്ട് (അതീവ ജാഗ്രത)' : isOrange ? 'ഓറഞ്ച് അലർട്ട്' : 'മഞ്ഞ അലർട്ട്'} - ${districtName}`,
+        speech: `അടിയന്തര കാലാവസ്ഥാ മുന്നറിയിപ്പ്. ${districtName} പ്രദേശത്ത് ചുഴലിക്കാറ്റും തീവ്ര ന്യൂനമർദ്ദവും ശക്തമാകുന്നു. കാറ്റിന്റെ കേന്ദ്രം നിങ്ങളിൽ നിന്ന് ഏകദേശം ${distanceKm} കിലോമീറ്റർ അകലെയാണ്. കാറ്റിന്റെ വേഗത മണിക്കൂറിൽ ${windSpeed} കി.മീറ്ററും വേഗത കൂടിയ കാറ്റ് ${gustSpeed} കി.മീറ്റർ വരെയും വീശാം. ${
+          isRed
+            ? 'കൃഷിപ്പണികളും പുറംജോലികളും ഉടൻ നിർത്തിവെക്കുക. കോൺക്രീറ്റ് കെട്ടിടങ്ങളിലോ ദുരിതാശ്വാസ ക്യാമ്പുകളിലോ അഭയം തേടുക. ഇലക്ട്രിക് പോസ്റ്റുകളുടെയും മരങ്ങളുടെയും അടിയിൽ നിൽക്കരുത്.'
+            : isOrange
+            ? 'പുറംജോലികൾ വേഗത്തിൽ പൂർത്തിയാക്കി സുരക്ഷിത സ്ഥാനങ്ങളിലേക്ക് മാറുക. മൊബൈൽ ഫോണുകൾ ചാർജ്ജ് ചെയ്യുക, കുടിവെള്ളം ശേഖരിക്കുക.'
+            : 'വരും മണിക്കൂറുകളിൽ ശക്തമായ മഴയ്ക്കും കാറ്റിനും സാധ്യതയുണ്ട്. ജാഗ്രത പാലിക്കുക.'
+        } ${winterSpeech}`,
+        phoneticSpeech: `Chuzhalikkaatu munnariyippu. ${districtName} pradesheth kaatinte prabhavam. Kendram ningalil ninnu ${distanceKm} kilometer aakale aanu. Kaatinte vegatha ${windSpeed} muthal ${gustSpeed} kilometer vare aavam. ${
+          isRed
+            ? 'Puram jolaikal nirthi surakshitha sthanathekku maaruka.'
+            : 'Jagratha paalikkuka, surakshitharayirikkuka.'
+        } ${winterPhonetic}`,
+        actionSteps: [
+          isRed ? 'പുറംജോലികളും കൃഷിയും ഉടൻ നിർത്തിവെക്കുക' : 'അത്യാവശ്യമല്ലാത്ത പുറംജോലികൾ ഒഴിവാക്കുക',
+          'കോൺക്രീറ്റ് കെട്ടിടത്തിലേക്കോ ഷെൽട്ടറിലേക്കോ മാറുക',
+          winterAction,
+          'കുടിവെള്ളവും എമർജൻസി ലൈറ്റും കരുതുക'
+        ]
+      };
+    }
+
+    case 'kannada': {
+      const winterSpeech = isSevereCold
+        ? `ಚಳಿಗಾಲದ ಎಚ್ಚರಿಕೆ: ರಾತ್ರಿ ಮತ್ತು ಮುಂಜಾನೆ ಕನಿಷ್ಠ ತಾಪಮಾನ ${minTemp}°C ಗೆ ಇಳಿಯಲಿದೆ. ತೀವ್ರ ಚಳಿಗಾಳಿಯಿಂದ ರಕ್ಷಣೆ ಪಡೆಯಲು ದಪ್ಪ ಕೋಟ್ (Coat) ಅಥವಾ ಜಾಕೆಟ್ (Heavy Jacket) ಧರಿಸುವುದು ಕಡ್ಡಾಯ.`
+        : isChillyWinter
+        ? `ಚಳಿಗಾಲದ ಸಲಹೆ: ಕನಿಷ್ಠ ತಾಪಮಾನ ${minTemp}°C ಇರಲಿದೆ. ಮುಂಜಾನೆ ಮತ್ತು ರಾತ್ರಿಯ ಕರ್ತವ್ಯದಲ್ಲಿ ಚಳಿಯಿಂದ ರಕ್ಷಣೆ ಪಡೆಯಲು ಸಿಬ್ಬಂದಿ ಜಾಕೆಟ್ ಅಥವಾ ಕೋಟ್ ಜೊತೆಯಲ್ಲಿಟ್ಟುಕೊಳ್ಳಬೇಕು.`
+        : isMildWinter
+        ? `ಮುಂಜಾನೆ ಲಘು ಚಳಿ (${minTemp}°C) ಇರಲಿದೆ, ತೆಳುವಾದ ಜಾಕೆಟ್ ಜೊತೆಯಲ್ಲಿಡಿ.`
+        : '';
+
+      const winterPhonetic = isSevereCold
+        ? `Chaliyinda rakshanege garam coat athava heavy jacket dharisi.`
+        : isChillyWinter
+        ? `Chaliyinda rakshanege jacket athava coat jotheyallidi.`
+        : '';
+
+      const winterAction = isSevereCold
+        ? `ದಪ್ಪ ಕೋಟ್ ಅಥವಾ ಜಾಕೆಟ್ ಧರಿಸಿ (${minTemp}°C)`
+        : isChillyWinter
+        ? `ಜಾಕೆಟ್ ಅಥವಾ ಕೋಟ್ ಜೊತೆಯಲ್ಲಿಡಿ (${minTemp}°C)`
+        : isMildWinter
+        ? `ತೆಳುವಾದ ಜಾಕೆಟ್ ಜೊತೆಯಲ್ಲಿಡಿ (${minTemp}°C)`
+        : 'ಹವಾಮಾನಕ್ಕೆ ತಕ್ಕಂತೆ ಜಾಗರೂಕರಾಗಿರಿ';
+
+      return {
+        headline: `ತೂಫಾನ್ ಸಾಥಿ ತುರ್ತು ಎಚ್ಚರಿಕೆ: ${isRed ? 'ಕೆಂಪು ಎಚ್ಚರಿಕೆ (ರೆಡ್ ಅಲರ್ಟ್)' : isOrange ? 'ಕಿತ್ತಳೆ ಎಚ್ಚರಿಕೆ' : 'ಹಳದಿ ಎಚ್ಚರಿಕೆ'} - ${districtName}`,
+        speech: `ತುರ್ತು ಹವಾಮಾನ ಎಚ್ಚರಿಕೆ. ${districtName} ಪ್ರದೇಶದಲ್ಲಿ ಚಂಡಮಾರುತ ಮತ್ತು ತೀವ್ರ ವಾಯುಭಾರ ಕುಸಿತದ ಪರಿಣಾಮ ಆರಂಭವಾಗಿದೆ. ಚಂಡಮಾರುತದ ಕೇಂದ್ರವು ನಿಮ್ಮಿಂದ ಸುಮಾರು ${distanceKm} ಕಿ.ಮೀ ದೂರದಲ್ಲಿದೆ. ಗಾಳಿಯ ವೇಗ ಗಂಟೆಗೆ ${windSpeed} ಕಿ.ಮೀ ಮತ್ತು ಬಿರುಗಾಳಿ ${gustSpeed} ಕಿ.ಮೀ ವರೆಗೆ ತಲುಪಬಹುದು. ${
+          isRed
+            ? 'ತಕ್ಷಣವೇ ಕೃಷಿ ಮತ್ತು ಹೊರಾಂಗಣ ಕೆಲಸಗಳನ್ನು ನಿಲ್ಲಿಸಿ. ಪಕ್ಕಾ ಕಟ್ಟಡ ಅಥವಾ ಚಂಡಮಾರುತ ಆಶ್ರಯ ತಾಣಗಳಿಗೆ ತೆರಳಿ. ವಿದ್ಯುತ್ ಕಂಬಗಳು ಮತ್ತು ಮರಗಳ ಕೆಳಗೆ ನಿಲ್ಲಬೇಡಿ.'
+            : isOrange
+            ? 'ಹೊರಾಂಗಣ ಕೆಲಸಗಳನ್ನು ಬೇಗ ಮುಗಿಸಿ ಸುರಕ್ಷಿತ ಸ್ಥಳಕ್ಕೆ ತೆರಳಿ. ಮೊಬೈಲ್ ಫೋನ್‌ಗಳನ್ನು ಚಾರ್ಜ್ ಮಾಡಿ ಮತ್ತು ಕುಡಿಯುವ ನೀರನ್ನು ಸಂಗ್ರಹಿಸಿ.'
+            : 'ಮುಂದಿನ ಕೆಲ ಗಂಟೆಗಳಲ್ಲಿ ಭಾರಿ ಮಳೆ ಮತ್ತು ಗಾಳಿ ಬೀಸುವ ಸಾಧ್ಯತೆಯಿದೆ. ಎಚ್ಚರಿಕೆಯಿಂದಿರಿ.'
+        } ${winterSpeech}`,
+        phoneticSpeech: `Toofan eccharike. ${districtName} pradeshalli toofanina prabhava. Kendravu nimminda ${distanceKm} kilometer dooradallide. Gaaliya vega ${windSpeed} rinda ${gustSpeed} kilometer varege irabahudu. ${
+          isRed
+            ? 'Taksanave horangana kelasa nillisi surakshitha sthalakke hogi.'
+            : 'Horangana kelasa thadeyiri, jagruthiyagiriri.'
+        } ${winterPhonetic}`,
+        actionSteps: [
+          isRed ? 'ತಕ್ಷಣವೇ ಕೃಷಿ ಮತ್ತು ಹೊರಗಿನ ಕೆಲಸಗಳನ್ನು ನಿಲ್ಲಿಸಿ' : 'ಹೊರಗಿನ ಕೆಲಸಗಳನ್ನು ಮುಂದೂಡಿ',
+          'ಪಕ್ಕಾ ಕಟ್ಟಡ ಅಥವಾ ಆಶ್ರಯ ತಾಣಕ್ಕೆ ತೆರಳಿ',
+          winterAction,
+          'ಕುಡಿಯುವ ನೀರು ಮತ್ತು ಟಾರ್ಚ್ ಸಿದ್ಧವಾಗಿಡಿ'
+        ]
+      };
+    }
+
     case 'english':
     default: {
       const winterSpeech = isSevereCold

@@ -46,18 +46,32 @@ export class SpeechService {
     this.onEndCallback = onComplete;
     this.isPlaying = true;
 
-    // Check if browser has native Odia or Bengali voices
+    // Check if browser has native regional voices
     const voices = this.synth.getVoices();
     const hasOdiaVoice = voices.some(v => v.lang.startsWith('or'));
     const hasBengaliVoice = voices.some(v => v.lang.startsWith('bn'));
+    const hasGujaratiVoice = voices.some(v => v.lang.startsWith('gu'));
+    const hasTeluguVoice = voices.some(v => v.lang.startsWith('te'));
+    const hasTamilVoice = voices.some(v => v.lang.startsWith('ta'));
+    const hasMalayalamVoice = voices.some(v => v.lang.startsWith('ml'));
+    const hasKannadaVoice = voices.some(v => v.lang.startsWith('kn'));
 
     let textToSpeak = briefing.speech;
 
-    // If device has no native Odia voice (standard on 90% of Windows/Android),
-    // use phonetic transliteration so Indian English/Hindi TTS voice pronounces it clearly without stopping!
+    // Fallback to phonetic speech for devices lacking regional Indian TTS synthesis
     if (lang === 'odia' && !hasOdiaVoice && briefing.phoneticSpeech) {
       textToSpeak = briefing.phoneticSpeech;
     } else if (lang === 'bengali' && !hasBengaliVoice && briefing.phoneticSpeech) {
+      textToSpeak = briefing.phoneticSpeech;
+    } else if (lang === 'gujarati' && !hasGujaratiVoice && briefing.phoneticSpeech) {
+      textToSpeak = briefing.phoneticSpeech;
+    } else if (lang === 'telugu' && !hasTeluguVoice && briefing.phoneticSpeech) {
+      textToSpeak = briefing.phoneticSpeech;
+    } else if (lang === 'tamil' && !hasTamilVoice && briefing.phoneticSpeech) {
+      textToSpeak = briefing.phoneticSpeech;
+    } else if (lang === 'malayalam' && !hasMalayalamVoice && briefing.phoneticSpeech) {
+      textToSpeak = briefing.phoneticSpeech;
+    } else if (lang === 'kannada' && !hasKannadaVoice && briefing.phoneticSpeech) {
       textToSpeak = briefing.phoneticSpeech;
     }
 
@@ -92,6 +106,12 @@ export class SpeechService {
     if (this.currentLang === 'odia') langCode = 'or-IN';
     else if (this.currentLang === 'bengali') langCode = 'bn-IN';
     else if (this.currentLang === 'hindi') langCode = 'hi-IN';
+    else if (this.currentLang === 'gujarati') langCode = 'gu-IN';
+    else if (this.currentLang === 'telugu') langCode = 'te-IN';
+    else if (this.currentLang === 'tamil') langCode = 'ta-IN';
+    else if (this.currentLang === 'malayalam') langCode = 'ml-IN';
+    else if (this.currentLang === 'kannada') langCode = 'kn-IN';
+    else langCode = 'en-IN';
 
     utterance.lang = langCode;
     utterance.rate = 0.92; // Clear speed for field workers

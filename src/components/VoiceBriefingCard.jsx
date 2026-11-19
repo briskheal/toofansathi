@@ -52,10 +52,15 @@ export default function VoiceBriefingCard({ briefing, selectedLang }) {
   };
 
   const langLabel = {
+    english: 'Listen Full Voice Briefing',
+    hindi: 'पूरी चेतावनी सुनें (Play Hindi Audio)',
     odia: 'ସମ୍ପୂର୍ଣ୍ଣ ସୂଚନା ଶୁଣନ୍ତୁ (Play Odia Audio)',
     bengali: 'সম্পূর্ণ বার্তা শুনুন (Play Bengali Audio)',
-    hindi: 'पूरी चेतावनी सुनें (Play Hindi Audio)',
-    english: 'Listen Full Voice Briefing'
+    gujarati: 'સંપૂર્ણ ચેતવણી સાંભળો (Play Gujarati Audio)',
+    telugu: 'పూర్తి వాయిస్ హెచ్చరిక వినండి (Play Telugu Audio)',
+    tamil: 'முழு எச்சரிக்கையை கேட்க (Play Tamil Audio)',
+    malayalam: 'പൂർണ്ണ മുന്നറിയിപ്പ് കേൾക്കുക (Play Malayalam Audio)',
+    kannada: 'ಸಂಪೂರ್ಣ ಧ್ವನಿ ಎಚ್ಚರಿಕೆ ಕೇಳಿ (Play Kannada Audio)'
   }[selectedLang] || 'Listen Audio Alert';
 
   return (

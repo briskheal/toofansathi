@@ -45,12 +45,17 @@ export default function Navbar({
           <select
             value={selectedLang}
             onChange={(e) => setSelectedLang(e.target.value)}
-            className="text-xs bg-slate-800 text-slate-200 border border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-500 font-medium"
+            className="text-xs bg-slate-800 text-slate-200 border border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-500 font-medium cursor-pointer"
           >
+            <option value="english">English</option>
+            <option value="hindi">हिन्दी (Hindi)</option>
             <option value="odia">ଓଡ଼ିଆ (Odia)</option>
             <option value="bengali">বাংলা (Bengali)</option>
-            <option value="hindi">हिन्दी (Hindi)</option>
-            <option value="english">English</option>
+            <option value="gujarati">ગુજરાતી (Gujarati)</option>
+            <option value="telugu">తెలుగు (Telugu)</option>
+            <option value="tamil">தமிழ் (Tamil)</option>
+            <option value="malayalam">മലയാളം (Malayalam)</option>
+            <option value="kannada">ಕನ್ನಡ (Kannada)</option>
           </select>
 
           {/* Emergency SOS Button */}
