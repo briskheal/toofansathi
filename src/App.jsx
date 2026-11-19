@@ -84,18 +84,28 @@ export default function App() {
 
   const activeStorm = liveAllStorms.find(s => s.id === baseStorm.id) || getLiveEstimatedStorm(baseStorm, liveClock);
 
-  // Online / Offline listeners
+  // Online / Offline & Auto-Sync listeners
   useEffect(() => {
-    const handleOnline = () => setIsOffline(false);
+    const handleOnline = () => {
+      setIsOffline(false);
+      loadWeather();
+    };
     const handleOffline = () => setIsOffline(true);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadWeather();
+      }
+    };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, []);
+  }, [loadWeather]);
 
   // Fetch weather data for the active location
   const loadWeather = useCallback(async () => {
@@ -114,8 +124,13 @@ export default function App() {
     }
   }, [activeLocation.lat, activeLocation.lon]);
 
+  // Periodic Auto-Refresh: fetch fresh weather observations every 2 minutes
   useEffect(() => {
     loadWeather();
+    const weatherTimer = setInterval(() => {
+      loadWeather();
+    }, 120000); // 2 minutes (120s)
+    return () => clearInterval(weatherTimer);
   }, [loadWeather]);
 
   // Handle single GPS refresh
