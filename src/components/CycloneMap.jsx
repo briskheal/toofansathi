@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Circle, Polyline, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle, Polyline, useMap, ZoomControl } from 'react-leaflet';
 import L from 'leaflet';
 import {
   MapPin,
@@ -303,12 +303,15 @@ export default function CycloneMap({
             center={flyTarget}
             zoom={flyZoom}
             scrollWheelZoom={false}
+            zoomControl={false}
             className="h-full w-full"
           >
             <TileLayer
               attribution='&copy; OpenStreetMap'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
+
+            <ZoomControl position="bottomright" />
 
             <MapRecenterController centerCoords={flyTarget} zoomLevel={flyZoom} triggerKey={flyTrigger} />
 
@@ -352,10 +355,20 @@ export default function CycloneMap({
                         <strong className="block text-red-600 text-sm font-bold">{storm.name}</strong>
                         <span className="text-[11px] font-semibold text-slate-700 block">Basin: {storm.basin}</span>
                         <span className="text-[10px] text-slate-600 block mt-1">{storm.center.locationDesc}</span>
-                        <span className="text-[11px] font-bold text-sky-700 block mt-1">
-                          Distance to you: {stormDist} km
-                        </span>
-                        <span className="text-[10px] text-slate-800 block">Status: {storm.status}</span>
+                        <div className="mt-1 pt-1 border-t border-slate-200 space-y-0.5">
+                          <span className="text-[11px] font-bold text-sky-700 block">
+                            📍 To You ({userLocation.name}): {stormDist} km
+                          </span>
+                          {storm.distanceToCoastKm && (
+                            <span className="text-[11px] font-bold text-emerald-700 block">
+                              🌊 To Coast ({storm.nearestCoastName}): ~{storm.distanceToCoastKm} km
+                            </span>
+                          )}
+                          <span className="text-[10px] text-slate-700 block">
+                            ⏱️ Advancing at {storm.movement?.speedKmph || 18} km/h {storm.movement?.direction || 'NNW'}
+                          </span>
+                          <span className="text-[10px] text-slate-800 block">Status: {storm.status}</span>
+                        </div>
                       </div>
                     </Popup>
                   </Marker>
@@ -439,21 +452,32 @@ export default function CycloneMap({
           </div>
 
           {/* Dual Storm Distance Floating Overlay */}
-          <div className="absolute top-2.5 left-2.5 z-[400] flex flex-col gap-1 max-w-[200px] sm:max-w-none">
+          <div className="absolute top-2.5 left-2.5 z-[400] flex flex-col gap-1 max-w-[210px] sm:max-w-none">
             {allStorms.map(storm => {
               const dist = calculateDistanceKm(userLocation.lat, userLocation.lon, storm.center.lat, storm.center.lon);
               const isBob = storm.basin === 'Bay of Bengal';
+              const coastDist = storm.distanceToCoastKm;
               return (
                 <button
                   key={storm.id}
                   onClick={() => switchMapView(isBob ? 'bay-of-bengal' : 'arabian-sea')}
-                  className="px-2 py-1 bg-slate-950/90 backdrop-blur-md border border-slate-800 rounded-lg text-[10px] text-left hover:border-sky-500 transition-colors shadow"
+                  className="px-2.5 py-1.5 bg-slate-950/95 backdrop-blur-md border border-slate-800 hover:border-sky-500 rounded-xl text-[10px] text-left transition-all shadow-lg"
                 >
-                  <div className="flex items-center gap-1 font-bold text-white">
-                    <span>{isBob ? '🔴' : '🟠'}</span>
-                    <span className="truncate">{storm.basin}:</span>
-                    <span className={dist < 300 ? 'text-red-400' : 'text-slate-300'}>{dist} km</span>
+                  <div className="flex items-center justify-between gap-1.5 font-bold text-white">
+                    <span className="flex items-center gap-1">
+                      <span>{isBob ? '🔴' : '🟠'}</span>
+                      <span className="truncate">{storm.basin}</span>
+                    </span>
+                    <span className={dist < 300 ? 'text-red-400 font-extrabold' : 'text-slate-300'}>
+                      {dist} km to you
+                    </span>
                   </div>
+                  {coastDist && (
+                    <div className="mt-0.5 pt-0.5 border-t border-slate-800/70 flex items-center justify-between text-[9px] text-emerald-400 font-medium">
+                      <span>🌊 Coast:</span>
+                      <span>~{coastDist} km ({storm.nearestCoastName ? storm.nearestCoastName.split(' ')[0] : 'Land'})</span>
+                    </div>
+                  )}
                 </button>
               );
             })}

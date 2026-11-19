@@ -26,6 +26,7 @@ export const ALL_INDIA_ACTIVE_STORMS = [
     },
     imdWarningStage: 'Cyclone Warning (Orange to Red for coastal belts)',
     bulletinTime: '19-Nov-2026 15:30 IST',
+    bulletinIso: '2026-11-19T15:30:00+05:30',
     source: 'IMD RSMC New Delhi',
 
     // Foreign Meteorological Agencies Comparison
@@ -93,6 +94,7 @@ export const ALL_INDIA_ACTIVE_STORMS = [
     },
     imdWarningStage: 'Squally Weather & Fishermen Warning (Yellow)',
     bulletinTime: '19-Nov-2026 15:30 IST',
+    bulletinIso: '2026-11-19T15:30:00+05:30',
     source: 'IMD Cyclone Warning Division, New Delhi',
 
     agencyComparison: [
@@ -151,6 +153,72 @@ export function getNearestStorm(userLat, userLon) {
     }
   }
   return closest;
+}
+
+// Compute Real-Time Dead-Reckoned Storm Position & Distance to Coastline
+export function getLiveEstimatedStorm(storm, currentTime = new Date()) {
+  if (!storm || !storm.center || !storm.movement) return storm;
+
+  const bulletinTime = storm.bulletinIso ? new Date(storm.bulletinIso).getTime() : new Date('2026-11-19T15:30:00+05:30').getTime();
+  const now = currentTime.getTime();
+  const elapsedHours = Math.max(0, (now - bulletinTime) / (1000 * 60 * 60));
+
+  const speedKmph = storm.movement.speedKmph || 18;
+  const headingDeg = storm.movement.headingDeg || 340; // NNW
+  const headingRad = (headingDeg * Math.PI) / 180;
+
+  const distanceTraveledKm = speedKmph * elapsedHours;
+
+  const deltaLat = (distanceTraveledKm * Math.cos(headingRad)) / 111.13;
+  const deltaLon = (distanceTraveledKm * Math.sin(headingRad)) / (111.13 * Math.cos((storm.center.lat * Math.PI) / 180));
+
+  const liveLat = Math.round((storm.center.lat + deltaLat) * 1000) / 1000;
+  const liveLon = Math.round((storm.center.lon + deltaLon) * 1000) / 1000;
+
+  // Nearest coastal landfall reference points
+  const coastalPoints = storm.basin === 'Bay of Bengal'
+    ? [
+        { name: 'Dhamra/Bhadrak Coast', lat: 20.80, lon: 86.95 },
+        { name: 'Paradip Port Coast', lat: 20.31, lon: 86.61 },
+        { name: 'Puri Beach Coast', lat: 19.81, lon: 85.83 },
+        { name: 'Digha Coast', lat: 21.62, lon: 87.50 },
+        { name: 'Sagar Island Coast', lat: 21.65, lon: 88.07 }
+      ]
+    : [
+        { name: 'Porbandar Coast', lat: 21.64, lon: 69.62 },
+        { name: 'Dwarka Coast', lat: 22.24, lon: 68.96 },
+        { name: 'Kutch Coast', lat: 23.24, lon: 69.66 },
+        { name: 'Mumbai Coast', lat: 18.92, lon: 72.83 }
+      ];
+
+  let minCoastDist = Infinity;
+  let nearestCoastName = coastalPoints[0].name;
+  for (const pt of coastalPoints) {
+    const d = calculateDistanceKm(liveLat, liveLon, pt.lat, pt.lon);
+    if (d < minCoastDist) {
+      minCoastDist = d;
+      nearestCoastName = pt.name;
+    }
+  }
+
+  return {
+    ...storm,
+    originalCenter: storm.originalCenter || storm.center,
+    center: {
+      lat: liveLat,
+      lon: liveLon,
+      locationDesc: `Estimated Live Center: ~${minCoastDist} km SE of ${nearestCoastName} (Advancing at ${speedKmph} km/h ${storm.movement.direction})`
+    },
+    liveCenter: {
+      lat: liveLat,
+      lon: liveLon,
+      locationDesc: `Estimated Live Center: ~${minCoastDist} km SE of ${nearestCoastName} (Advancing at ${speedKmph} km/h ${storm.movement.direction})`
+    },
+    distanceTraveledKm: Math.round(distanceTraveledKm),
+    elapsedMinutes: Math.round(elapsedHours * 60),
+    distanceToCoastKm: minCoastDist,
+    nearestCoastName: nearestCoastName
+  };
 }
 
 // Calculate Haversine distance in KM between two lat/lon points

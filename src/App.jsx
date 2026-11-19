@@ -18,6 +18,7 @@ import { fetchLiveWeather } from './services/weatherApi';
 import {
   ALL_INDIA_ACTIVE_STORMS,
   getNearestStorm,
+  getLiveEstimatedStorm,
   calculateDistanceKm,
   calculateBearingDirection,
   evaluateThreatLevel,
@@ -64,10 +65,24 @@ export default function App() {
     ALL_INDIA_REGIONS.find((d) => d.id === selectedDistrictId) ||
     ALL_INDIA_REGIONS[0];
 
+  // Real-time ticker for live storm dead reckoning (every 20s)
+  const [liveClock, setLiveClock] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setLiveClock(new Date());
+    }, 20000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Compute live dead-reckoned storms moving along trajectory
+  const liveAllStorms = ALL_INDIA_ACTIVE_STORMS.map(s => getLiveEstimatedStorm(s, liveClock));
+
   // Active cyclone bulletin (auto-pick nearest or user-selected)
-  const activeStorm = autoSelectNearestStorm
+  const baseStorm = autoSelectNearestStorm
     ? getNearestStorm(activeLocation.lat, activeLocation.lon)
     : (ALL_INDIA_ACTIVE_STORMS.find(s => s.id === selectedStormId) || ALL_INDIA_ACTIVE_STORMS[0]);
+
+  const activeStorm = liveAllStorms.find(s => s.id === baseStorm.id) || getLiveEstimatedStorm(baseStorm, liveClock);
 
   // Online / Offline listeners
   useEffect(() => {
@@ -294,7 +309,7 @@ export default function App() {
         </section>
 
         {/* District & GPS Selector Bar (Mobile-Boundary Safe) */}
-        <section className="bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 overflow-hidden">
+        <section className="bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col gap-2.5 overflow-hidden">
           <div className="flex items-center gap-1.5 flex-1 min-w-0 w-full">
             <span className="text-xs font-bold text-slate-400 flex-shrink-0">Area:</span>
             
@@ -320,54 +335,56 @@ export default function App() {
             </button>
           </div>
 
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {/* Future Visit Planner Button */}
+          {/* 4 Equally Distributed Control Buttons (Plan Visit, GPS Fix, Live Watch, Refresh) */}
+          <div className="grid grid-cols-4 gap-1.5 sm:gap-2 w-full pt-1">
+            {/* 1. Plan Visit Button */}
             <button
               onClick={() => setIsTravelPlannerOpen(true)}
-              className="flex items-center justify-center gap-1 px-2.5 py-1.5 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex-shrink-0"
-              title="Plan field visit on future dates (Coming 5-7 days weather outlook)"
+              className="w-full flex items-center justify-center gap-1 px-1 sm:px-2 py-2 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white rounded-xl text-[11px] sm:text-xs font-bold transition-all shadow-sm border border-sky-500/40"
+              title="Plan field visit on future dates (5-7 days outlook)"
             >
-              <Calendar className="w-3.5 h-3.5" />
-              <span>Plan Visit</span>
+              <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="truncate">Plan Visit</span>
             </button>
 
-            {/* Instant GPS Refresh Button */}
+            {/* 2. Instant GPS Refresh Button */}
             <button
               onClick={handleUseGps}
               disabled={isLoading}
-              className={`flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all border flex-shrink-0 ${
+              className={`w-full flex items-center justify-center gap-1 px-1 sm:px-2 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all border ${
                 customGpsLocation
-                  ? 'bg-sky-600 text-white border-sky-500 shadow-sm'
-                  : 'bg-slate-800 hover:bg-slate-700 text-sky-400 border-slate-700'
+                  ? 'bg-sky-600 text-white border-sky-400 shadow-sm'
+                  : 'bg-slate-800/90 hover:bg-slate-700 text-sky-400 border-slate-700/80'
               }`}
               title="Detect or refresh exact GPS location"
             >
-              <Locate className="w-3.5 h-3.5" />
-              <span>{customGpsLocation ? 'GPS' : 'Use GPS'}</span>
+              <Locate className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="truncate">{customGpsLocation ? 'GPS Fix' : 'Use GPS'}</span>
             </button>
 
-            {/* Continuous Live Watch Toggle */}
+            {/* 3. Continuous Live Watch Toggle */}
             <button
               onClick={toggleLiveTracking}
-              className={`flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-xs font-bold transition-all border flex-shrink-0 ${
+              className={`w-full flex items-center justify-center gap-1 px-1 sm:px-2 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all border ${
                 isWatchActive
                   ? 'bg-emerald-600 text-white border-emerald-400 shadow-sm ring-1 ring-emerald-400/50'
-                  : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+                  : 'bg-slate-800/90 hover:bg-slate-700 text-slate-300 border-slate-700/80'
               }`}
               title="Continuously track GPS as you move in the field"
             >
-              <Navigation className={`w-3.5 h-3.5 ${isWatchActive ? 'animate-pulse text-white' : 'text-slate-400'}`} />
-              <span>{isWatchActive ? 'ON' : 'OFF'}</span>
+              <Navigation className={`w-3.5 h-3.5 flex-shrink-0 ${isWatchActive ? 'animate-pulse text-white' : 'text-slate-400'}`} />
+              <span className="truncate">{isWatchActive ? 'Live ON' : 'Live Watch'}</span>
             </button>
 
-            {/* Reload Weather & Bulletin */}
+            {/* 4. Reload Weather & Bulletin */}
             <button
               onClick={loadWeather}
               disabled={isLoading}
-              className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition-colors flex-shrink-0"
+              className="w-full flex items-center justify-center gap-1 px-1 sm:px-2 py-2 bg-slate-800/90 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700/80 text-[11px] sm:text-xs font-bold transition-all shadow-sm"
               title="Refresh weather data and IMD status"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-sky-400' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 flex-shrink-0 ${isLoading ? 'animate-spin text-sky-400' : 'text-slate-400'}`} />
+              <span className="truncate">Refresh</span>
             </button>
           </div>
         </section>
@@ -415,6 +432,10 @@ export default function App() {
         <LiveMetricsGrid
           distanceKm={distanceKm}
           directionText={bearing.text}
+          distanceToCoastKm={activeStorm.distanceToCoastKm}
+          nearestCoastName={activeStorm.nearestCoastName}
+          movementSpeed={activeStorm.movement?.speedKmph}
+          movementDirection={activeStorm.movement?.direction}
           windSpeed={currentWind}
           windGusts={currentGusts}
           rainMm={rainMm}
@@ -445,7 +466,7 @@ export default function App() {
             onRefreshLocation={handleUseGps}
             isGpsActive={!!customGpsLocation}
             activeStorm={activeStorm}
-            allStorms={ALL_INDIA_ACTIVE_STORMS}
+            allStorms={liveAllStorms}
           />
         </div>
 

@@ -4,6 +4,10 @@ import { Compass, Wind, CloudRain, Gauge, Info, Thermometer, ThermometerSnowflak
 export default function LiveMetricsGrid({
   distanceKm,
   directionText,
+  distanceToCoastKm,
+  nearestCoastName,
+  movementSpeed = 18,
+  movementDirection = 'NNW',
   windSpeed,
   windGusts,
   rainMm,
@@ -21,7 +25,7 @@ export default function LiveMetricsGrid({
     <div className="space-y-1.5">
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-2.5">
         
-        {/* Metric 1: Distance to Storm Center */}
+        {/* Metric 1: Distance to Storm Center & Coastline */}
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
           <div className="flex items-center justify-between text-slate-400 mb-1.5">
             <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider">Cyclone Eye</span>
@@ -32,8 +36,18 @@ export default function LiveMetricsGrid({
               {distanceKm} <span className="text-xs font-semibold text-slate-400">km</span>
             </div>
             <p className="text-[11px] text-sky-400 font-medium truncate mt-0.5">
-              Towards {directionText}
+              To you ({directionText})
             </p>
+            {distanceToCoastKm && (
+              <div className="mt-1.5 pt-1.5 border-t border-slate-800/80 text-[10px] space-y-0.5">
+                <div className="text-emerald-400 font-bold truncate">
+                  🌊 ~{distanceToCoastKm} km to coast
+                </div>
+                <div className="text-slate-400 text-[9px]">
+                  ⏱️ Approaching at {movementSpeed} km/h {movementDirection}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
