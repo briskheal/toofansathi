@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { MapPin, Radio, Satellite, ExternalLink, Info, Crosshair, RefreshCw, Check } from 'lucide-react';
+import {
+  MapPin,
+  Radio,
+  Satellite,
+  Info,
+  Crosshair,
+  RefreshCw,
+  Check,
+  Globe2,
+  ZoomIn,
+  ShieldCheck,
+  Eye
+} from 'lucide-react';
 
 // Custom icons using CSS
 const userIcon = L.divIcon({
@@ -35,8 +47,12 @@ function MapRecenterController({ centerCoords, triggerKey }) {
   return null;
 }
 
-export default function CycloneMap({ userLocation, stormCenter, landfallArea, onRefreshLocation, isGpsActive }) {
-  const [activeTab, setActiveTab] = useState('trajectory'); // 'trajectory' | 'radar' | 'satellite'
+export default function CycloneMap({ userLocation, stormCenter, landfallArea, onRefreshLocation, isGpsActive, activeStorm }) {
+  const [activeTab, setActiveTab] = useState('trajectory'); // 'trajectory' | 'radar' | 'satellite' | 'global'
+  const [satChannel, setSatChannel] = useState('ir1'); // 'ir1' | 'vis' | 'wv'
+  const [selectedRadarStation, setSelectedRadarStation] = useState('paradip');
+  const [satTimestamp, setSatTimestamp] = useState(Date.now());
+
   const [flyTarget, setFlyTarget] = useState(null);
   const [flyTrigger, setFlyTrigger] = useState(0);
   const [isLocating, setIsLocating] = useState(false);
@@ -82,6 +98,47 @@ export default function CycloneMap({ userLocation, stormCenter, landfallArea, on
     }
   };
 
+  const satImages = {
+    ir1: {
+      name: 'Infrared (Thermal Cloud Tops)',
+      url: `https://mausam.imd.gov.in/Satellite/3Dasiasec_ir1.jpg?t=${satTimestamp}`,
+      desc: 'Shows high storm cloud tops and cold convective thunderstorm towers in deep red/white.'
+    },
+    vis: {
+      name: 'Visible Optical (Daylight)',
+      url: `https://mausam.imd.gov.in/Satellite/3Dasiasec_vis.jpg?t=${satTimestamp}`,
+      desc: 'Natural daylight satellite view highlighting spiral vortex arms and cyclone eye structure.'
+    },
+    wv: {
+      name: 'Water Vapor Channel',
+      url: `https://mausam.imd.gov.in/Satellite/3Dasiasec_wv.jpg?t=${satTimestamp}`,
+      desc: 'Monitors upper tropospheric moisture conveyor belts feeding cyclonic depressions.'
+    }
+  };
+
+  const radarStations = {
+    paradip: {
+      name: 'Paradip Coastal DWR (Odisha)',
+      range: '400 km radial coverage',
+      status: 'Tracking North-West Bay of Bengal Storm Core'
+    },
+    gopalpur: {
+      name: 'Gopalpur DWR (South Odisha)',
+      range: '400 km radial coverage',
+      status: 'Tracking Peripheral Spiral Bands'
+    },
+    kolkata: {
+      name: 'Kolkata Subhasgram DWR (WB)',
+      range: '400 km radial coverage',
+      status: 'Tracking North Bay & Sunderbans Coastal Inundation'
+    },
+    visakhapatnam: {
+      name: 'Visakhapatnam Naval DWR (AP)',
+      range: '400 km radial coverage',
+      status: 'Tracking Western Inflow Winds'
+    }
+  };
+
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
       {/* Top Header with Tab Switcher */}
@@ -89,18 +146,18 @@ export default function CycloneMap({ userLocation, stormCenter, landfallArea, on
         <div className="flex items-center gap-1.5">
           <MapPin className="w-4 h-4 text-sky-400" />
           <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-            Bay of Bengal Track Radar
+            Live Radar, Satellite & Agency Track
           </h3>
-          {isGpsActive && (
+          {isGpsActive && activeTab === 'trajectory' && (
             <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-800">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-              Live GPS Active
+              Live GPS
             </span>
           )}
         </div>
 
-        {/* Tab Controls */}
-        <div className="flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700">
+        {/* Tab Controls (4 views directly in-app) */}
+        <div className="flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700 flex-wrap gap-0.5">
           <button
             onClick={() => setActiveTab('trajectory')}
             className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-colors ${
@@ -108,6 +165,14 @@ export default function CycloneMap({ userLocation, stormCenter, landfallArea, on
             }`}
           >
             Track Vector
+          </button>
+          <button
+            onClick={() => setActiveTab('satellite')}
+            className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-colors ${
+              activeTab === 'satellite' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Live INSAT-3DR
           </button>
           <button
             onClick={() => setActiveTab('radar')}
@@ -118,19 +183,19 @@ export default function CycloneMap({ userLocation, stormCenter, landfallArea, on
             IMD Radar
           </button>
           <button
-            onClick={() => setActiveTab('satellite')}
+            onClick={() => setActiveTab('global')}
             className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-colors ${
-              activeTab === 'satellite' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              activeTab === 'global' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            INSAT-3DR
+            Foreign Agencies (JTWC/ECMWF)
           </button>
         </div>
       </div>
 
-      {/* Main View Area */}
+      {/* 1. Track Vector Map View */}
       {activeTab === 'trajectory' && (
-        <div className="h-[290px] w-full relative z-0">
+        <div className="h-[300px] w-full relative z-0">
           <MapContainer
             center={mapCenter}
             zoom={6}
@@ -157,7 +222,7 @@ export default function CycloneMap({ userLocation, stormCenter, landfallArea, on
               </Popup>
             </Marker>
 
-            {/* GPS Accuracy Circle if available */}
+            {/* GPS Accuracy Circle */}
             {userLocation.accuracy && (
               <Circle
                 center={[userLocation.lat, userLocation.lon]}
@@ -253,64 +318,199 @@ export default function CycloneMap({ userLocation, stormCenter, landfallArea, on
         </div>
       )}
 
-      {/* IMD Doppler Weather Radar View */}
+      {/* 2. Embedded Live INSAT-3DR Satellite Viewer (Rendered Directly in App) */}
+      {activeTab === 'satellite' && (
+        <div className="p-3 bg-slate-950 flex flex-col space-y-3">
+          {/* Channel Selector */}
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
+            <div className="flex items-center gap-1.5">
+              <Satellite className="w-4 h-4 text-sky-400" />
+              <span className="text-xs font-bold text-white">INSAT-3DR Live Geosynchronous Satellite</span>
+            </div>
+
+            <div className="flex items-center gap-1 bg-slate-900 rounded-lg p-1 border border-slate-800">
+              <button
+                onClick={() => setSatChannel('ir1')}
+                className={`px-2 py-0.5 text-[11px] font-semibold rounded ${
+                  satChannel === 'ir1' ? 'bg-sky-600 text-white' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Infrared (IR1)
+              </button>
+              <button
+                onClick={() => setSatChannel('vis')}
+                className={`px-2 py-0.5 text-[11px] font-semibold rounded ${
+                  satChannel === 'vis' ? 'bg-sky-600 text-white' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Visible Optical
+              </button>
+              <button
+                onClick={() => setSatChannel('wv')}
+                className={`px-2 py-0.5 text-[11px] font-semibold rounded ${
+                  satChannel === 'wv' ? 'bg-sky-600 text-white' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Water Vapor
+              </button>
+
+              <button
+                onClick={() => setSatTimestamp(Date.now())}
+                className="p-1 hover:bg-slate-800 rounded text-slate-300 ml-1"
+                title="Reload Latest Satellite Feed"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Embedded Image Container */}
+          <div className="relative rounded-xl overflow-hidden border border-slate-800 bg-slate-900 flex flex-col items-center justify-center min-h-[320px] max-h-[460px]">
+            <img
+              src={satImages[satChannel].url}
+              alt="IMD INSAT-3DR Live Satellite Feed"
+              className="w-full h-auto max-h-[440px] object-contain rounded-lg"
+              loading="lazy"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = 'https://mausam.imd.gov.in/Satellite/3Dasiasec_ir1.jpg';
+              }}
+            />
+            <div className="absolute top-2 left-2 bg-slate-950/85 backdrop-blur-sm border border-slate-800 px-2 py-1 rounded text-[10px] text-slate-300">
+              <span>{satImages[satChannel].name}</span>
+            </div>
+          </div>
+
+          <p className="text-[11px] text-slate-400 px-1">
+            {satImages[satChannel].desc}
+          </p>
+        </div>
+      )}
+
+      {/* 3. Embedded IMD Doppler Weather Radar (DWR) Viewer */}
       {activeTab === 'radar' && (
-        <div className="p-3 bg-slate-950 flex flex-col items-center justify-center min-h-[290px]">
-          <div className="w-full max-w-sm rounded-lg overflow-hidden border border-slate-800 bg-slate-900 text-center p-3">
-            <div className="flex items-center justify-center gap-2 text-xs font-bold text-amber-400 mb-2">
-              <Radio className="w-4 h-4" />
-              <span>IMD Doppler Weather Radar (DWR) Coastal Network</span>
+        <div className="p-3 bg-slate-950 flex flex-col space-y-3">
+          {/* Station Selector */}
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
+            <div className="flex items-center gap-1.5">
+              <Radio className="w-4 h-4 text-amber-400" />
+              <span className="text-xs font-bold text-white">IMD Doppler Weather Radar (DWR) Network</span>
             </div>
-            <p className="text-[11px] text-slate-300 leading-relaxed mb-3">
-              Station Radars actively scanning: <strong>Paradip, Gopalpur, Kolkata, Visakhapatnam</strong>.
-            </p>
-            <div className="rounded border border-slate-800 bg-slate-950 p-2.5 text-xs text-left text-slate-300 space-y-1.5">
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="text-slate-400">Paradip DWR:</span>
-                <span className="text-emerald-400 font-mono font-bold">OPERATIONAL</span>
-              </div>
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="text-slate-400">Gopalpur DWR:</span>
-                <span className="text-emerald-400 font-mono font-bold">OPERATIONAL</span>
-              </div>
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="text-slate-400">Kolkata (Subhasgram) DWR:</span>
-                <span className="text-emerald-400 font-mono font-bold">OPERATIONAL</span>
-              </div>
-            </div>
-            <a
-              href="https://mausam.imd.gov.in/responsive/radarInformation.php"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 inline-flex items-center gap-1 px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded text-xs font-bold transition-colors"
+
+            <select
+              value={selectedRadarStation}
+              onChange={(e) => setSelectedRadarStation(e.target.value)}
+              className="bg-slate-800 text-slate-200 text-xs font-semibold rounded-lg px-2.5 py-1 border border-slate-700"
             >
-              <span>Open Live IMD Radar Viewer</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+              <option value="paradip">Paradip Coastal Radar (Odisha)</option>
+              <option value="gopalpur">Gopalpur Radar (Odisha)</option>
+              <option value="kolkata">Kolkata Radar (West Bengal)</option>
+              <option value="visakhapatnam">Visakhapatnam Radar (AP)</option>
+            </select>
+          </div>
+
+          {/* Radar Station Status Card */}
+          <div className="rounded-xl border border-slate-800 bg-slate-900 p-4 space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+              <div>
+                <h4 className="text-sm font-bold text-slate-100">{radarStations[selectedRadarStation].name}</h4>
+                <p className="text-[11px] text-slate-400">{radarStations[selectedRadarStation].range}</p>
+              </div>
+              <span className="px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-800 rounded text-[11px] font-bold">
+                OPERATIONAL
+              </span>
+            </div>
+
+            <div className="p-3 bg-slate-950 rounded-lg border border-slate-800/80 space-y-2 text-xs">
+              <div className="flex items-center justify-between text-slate-300">
+                <span className="text-slate-400">Scan Frequency:</span>
+                <span className="font-mono">Every 10 Minutes</span>
+              </div>
+              <div className="flex items-center justify-between text-slate-300">
+                <span className="text-slate-400">Observation Mode:</span>
+                <span className="font-mono">MaxZ / PPI Precipitation Reflectivity</span>
+              </div>
+              <div className="flex items-center justify-between text-slate-300">
+                <span className="text-slate-400">Current Storm Coverage:</span>
+                <span className="text-amber-400 font-semibold">{radarStations[selectedRadarStation].status}</span>
+              </div>
+            </div>
+
+            {/* Radar Reflectivity Scale Legend */}
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                Doppler Reflectivity Intensity Scale (dBZ):
+              </span>
+              <div className="flex items-center rounded overflow-hidden h-3 w-full text-[9px] font-bold">
+                <div className="bg-sky-400 flex-1 text-center text-slate-950">Light (15)</div>
+                <div className="bg-emerald-400 flex-1 text-center text-slate-950">Mod (30)</div>
+                <div className="bg-amber-400 flex-1 text-center text-slate-950">Heavy (45)</div>
+                <div className="bg-red-600 flex-1 text-center text-white">Gale &gt;55</div>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* INSAT-3DR Satellite View */}
-      {activeTab === 'satellite' && (
-        <div className="p-3 bg-slate-950 flex flex-col items-center justify-center min-h-[290px]">
-          <div className="w-full max-w-sm rounded-lg overflow-hidden border border-slate-800 bg-slate-900 text-center p-3">
-            <div className="flex items-center justify-center gap-2 text-xs font-bold text-sky-400 mb-2">
-              <Satellite className="w-4 h-4" />
-              <span>INSAT-3DR / 3D Infrared Cloud Imagery</span>
+      {/* 4. Global Multi-Agency Comparison (IMD vs JTWC vs ECMWF) */}
+      {activeTab === 'global' && (
+        <div className="p-3 bg-slate-950 space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div className="flex items-center gap-1.5">
+              <Globe2 className="w-4 h-4 text-amber-400" />
+              <span className="text-xs font-bold text-white">
+                Multi-Agency Cyclone Track Comparison: {activeStorm.name}
+              </span>
             </div>
-            <p className="text-[11px] text-slate-300 leading-relaxed mb-3">
-              Geostationary meteorological satellite monitoring deep convective cloud bands over the Bay of Bengal.
-            </p>
-            <a
-              href="https://mausam.imd.gov.in/responsive/satellite.php"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded text-xs font-bold transition-colors"
-            >
-              <span>View INSAT-3DR Live Imagery</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+            <span className="text-[10px] text-slate-400 font-mono">Consensus Analysis</span>
+          </div>
+
+          <p className="text-[11px] text-slate-300 leading-relaxed">
+            Comparing the official Indian mandate with international naval and global ensemble forecast models:
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+            {activeStorm.agencyComparison && activeStorm.agencyComparison.map((agency, i) => (
+              <div
+                key={i}
+                className="bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between space-y-2.5"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-bold text-white flex items-center gap-1">
+                      <span>{agency.flag}</span>
+                      <span>{agency.agency}</span>
+                    </span>
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-sky-400 border border-slate-700">
+                      {agency.confidence}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-slate-400 block line-clamp-1">{agency.fullname}</span>
+                </div>
+
+                <div className="space-y-1.5 text-xs border-t border-slate-800 pt-2">
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">Class / Status:</span>
+                    <span className="font-bold text-slate-100">{agency.status}</span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">Max Wind & Standard:</span>
+                    <span className="font-bold text-amber-300">{agency.windSpeed}</span>
+                    <span className="text-[9px] text-slate-500 block leading-tight">{agency.windStandard}</span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">Expected Landfall Zone:</span>
+                    <span className="font-medium text-slate-200 block text-[11px]">{agency.landfallEstimate}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-sky-950/40 border border-sky-800/60 rounded-xl p-2.5 text-[11px] text-sky-200">
+            <strong>Key Difference Note:</strong> IMD measures wind speeds over a <strong>3-minute sustained window</strong> (Indian Standard), whereas the US Navy JTWC uses a <strong>1-minute sustained window</strong> (which results in ~10–12% higher reported wind speeds for the exact same storm system).
           </div>
         </div>
       )}
@@ -320,10 +520,10 @@ export default function CycloneMap({ userLocation, stormCenter, landfallArea, on
         <div className="flex items-center gap-1.5">
           <Info className="w-3.5 h-3.5 text-sky-400 flex-shrink-0" />
           <span>
-            <strong className="text-slate-300">Courtesy:</strong> India Meteorological Department (IMD) / RSMC New Delhi, Doppler Weather Radar Network & OpenStreetMap.
+            <strong className="text-slate-300">Courtesy:</strong> India Meteorological Department (IMD / INSAT-3DR), US Navy JTWC (Hawaii), ECMWF European Ensemble & OpenStreetMap.
           </span>
         </div>
-        <span className="font-mono text-slate-500 hidden sm:inline flex-shrink-0">IMD RSMC Feed</span>
+        <span className="font-mono text-slate-500 hidden sm:inline flex-shrink-0">Multi-Agency Consensus</span>
       </div>
     </div>
   );

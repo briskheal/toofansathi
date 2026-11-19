@@ -437,6 +437,7 @@ export default function App() {
           landfallArea={activeStorm.landfall.predictedArea}
           onRefreshLocation={handleUseGps}
           isGpsActive={!!customGpsLocation}
+          activeStorm={activeStorm}
         />
 
         {/* 7. Install PWA Prompt for Mobile Home Screen */}

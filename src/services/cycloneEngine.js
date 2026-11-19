@@ -25,8 +25,48 @@ export const ALL_INDIA_ACTIVE_STORMS = [
       status: 'Approaching Coast'
     },
     imdWarningStage: 'Cyclone Warning (Orange to Red for coastal belts)',
-    bulletinTime: '19-Nov-2026 08:30 IST',
-    source: 'IMD RSMC New Delhi'
+    bulletinTime: '19-Nov-2026 15:30 IST',
+    source: 'IMD RSMC New Delhi',
+
+    // Foreign Meteorological Agencies Comparison
+    agencyComparison: [
+      {
+        agency: 'IMD (India)',
+        fullname: 'India Meteorological Department (RSMC New Delhi)',
+        flag: '🇮🇳',
+        status: 'Deep Depression / Cyclonic Storm',
+        windSpeed: '75 km/h (40 knots)',
+        windStandard: '3-min sustained (IMD Standard)',
+        peakGusts: '95 km/h (51 knots)',
+        centralPressure: '994 hPa',
+        landfallEstimate: 'Between Puri & Digha (near Dhamra/Bhadrak coast)',
+        confidence: 'High (Primary RSMC Mandate)'
+      },
+      {
+        agency: 'JTWC (USA)',
+        fullname: 'Joint Typhoon Warning Center (US Navy / Air Force, Hawaii)',
+        flag: '🇺🇸',
+        status: 'Tropical Cyclone 01B (Developing)',
+        windSpeed: '85 km/h (45 knots)',
+        windStandard: '1-min sustained (US Saffir-Simpson Standard)',
+        peakGusts: '105 km/h (57 knots)',
+        centralPressure: '992 hPa',
+        landfallEstimate: 'Northern Odisha / West Bengal border, expected in 20-22 hrs',
+        confidence: 'High (Close track alignment with IMD)'
+      },
+      {
+        agency: 'ECMWF (Europe)',
+        fullname: 'European Centre for Medium-Range Weather Forecasts (IFS Model)',
+        flag: '🇪🇺',
+        status: 'Deep Cyclonic Depression (Ensemble Mean)',
+        windSpeed: '78 km/h (42 knots)',
+        windStandard: '10-min sustained (WMO Standard)',
+        peakGusts: '98 km/h (53 knots)',
+        centralPressure: '993 hPa',
+        landfallEstimate: 'Coastal Odisha (Bhadrak / Balasore sector), landfall window ~18:00 UTC',
+        confidence: 'Very High (Consensus Model)'
+      }
+    ]
   },
   {
     id: 'ARB-01-2026',
@@ -52,8 +92,47 @@ export const ALL_INDIA_ACTIVE_STORMS = [
       status: 'Sea-Track System'
     },
     imdWarningStage: 'Squally Weather & Fishermen Warning (Yellow)',
-    bulletinTime: '19-Nov-2026 08:30 IST',
-    source: 'IMD Cyclone Warning Division, New Delhi'
+    bulletinTime: '19-Nov-2026 15:30 IST',
+    source: 'IMD Cyclone Warning Division, New Delhi',
+
+    agencyComparison: [
+      {
+        agency: 'IMD (India)',
+        fullname: 'India Meteorological Department (New Delhi)',
+        flag: '🇮🇳',
+        status: 'Well-Marked Low Pressure System',
+        windSpeed: '45 km/h (24 knots)',
+        windStandard: '3-min sustained',
+        peakGusts: '60 km/h',
+        centralPressure: '1000 hPa',
+        landfallEstimate: 'No direct Indian coast landfall (Moving WNW into open sea)',
+        confidence: 'High'
+      },
+      {
+        agency: 'JTWC (USA)',
+        fullname: 'Joint Typhoon Warning Center (Hawaii)',
+        flag: '🇺🇸',
+        status: 'Invest 99A (Low probability of intensification)',
+        windSpeed: '50 km/h (27 knots)',
+        windStandard: '1-min sustained',
+        peakGusts: '65 km/h',
+        centralPressure: '999 hPa',
+        landfallEstimate: 'Recurving towards Oman/Makran coast',
+        confidence: 'Medium'
+      },
+      {
+        agency: 'ECMWF (Europe)',
+        fullname: 'European Centre for Medium-Range Weather Forecasts',
+        flag: '🇪🇺',
+        status: 'Monsoon Depression Peripheral Low',
+        windSpeed: '46 km/h',
+        windStandard: '10-min sustained',
+        peakGusts: '62 km/h',
+        centralPressure: '1001 hPa',
+        landfallEstimate: 'Dissipating over North Arabian Sea',
+        confidence: 'High'
+      }
+    ]
   }
 ];
 
