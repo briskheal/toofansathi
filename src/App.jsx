@@ -223,6 +223,11 @@ export default function App() {
   const currentGusts = weatherData ? Math.round(weatherData.current.wind_gusts_10m) : 58;
   const rainMm = weatherData ? Math.round(weatherData.current.precipitation * 10) / 10 : 12;
   const pressureHpa = weatherData ? Math.round(weatherData.current.surface_pressure) : 998;
+  const currentTemp = weatherData?.current?.temperature_2m !== undefined ? Math.round(weatherData.current.temperature_2m) : 26;
+  const apparentTemp = weatherData?.current?.apparent_temperature !== undefined ? Math.round(weatherData.current.apparent_temperature) : 25;
+  const maxTemp = weatherData?.daily?.temperature_2m_max?.[0] !== undefined ? Math.round(weatherData.daily.temperature_2m_max[0]) : 29;
+  const minTemp = weatherData?.daily?.temperature_2m_min?.[0] !== undefined ? Math.round(weatherData.daily.temperature_2m_min[0]) : 17;
+  const humidity = weatherData?.current?.relative_humidity_2m !== undefined ? Math.round(weatherData.current.relative_humidity_2m) : 68;
 
   const threat = evaluateThreatLevel(distanceKm, currentWind, currentGusts, rainMm);
   const voiceBriefing = generateVoiceBriefing(
@@ -404,7 +409,7 @@ export default function App() {
         {/* 2. One-Tap 30-Second Audio Briefing (Odia/Bengali/Hindi/English) */}
         <VoiceBriefingCard briefing={voiceBriefing} selectedLang={selectedLang} />
 
-        {/* 3. Four Core Real-time Indicators */}
+        {/* 3. Core Real-time Indicators & Winter Temperature Range */}
         <LiveMetricsGrid
           distanceKm={distanceKm}
           directionText={bearing.text}
@@ -412,6 +417,11 @@ export default function App() {
           windGusts={currentGusts}
           rainMm={rainMm}
           pressureHpa={pressureHpa}
+          currentTemp={currentTemp}
+          maxTemp={maxTemp}
+          minTemp={minTemp}
+          apparentTemp={apparentTemp}
+          humidity={humidity}
         />
 
         {/* 4. IMD Official Cyclone Bulletin Card */}

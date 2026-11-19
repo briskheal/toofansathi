@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wind, CloudRain, Clock, Info, Zap, AlertTriangle } from 'lucide-react';
+import { Wind, CloudRain, Clock, Info, Zap, Thermometer } from 'lucide-react';
 
 export default function HourlyForecastStrip({ hourlyData }) {
   if (!hourlyData || !hourlyData.time) return null;
@@ -22,12 +22,14 @@ export default function HourlyForecastStrip({ hourlyData }) {
     const windSpeed = Math.round(hourlyData.wind_speed_10m[actualIdx] || 0);
     const windGusts = Math.round(hourlyData.wind_gusts_10m[actualIdx] || 0);
     const rain = Math.round((hourlyData.precipitation[actualIdx] || 0) * 10) / 10;
+    const temp = hourlyData.temperature_2m ? Math.round(hourlyData.temperature_2m[actualIdx]) : null;
 
     return {
       hourLabel,
       windSpeed,
       windGusts,
       rain,
+      temp,
       isHighRisk: windGusts >= 55 || rain >= 15
     };
   });
@@ -42,12 +44,15 @@ export default function HourlyForecastStrip({ hourlyData }) {
         </div>
 
         {/* Legend for field workers */}
-        <div className="flex items-center gap-2 text-[10px] text-slate-400 flex-wrap">
+        <div className="flex items-center gap-2.5 text-[10px] text-slate-400 flex-wrap">
+          <span className="flex items-center gap-1">
+            <Thermometer className="w-3 h-3 text-rose-400" /> Temp
+          </span>
           <span className="flex items-center gap-1">
             <Wind className="w-3 h-3 text-sky-400" /> Wind
           </span>
           <span className="flex items-center gap-1">
-            <Zap className="w-3 h-3 text-amber-400" /> Peak Gusts
+            <Zap className="w-3 h-3 text-amber-400" /> Gusts
           </span>
           <span className="flex items-center gap-1">
             <CloudRain className="w-3 h-3 text-blue-400" /> Rain
@@ -60,7 +65,7 @@ export default function HourlyForecastStrip({ hourlyData }) {
         {items.map((item, i) => (
           <div
             key={i}
-            className={`flex-shrink-0 flex flex-col justify-between p-2.5 rounded-xl border min-w-[110px] text-xs transition-all ${
+            className={`flex-shrink-0 flex flex-col justify-between p-2.5 rounded-xl border min-w-[115px] text-xs transition-all ${
               item.isHighRisk
                 ? 'bg-red-950/50 border-red-700/80 shadow-sm shadow-red-950/50'
                 : 'bg-slate-800/70 border-slate-700/70'
@@ -69,14 +74,31 @@ export default function HourlyForecastStrip({ hourlyData }) {
             {/* Hour Timestamp */}
             <div className="flex items-center justify-between border-b border-slate-700/60 pb-1.5 mb-1.5">
               <span className="font-mono text-xs font-bold text-white">{item.hourLabel}</span>
-              {item.isHighRisk && (
+              {item.isHighRisk ? (
                 <span className="text-[9px] font-bold uppercase text-red-400 bg-red-900/60 px-1 rounded">
                   Risk
                 </span>
-              )}
+              ) : item.temp !== null ? (
+                <span className="text-[10px] font-bold text-slate-300">
+                  {item.temp}°C
+                </span>
+              ) : null}
             </div>
 
-            {/* Parameter 1: Wind Speed */}
+            {/* Parameter 1: Temperature */}
+            {item.temp !== null && (
+              <div className="flex items-center justify-between py-0.5 text-[11px]">
+                <span className="text-slate-400 flex items-center gap-1">
+                  <Thermometer className="w-3 h-3 text-rose-400" />
+                  <span>Temp:</span>
+                </span>
+                <span className={`font-bold ${item.temp <= 15 ? 'text-cyan-300' : 'text-slate-100'}`}>
+                  {item.temp}°C
+                </span>
+              </div>
+            )}
+
+            {/* Parameter 2: Wind Speed */}
             <div className="flex items-center justify-between py-0.5 text-[11px]">
               <span className="text-slate-400 flex items-center gap-1">
                 <Wind className="w-3 h-3 text-sky-400" />
@@ -85,7 +107,7 @@ export default function HourlyForecastStrip({ hourlyData }) {
               <span className="font-bold text-slate-100">{item.windSpeed} <span className="text-[9px] text-slate-400 font-normal">km/h</span></span>
             </div>
 
-            {/* Parameter 2: Peak Wind Gusts */}
+            {/* Parameter 3: Peak Wind Gusts */}
             <div className="flex items-center justify-between py-0.5 text-[11px]">
               <span className="text-slate-400 flex items-center gap-1">
                 <Zap className="w-3 h-3 text-amber-400" />
@@ -96,7 +118,7 @@ export default function HourlyForecastStrip({ hourlyData }) {
               </span>
             </div>
 
-            {/* Parameter 3: Rain */}
+            {/* Parameter 4: Rain */}
             <div className="flex items-center justify-between py-0.5 text-[11px] border-t border-slate-700/40 mt-1 pt-1">
               <span className="text-slate-400 flex items-center gap-1">
                 <CloudRain className="w-3 h-3 text-blue-400" />
