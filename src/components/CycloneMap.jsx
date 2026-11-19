@@ -17,14 +17,60 @@ import {
 import { calculateDistanceKm } from '../services/cycloneEngine';
 
 // Custom icons using CSS
-const userIcon = L.divIcon({
-  className: 'custom-user-marker',
-  html: `<div style="position:relative; width:18px; height:18px;">
-          <div style="position:absolute; inset:0; border-radius:50%; background:#38bdf8; opacity:0.6; animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
-          <div style="position:absolute; inset:2px; border-radius:50%; background:#0284c7; border:2px solid white; box-shadow:0 0 12px #38bdf8;"></div>
+// Distinctive User Location Pin with permanent visible label badge
+const createUserIcon = (locationName) => {
+  const cleanName = (locationName || 'You')
+    .replace(/^Live GPS \(Near (.*)\)$/, '$1')
+    .replace(/^Live Tracking \((.*)\)$/, '$1');
+
+  return L.divIcon({
+    className: 'custom-user-marker',
+    html: `<div style="position:relative; display:flex; flex-direction:column; align-items:center; transform: translate(-50%, -100%); pointer-events:auto;">
+            <div style="background:#0284c7; color:#ffffff; font-size:10px; font-weight:800; padding:2px 7px; border-radius:12px; border:1.5px solid white; box-shadow:0 3px 10px rgba(0,0,0,0.6); white-space:nowrap; margin-bottom:2px; font-family:Inter,sans-serif; display:flex; align-items:center; gap:4px; letter-spacing:0.2px;">
+              <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#38bdf8; box-shadow:0 0 6px #38bdf8;"></span>
+              YOU (${cleanName})
+            </div>
+            <div style="position:relative; width:22px; height:22px;">
+              <div style="position:absolute; inset:0; border-radius:50%; background:#0284c7; opacity:0.45; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+              <div style="position:absolute; inset:2px; border-radius:50%; background:#0284c7; border:2.5px solid #ffffff; box-shadow:0 0 12px #38bdf8; display:flex; align-items:center; justify-content:center;">
+                <div style="width:6px; height:6px; border-radius:50%; background:#ffffff;"></div>
+              </div>
+            </div>
+            <div style="width:2px; height:6px; background:#0284c7;"></div>
+           </div>`,
+    iconSize: [0, 0],
+    iconAnchor: [0, 0]
+  });
+};
+
+// Landfall Marker Icon (Red Hazard Target)
+const createLandfallIcon = (time) => L.divIcon({
+  className: 'custom-landfall-marker',
+  html: `<div style="position:relative; display:flex; flex-direction:column; align-items:center; transform: translate(-50%, -100%); pointer-events:auto;">
+          <div style="background:#b91c1c; color:#ffffff; font-size:9px; font-weight:800; padding:2px 6px; border-radius:8px; border:1.5px solid white; box-shadow:0 3px 10px rgba(0,0,0,0.6); white-space:nowrap; margin-bottom:2px; font-family:Inter,sans-serif; display:flex; align-items:center; gap:3px;">
+            <span>⚠️</span> LANDFALL (${time || '06:00 AM'})
+          </div>
+          <div style="position:relative; width:20px; height:20px;">
+            <div style="position:absolute; inset:0; border-radius:50%; background:#ef4444; opacity:0.55; animation: ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+            <div style="position:absolute; inset:2px; border-radius:50%; background:#dc2626; border:2px solid #ffffff; box-shadow:0 0 10px #ef4444; display:flex; align-items:center; justify-content:center; color:white; font-size:10px; font-weight:bold;">🎯</div>
+          </div>
+          <div style="width:2px; height:5px; background:#dc2626;"></div>
          </div>`,
-  iconSize: [18, 18],
-  iconAnchor: [9, 9]
+  iconSize: [0, 0],
+  iconAnchor: [0, 0]
+});
+
+// Milestone Marker Icon (Orange/Dark Slate Milestone - Zero blue/green to prevent confusion)
+const createForecastMilestoneIcon = (time) => L.divIcon({
+  className: 'custom-milestone-marker',
+  html: `<div style="position:relative; display:flex; flex-direction:column; align-items:center; transform: translate(-50%, -100%); pointer-events:auto;">
+          <div style="background:#0f172a; color:#fdba74; font-size:8px; font-weight:700; padding:1px 5px; border-radius:6px; border:1px solid #ea580c; white-space:nowrap; margin-bottom:2px; font-family:Inter,sans-serif; box-shadow:0 2px 5px rgba(0,0,0,0.6);">
+            ⏱️ ${time}
+          </div>
+          <div style="width:10px; height:10px; border-radius:50%; background:#f97316; border:2px solid #ffffff; box-shadow:0 0 6px rgba(249, 115, 22, 0.9);"></div>
+         </div>`,
+  iconSize: [0, 0],
+  iconAnchor: [0, 0]
 });
 
 const cycloneBobIcon = L.divIcon({
@@ -207,10 +253,9 @@ export default function CycloneMap({
           [lat, lon]
         ],
         checkpoints: [
-          { label: 'Live Center', lat: lat, lon: lon, time: 'Now' },
-          { label: '00:00 (Offshore)', lat: 20.45, lon: 87.35, time: '12:00 AM' },
-          { label: 'Landfall (Dhamra/Bhadrak)', lat: 20.85, lon: 87.05, time: '06:00 AM', isLandfall: true },
-          { label: 'Inland (Balasore)', lat: 21.45, lon: 86.70, time: '12:00 PM' }
+          { label: '00:00 (Offshore Squall)', lat: 20.45, lon: 87.35, time: '12:00 AM' },
+          { label: 'Expected Landfall (Dhamra/Bhadrak)', lat: 20.85, lon: 87.05, time: '06:00 AM', isLandfall: true },
+          { label: 'Inland Crossing (Balasore)', lat: 21.45, lon: 86.70, time: '12:00 PM' }
         ]
       };
     } else {
@@ -236,9 +281,8 @@ export default function CycloneMap({
           [lat, lon]
         ],
         checkpoints: [
-          { label: 'Live Center', lat: lat, lon: lon, time: 'Now' },
-          { label: 'Moving WNW', lat: 21.20, lon: 65.50, time: '12 hrs' },
-          { label: 'Open Sea', lat: 21.90, lon: 64.20, time: '24 hrs' }
+          { label: 'West-Northwest Vector', lat: 21.20, lon: 65.50, time: '12 hrs' },
+          { label: 'Open Ocean Recurvature', lat: 21.90, lon: 64.20, time: '24 hrs' }
         ]
       };
     }
@@ -375,11 +419,11 @@ export default function CycloneMap({
 
             <MapRecenterController centerCoords={flyTarget} zoomLevel={flyZoom} triggerKey={flyTrigger} />
 
-            {/* User Marker */}
-            <Marker position={[userLocation.lat, userLocation.lon]} icon={userIcon}>
+            {/* User Marker with Distinct Pin & Label */}
+            <Marker position={[userLocation.lat, userLocation.lon]} icon={createUserIcon(userLocation.name)}>
               <Popup>
                 <div className="text-xs text-slate-900 font-sans">
-                  <strong>Your Location:</strong> {userLocation.name}
+                  <strong className="text-sky-700">📍 Your Location:</strong> {userLocation.name}
                   <div className="text-[10px] text-slate-600 mt-0.5">
                     Lat: {userLocation.lat.toFixed(4)}°, Lon: {userLocation.lon.toFixed(4)}°
                     {userLocation.accuracy && ` (Accuracy: ±${Math.round(userLocation.accuracy)}m)`}
@@ -491,28 +535,23 @@ export default function CycloneMap({
                     }}
                   />
 
-                  {/* Forecast Checkpoints (Landfall & 6h Intervals) */}
+                  {/* Forecast Checkpoints (Landfall & Milestone Markers - NO blue/green dots) */}
                   {trackData.checkpoints && trackData.checkpoints.map((pt, pIdx) => (
-                    <Circle
+                    <Marker
                       key={pIdx}
-                      center={[pt.lat, pt.lon]}
-                      radius={pt.isLandfall ? 16000 : 9000}
-                      pathOptions={{
-                        color: pt.isLandfall ? '#ef4444' : '#38bdf8',
-                        fillColor: pt.isLandfall ? '#ef4444' : '#38bdf8',
-                        fillOpacity: 0.85,
-                        weight: 2
-                      }}
+                      position={[pt.lat, pt.lon]}
+                      icon={pt.isLandfall ? createLandfallIcon(pt.time) : createForecastMilestoneIcon(pt.time)}
                     >
                       <Popup>
                         <div className="text-xs text-slate-900 font-sans p-0.5">
-                          <strong className={pt.isLandfall ? 'text-red-600 block font-bold' : 'text-sky-700 block font-bold'}>
+                          <strong className={pt.isLandfall ? 'text-red-600 block font-bold' : 'text-amber-800 block font-bold'}>
                             {pt.label}
                           </strong>
                           <span className="text-[10px] text-slate-600">Expected Time: {pt.time}</span>
+                          <span className="text-[10px] text-slate-500 block">Coords: {pt.lat.toFixed(2)}°N, {pt.lon.toFixed(2)}°E</span>
                         </div>
                       </Popup>
-                    </Circle>
+                    </Marker>
                   ))}
                 </React.Fragment>
               );
@@ -591,10 +630,18 @@ export default function CycloneMap({
           </div>
 
           {/* Legend Overlay */}
-          <div className="absolute bottom-2 left-2 z-[400] bg-slate-950/90 backdrop-blur-sm border border-slate-800 rounded-lg p-2 text-[10px] text-slate-300 space-y-1">
+          <div className="absolute bottom-2 left-2 z-[400] bg-slate-950/95 backdrop-blur-md border border-slate-800 rounded-lg p-2 text-[10px] text-slate-300 space-y-1.5 shadow-xl">
             <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-sky-500 inline-block"></span>
-              <span>Your Location</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-sky-500 border border-white inline-block shadow-sm"></span>
+              <span className="font-semibold text-white">Your Location (📍 YOU)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-600 border border-white inline-block"></span>
+              <span className="text-red-400 font-semibold">⚠️ Expected Landfall</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-orange-500 border border-white inline-block"></span>
+              <span className="text-orange-300 font-medium">⏱️ Forecast Milestones</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-4 h-1 bg-red-500 inline-block rounded"></span>

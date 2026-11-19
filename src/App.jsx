@@ -133,16 +133,16 @@ export default function App() {
     return () => clearInterval(weatherTimer);
   }, [loadWeather]);
 
-  // Handle single GPS refresh
-  const handleUseGps = useCallback(() => {
+  // Handle GPS location acquisition (silent on initial auto-detect, alert only on user-initiated click)
+  const handleUseGps = useCallback((isSilent = false) => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
-        alert('Geolocation is not supported by your browser.');
+        if (!isSilent) alert('Geolocation is not supported by your browser.');
         reject(new Error('Geolocation not supported'));
         return;
       }
 
-      setIsLoading(true);
+      if (!isSilent) setIsLoading(true);
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const lat = pos.coords.latitude;
@@ -161,24 +161,35 @@ export default function App() {
             lat: lat,
             lon: lon,
             accuracy: accuracy,
-            highRisk: true,
+            highRisk: nearest.highRisk || false,
             deoc: nearest.deoc
           };
 
           setCustomGpsLocation(newLoc);
-          setIsLoading(false);
+          if (!isSilent) setIsLoading(false);
           resolve(newLoc);
         },
         (err) => {
           console.warn('GPS error:', err);
-          setIsLoading(false);
-          alert('Could not access GPS. Please check location permissions in your browser or select your district manually.');
+          if (!isSilent) {
+            setIsLoading(false);
+            alert('Could not access GPS. Please check location permissions in your browser or select your district manually.');
+          }
           reject(err);
         },
-        { timeout: 12000, enableHighAccuracy: true, maximumAge: 0 }
+        { timeout: 10000, enableHighAccuracy: true, maximumAge: 30000 }
       );
     });
   }, []);
+
+  // Auto-detect GPS coordinates by default on initial app load
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'geolocation' in navigator) {
+      handleUseGps(true).catch((err) => {
+        console.info('Default GPS auto-detect fallback:', err?.message || err);
+      });
+    }
+  }, [handleUseGps]);
 
   // Continuous live GPS tracking toggle
   const toggleLiveTracking = () => {
