@@ -2,10 +2,12 @@ import React, { useState, useMemo } from 'react';
 import { X, Search, MapPin, Locate, Check, Sparkles, Building2, Store } from 'lucide-react';
 import { ALL_INDIA_REGIONS } from '../data/districts';
 
-const ALPHABET_LETTERS = ['All', 'A', 'B', 'C', 'D', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'T', 'U', 'V', 'W'];
-
 const STATE_FILTER_TABS = [
   { id: 'all', label: 'All India' },
+  { id: 'northeast', label: 'North East (8 States)', states: ['Assam', 'Meghalaya', 'Tripura', 'Manipur', 'Nagaland', 'Mizoram', 'Arunachal Pradesh', 'Sikkim'] },
+  { id: 'up_delhi', label: 'UP & Delhi NCR', states: ['Uttar Pradesh', 'Delhi NCR'] },
+  { id: 'uttarakhand_hills', label: 'Uttarakhand, HP & Hills', states: ['Uttarakhand', 'Himachal Pradesh', 'Jammu & Kashmir', 'Ladakh'] },
+  { id: 'punjab_haryana', label: 'Punjab & Haryana', states: ['Punjab / Haryana', 'Haryana', 'Punjab'] },
   { id: 'odisha', label: 'Odisha', state: 'Odisha' },
   { id: 'wb', label: 'West Bengal', state: 'West Bengal' },
   { id: 'andhra', label: 'Andhra Pradesh', state: 'Andhra Pradesh' },
@@ -15,9 +17,8 @@ const STATE_FILTER_TABS = [
   { id: 'south', label: 'Karnataka & Kerala', states: ['Karnataka', 'Kerala'] },
   { id: 'telangana', label: 'Telangana', state: 'Telangana' },
   { id: 'bihar_jharkhand', label: 'Bihar & Jharkhand', states: ['Bihar', 'Jharkhand'] },
-  { id: 'up_delhi', label: 'UP & Delhi NCR', states: ['Uttar Pradesh', 'Delhi NCR'] },
   { id: 'mp_cg', label: 'Madhya Pradesh & CG', states: ['Madhya Pradesh', 'Chhattisgarh'] },
-  { id: 'north_west', label: 'Rajasthan & Punjab', states: ['Rajasthan', 'Punjab / Haryana'] }
+  { id: 'north_west', label: 'Rajasthan', state: 'Rajasthan' }
 ];
 
 export default function DistrictPickerModal({
@@ -32,6 +33,16 @@ export default function DistrictPickerModal({
   const [search, setSearch] = useState('');
   const [searchLetter, setSearchLetter] = useState('All');
   const [activeFilter, setActiveFilter] = useState('all');
+
+  // Dynamic alphabet list generated from all Indian cities/markets
+  const ALPHABET_LETTERS = useMemo(() => {
+    const letters = new Set();
+    ALL_INDIA_REGIONS.forEach((item) => {
+      const char = item.name.trim().charAt(0).toUpperCase();
+      if (char >= 'A' && char <= 'Z') letters.add(char);
+    });
+    return ['All', ...Array.from(letters).sort()];
+  }, []);
 
   const filteredDistricts = useMemo(() => {
     return ALL_INDIA_REGIONS.filter((district) => {

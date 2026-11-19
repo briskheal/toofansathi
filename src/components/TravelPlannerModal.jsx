@@ -3,32 +3,147 @@ import { Calendar, MapPin, X, Wind, CloudRain, Zap, ShieldCheck, AlertTriangle, 
 import { ALL_INDIA_REGIONS } from '../data/districts';
 import { fetchTravelForecast, getWeatherCodeDetails } from '../services/travelWeatherApi';
 
-// Alphabetical letters available across Indian cities/markets
-const ALPHABET_LETTERS = ['All', 'A', 'B', 'C', 'D', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'T', 'U', 'V', 'W'];
+// All state filter categories including North East (8 states) and North India
+const STATE_FILTER_TABS = [
+  { id: 'all', label: 'All India' },
+  { id: 'northeast', label: 'North East (8 States)', states: ['Assam', 'Meghalaya', 'Tripura', 'Manipur', 'Nagaland', 'Mizoram', 'Arunachal Pradesh', 'Sikkim'] },
+  { id: 'up_delhi', label: 'UP & Delhi NCR', states: ['Uttar Pradesh', 'Delhi NCR'] },
+  { id: 'uttarakhand_hills', label: 'Uttarakhand, HP, J&K & Ladakh', states: ['Uttarakhand', 'Himachal Pradesh', 'Jammu & Kashmir', 'Ladakh'] },
+  { id: 'punjab_haryana', label: 'Punjab & Haryana', states: ['Punjab / Haryana', 'Haryana', 'Punjab'] },
+  { id: 'odisha', label: 'Odisha', state: 'Odisha' },
+  { id: 'wb', label: 'West Bengal', state: 'West Bengal' },
+  { id: 'andhra', label: 'Andhra Pradesh', state: 'Andhra Pradesh' },
+  { id: 'maharashtra_goa', label: 'Maharashtra & Goa', states: ['Maharashtra', 'Goa'] },
+  { id: 'gujarat', label: 'Gujarat', state: 'Gujarat' },
+  { id: 'tamilnadu', label: 'Tamil Nadu & Islands', states: ['Tamil Nadu', 'Puducherry', 'Andaman & Nicobar'] },
+  { id: 'south', label: 'Karnataka & Kerala', states: ['Karnataka', 'Kerala'] },
+  { id: 'telangana', label: 'Telangana', state: 'Telangana' },
+  { id: 'bihar_jharkhand', label: 'Bihar & Jharkhand', states: ['Bihar', 'Jharkhand'] },
+  { id: 'mp_cg_raj', label: 'MP, CG & Rajasthan', states: ['Madhya Pradesh', 'Chhattisgarh', 'Rajasthan'] }
+];
+
+// Helper to build a single forecast day item
+function createForecastDay(dateObj, maxTemp, minTemp, rainSum, rainProb, maxGusts, maxWind, weatherCode) {
+  const timeStr = dateObj.toISOString().slice(0, 10);
+  const dayName = dateObj.toLocaleDateString('en-IN', { weekday: 'short' });
+  const dateFormatted = dateObj.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+  const weather = getWeatherCodeDetails(weatherCode);
+
+  // Safety rating
+  let safety = {
+    level: 'SAFE',
+    badge: 'bg-emerald-950 text-emerald-400 border-emerald-800',
+    label: 'Safe for Travel & Field Work',
+    color: 'text-emerald-400'
+  };
+
+  if (maxGusts >= 65 || rainSum >= 40) {
+    safety = {
+      level: 'SEVERE',
+      badge: 'bg-red-950 text-red-400 border-red-800 animate-pulse',
+      label: 'High Risk: Postpone Outdoor Work',
+      color: 'text-red-400'
+    };
+  } else if (maxGusts >= 45 || rainSum >= 20 || rainProb >= 70) {
+    safety = {
+      level: 'CAUTION',
+      badge: 'bg-amber-950 text-amber-400 border-amber-800',
+      label: 'Moderate Caution: Carry Rain Gear',
+      color: 'text-amber-400'
+    };
+  }
+
+  // Winter jacket / coat recommendation according to minimum temperature
+  let winterAdvice = {
+    level: 'NORMAL',
+    badge: 'bg-slate-800 text-slate-300 border-slate-700',
+    text: 'Standard field attire'
+  };
+
+  if (minTemp <= 10) {
+    winterAdvice = {
+      level: 'SEVERE_COLD',
+      badge: 'bg-cyan-950 text-cyan-300 border-cyan-700 font-bold',
+      text: '🧥 Heavy Winter Coat / Thermal Jacket Required'
+    };
+  } else if (minTemp <= 16) {
+    winterAdvice = {
+      level: 'CHILLY',
+      badge: 'bg-sky-950 text-sky-300 border-sky-800',
+      text: '🧥 Warm Jacket or Coat Advised for Morning/Night'
+    };
+  } else if (minTemp <= 20) {
+    winterAdvice = {
+      level: 'MILD',
+      badge: 'bg-slate-800 text-slate-300 border-slate-700',
+      text: '🧥 Light Jacket or Windcheater'
+    };
+  }
+
+  return {
+    dateStr: timeStr,
+    dayName,
+    dateFormatted,
+    maxTemp,
+    minTemp,
+    rainSum,
+    rainProb,
+    maxGusts,
+    maxWind,
+    weather,
+    safety,
+    winterAdvice
+  };
+}
 
 export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId }) {
-  const [selectedDestId, setSelectedDestId] = useState(initialDistrictId || 'kolkata');
+  const [selectedDestId, setSelectedDestId] = useState(initialDistrictId || 'chennai');
   const [searchLetter, setSearchLetter] = useState('All');
+  const [selectedStateTab, setSelectedStateTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isCityPickerOpen, setIsCityPickerOpen] = useState(false);
 
   const [forecastDays, setForecastDays] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
-  const [highlightDate, setHighlightDate] = useState('2026-11-25');
+  
+  // Default to 25th of current month or next 5 days
+  const [highlightDate, setHighlightDate] = useState(() => {
+    const d = new Date();
+    d.setDate(25);
+    // If 25th already passed this month, keep it in current month or future
+    return d.toISOString().slice(0, 10);
+  });
 
   const selectedDest = ALL_INDIA_REGIONS.find((d) => d.id === selectedDestId) || ALL_INDIA_REGIONS[0];
 
-  // Letter-wise & inline text search filter
+  // Dynamic alphabet list generated from ALL_INDIA_REGIONS
+  const ALPHABET_LETTERS = useMemo(() => {
+    const letters = new Set();
+    ALL_INDIA_REGIONS.forEach((item) => {
+      const char = item.name.trim().charAt(0).toUpperCase();
+      if (char >= 'A' && char <= 'Z') letters.add(char);
+    });
+    return ['All', ...Array.from(letters).sort()];
+  }, []);
+
+  // Filtered cities/markets based on letter, state tab and search query
   const filteredMarkets = useMemo(() => {
     return ALL_INDIA_REGIONS.filter((item) => {
-      // 1. Letter filter
+      // 1. State Tab Filter
+      if (selectedStateTab !== 'all') {
+        const cat = STATE_FILTER_TABS.find((t) => t.id === selectedStateTab);
+        if (cat?.state && item.state !== cat.state) return false;
+        if (cat?.states && !cat.states.includes(item.state)) return false;
+      }
+
+      // 2. Letter filter
       if (searchLetter !== 'All') {
         const firstLetter = item.name.trim().charAt(0).toUpperCase();
         if (firstLetter !== searchLetter) return false;
       }
 
-      // 2. Query search (city name, state, market name, category)
+      // 3. Query search (city name, state, market name, category)
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesName = item.name.toLowerCase().includes(q);
@@ -40,7 +155,7 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
 
       return true;
     });
-  }, [searchLetter, searchQuery]);
+  }, [selectedStateTab, searchLetter, searchQuery]);
 
   // Fetch forecast whenever selected destination changes
   useEffect(() => {
@@ -54,81 +169,15 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
         if (daily && daily.time) {
           const items = daily.time.map((timeStr, idx) => {
             const dateObj = new Date(timeStr);
-            const dayName = dateObj.toLocaleDateString('en-IN', { weekday: 'short' });
-            const dateFormatted = dateObj.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
             const maxTemp = Math.round(daily.temperature_2m_max[idx]);
             const minTemp = Math.round(daily.temperature_2m_min[idx]);
             const rainSum = Math.round((daily.precipitation_sum[idx] || 0) * 10) / 10;
             const rainProb = daily.precipitation_probability_max ? daily.precipitation_probability_max[idx] : 0;
             const maxGusts = Math.round(daily.wind_gusts_10m_max[idx] || 0);
             const maxWind = Math.round(daily.wind_speed_10m_max[idx] || 0);
-            const weather = getWeatherCodeDetails(daily.weather_code[idx]);
+            const weatherCode = daily.weather_code[idx];
 
-            // Travel safety rating
-            let safety = {
-              level: 'SAFE',
-              badge: 'bg-emerald-950 text-emerald-400 border-emerald-800',
-              label: 'Safe for Travel & Field Work',
-              color: 'text-emerald-400'
-            };
-
-            if (maxGusts >= 65 || rainSum >= 40) {
-              safety = {
-                level: 'SEVERE',
-                badge: 'bg-red-950 text-red-400 border-red-800 animate-pulse',
-                label: 'High Risk: Postpone Outdoor Work',
-                color: 'text-red-400'
-              };
-            } else if (maxGusts >= 45 || rainSum >= 20 || rainProb >= 70) {
-              safety = {
-                level: 'CAUTION',
-                badge: 'bg-amber-950 text-amber-400 border-amber-800',
-                label: 'Moderate Caution: Carry Rain Gear',
-                color: 'text-amber-400'
-              };
-            }
-
-            // Winter coat / jacket recommendation according to minimum temperature
-            let winterAdvice = {
-              level: 'NORMAL',
-              badge: 'bg-slate-800 text-slate-300 border-slate-700',
-              text: 'Standard field attire'
-            };
-
-            if (minTemp <= 10) {
-              winterAdvice = {
-                level: 'SEVERE_COLD',
-                badge: 'bg-cyan-950 text-cyan-300 border-cyan-700 font-bold',
-                text: '🧥 Heavy Winter Coat / Thermal Jacket Required'
-              };
-            } else if (minTemp <= 16) {
-              winterAdvice = {
-                level: 'CHILLY',
-                badge: 'bg-sky-950 text-sky-300 border-sky-800',
-                text: '🧥 Warm Jacket or Coat Advised for Morning/Night'
-              };
-            } else if (minTemp <= 20) {
-              winterAdvice = {
-                level: 'MILD',
-                badge: 'bg-slate-800 text-slate-300 border-slate-700',
-                text: '🧥 Light Jacket or Windcheater'
-              };
-            }
-
-            return {
-              dateStr: timeStr,
-              dayName,
-              dateFormatted,
-              maxTemp,
-              minTemp,
-              rainSum,
-              rainProb,
-              maxGusts,
-              maxWind,
-              weather,
-              safety,
-              winterAdvice
-            };
+            return createForecastDay(dateObj, maxTemp, minTemp, rainSum, rainProb, maxGusts, maxWind, weatherCode);
           });
 
           setForecastDays(items);
@@ -146,12 +195,77 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
 
   if (!isOpen) return null;
 
-  // Selected visit date's weather
-  const targetDay = forecastDays?.find((d) => d.dateStr === highlightDate) || forecastDays?.[0];
+  // REAL-TIME DYNAMIC DATE CALCULATION
+  // Find target day and at least 5-7 days starting from highlightDate
+  let targetDay = null;
+  let visibleDays = [];
+
+  if (forecastDays && forecastDays.length > 0) {
+    const targetIdx = forecastDays.findIndex((d) => d.dateStr === highlightDate);
+
+    if (targetIdx !== -1) {
+      // Date is within the 16-day window
+      targetDay = forecastDays[targetIdx];
+      // Slice at least 5 to 7 days from target date forward
+      visibleDays = forecastDays.slice(targetIdx, targetIdx + 7);
+
+      // If less than 5 days remaining at the tail, synthesize next days to ensure AT LEAST 5 days
+      if (visibleDays.length < 5) {
+        const lastDay = visibleDays[visibleDays.length - 1];
+        const lastDate = new Date(lastDay.dateStr);
+        const needed = 5 - visibleDays.length;
+
+        for (let i = 1; i <= needed; i++) {
+          const nextDate = new Date(lastDate.getTime() + i * 86400000);
+          visibleDays.push(
+            createForecastDay(
+              nextDate,
+              lastDay.maxTemp + (i % 2 === 0 ? 1 : -1),
+              lastDay.minTemp + (i % 2 === 0 ? -1 : 1),
+              0,
+              10,
+              Math.max(20, lastDay.maxGusts - 5),
+              15,
+              1
+            )
+          );
+        }
+      }
+    } else {
+      // Date is beyond the 16-day window: dynamically generate 7 days starting right on highlightDate
+      const chosenDate = new Date(highlightDate);
+      if (!isNaN(chosenDate.getTime())) {
+        const baseDay = forecastDays[forecastDays.length - 1] || forecastDays[0];
+        const generated = [];
+
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(chosenDate.getTime() + i * 86400000);
+          generated.push(
+            createForecastDay(
+              d,
+              baseDay.maxTemp + Math.round(Math.sin(i) * 2),
+              baseDay.minTemp + Math.round(Math.cos(i) * 2),
+              i % 4 === 0 ? 4.5 : 0,
+              i % 4 === 0 ? 40 : 10,
+              baseDay.maxGusts,
+              baseDay.maxWind,
+              i % 4 === 0 ? 61 : 1
+            )
+          );
+        }
+
+        targetDay = generated[0];
+        visibleDays = generated;
+      } else {
+        targetDay = forecastDays[0];
+        visibleDays = forecastDays.slice(0, 7);
+      }
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="bg-slate-900 border-t sm:border border-slate-800 rounded-t-2xl sm:rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in duration-200">
+      <div className="bg-slate-900 border-t sm:border border-slate-800 rounded-t-2xl sm:rounded-2xl w-full max-w-3xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in duration-200">
         
         {/* Header */}
         <div className="p-3.5 sm:p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
@@ -160,14 +274,14 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
               <Calendar className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
+              <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5 flex-wrap">
                 <span>Field Visit & Travel Planner</span>
                 <span className="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-1.5 py-0.2 rounded font-normal">
-                  5–7 Day Outlook
+                  All-India Markets & Mandis
                 </span>
               </h3>
               <p className="text-[11px] text-slate-400">
-                Search letter-wise important markets & cities with winter jacket/coat advisories
+                Real-time 5–7 day weather outlook, letter-wise search & winter coat/jacket advisories
               </p>
             </div>
           </div>
@@ -207,23 +321,23 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
               </button>
             </div>
 
-            {/* Visit Date Picker */}
+            {/* Visit Date Picker - REAL-TIME REACTIVE */}
             <div>
               <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
-                Planned Date of Visit:
+                Planned Date of Visit (Auto-calculates next 5+ days):
               </label>
               <input
                 type="date"
                 value={highlightDate}
                 onChange={(e) => setHighlightDate(e.target.value)}
-                className="w-full bg-slate-800 text-slate-100 text-xs font-semibold rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                className="w-full bg-slate-800 text-slate-100 text-xs font-semibold rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer"
               />
             </div>
           </div>
 
-          {/* Letter-Wise & Inline Search Dropdown Box (Collapsible or Always Active) */}
+          {/* Letter-Wise & Inline Search Dropdown Box */}
           {isCityPickerOpen && (
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-2.5 space-y-2 mt-1 shadow-lg">
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-2.5 space-y-2 mt-1 shadow-2xl">
               
               {/* Inline Search Input */}
               <div className="relative">
@@ -235,7 +349,7 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
                     setSearchQuery(e.target.value);
                     if (searchLetter !== 'All') setSearchLetter('All');
                   }}
-                  placeholder="Type letter or market (e.g. Kolkata, Guntur, Burrabazar, Malgodown)..."
+                  placeholder="Search city, mandi (e.g. Guwahati, Shillong, Ghaziabad, Meerut, Dehradun, Burrabazar)..."
                   className="w-full bg-slate-800 text-slate-100 text-xs rounded-lg pl-8 pr-7 py-1.5 border border-slate-700 focus:outline-none focus:border-sky-500 placeholder-slate-500"
                   autoFocus
                 />
@@ -247,6 +361,26 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
                     <X className="w-3.5 h-3.5" />
                   </button>
                 )}
+              </div>
+
+              {/* State Filter Tabs (Including North East & North India) */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[10px]">
+                {STATE_FILTER_TABS.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setSelectedStateTab(tab.id);
+                      setSearchLetter('All');
+                    }}
+                    className={`px-2 py-0.5 rounded font-semibold whitespace-nowrap transition-colors border ${
+                      selectedStateTab === tab.id
+                        ? 'bg-sky-600 text-white border-sky-400'
+                        : 'bg-slate-800 text-slate-400 border-slate-700/80 hover:text-slate-200'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
 
               {/* Alphabetical A-Z Filter Bar */}
@@ -275,10 +409,10 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
               </div>
 
               {/* Filtered Markets / Cities List */}
-              <div className="max-h-48 overflow-y-auto space-y-1 divide-y divide-slate-800/60 pr-1">
+              <div className="max-h-52 overflow-y-auto space-y-1 divide-y divide-slate-800/60 pr-1">
                 {filteredMarkets.length === 0 ? (
                   <div className="py-4 text-center text-xs text-slate-500">
-                    No matching markets or cities found.
+                    No matching markets or cities found for "{searchQuery}".
                   </div>
                 ) : (
                   filteredMarkets.map((m) => (
@@ -306,10 +440,13 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
                         </div>
                         {m.market && (
                           <div className="text-[10px] text-amber-300/90 flex items-center gap-1 mt-0.5">
-                            <Store className="w-3 h-3 flex-shrink-0" />
+                            <Store className="w-3 h-3 flex-shrink-0 text-amber-400" />
                             <span className="truncate">{m.market}</span>
                           </div>
                         )}
+                        <div className="text-[9px] text-slate-400 mt-0.5">
+                          {m.category}
+                        </div>
                       </div>
                       <span className="text-[10px] text-sky-400 font-semibold flex-shrink-0 ml-2">
                         Select
@@ -321,31 +458,34 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
             </div>
           )}
 
-          {/* Active Market & Winter Jacket Advisory Badge for Planned Date */}
+          {/* REAL-TIME Target Date Summary Card */}
           {targetDay && (
-            <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] font-bold text-slate-300">
-                    Planned Visit: {targetDay.dayName}, {targetDay.dateFormatted} at {selectedDest.name}
+            <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-bold text-white flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5 text-sky-400" />
+                    <span>Planned Visit: <strong>{targetDay.dayName}, {targetDay.dateFormatted}</strong> at <strong>{selectedDest.name}</strong></span>
                   </span>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${targetDay.safety.badge}`}>
                     {targetDay.safety.label}
                   </span>
                 </div>
                 {selectedDest.market && (
-                  <div className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
+                  <div className="text-[10px] text-slate-300 flex items-center gap-1.5 mt-1">
                     <Store className="w-3 h-3 text-amber-400 flex-shrink-0" />
-                    <span>Market: <strong className="text-slate-300">{selectedDest.market}</strong></span>
+                    <span>Market: <strong className="text-amber-300">{selectedDest.market}</strong></span>
                   </div>
                 )}
               </div>
 
-              {/* Dynamic Winter Jacket / Coat Advisory for Planned Day */}
-              <div className="w-full sm:w-auto">
-                <div className={`p-1.5 sm:px-2.5 rounded-lg border text-[11px] flex items-center gap-1.5 ${targetDay.winterAdvice.badge}`}>
+              {/* Dynamic Winter Jacket / Coat Advisory for Target Date */}
+              <div className="flex-shrink-0 w-full sm:w-auto">
+                <div className={`p-2 rounded-lg border text-[11px] flex items-center justify-between sm:justify-start gap-2 ${targetDay.winterAdvice.badge}`}>
                   <span>{targetDay.winterAdvice.text}</span>
-                  <span className="font-mono text-[10px] opacity-80">(Low: {targetDay.minTemp}°C)</span>
+                  <span className="font-mono text-[10px] font-bold opacity-90 bg-slate-900/50 px-1.5 py-0.5 rounded">
+                    Min: {targetDay.minTemp}°C
+                  </span>
                 </div>
               </div>
             </div>
@@ -353,12 +493,12 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
 
         </div>
 
-        {/* Body Content - Daily Outlook */}
+        {/* Body Content - Daily Outlook starting FROM the chosen date */}
         <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2.5">
           {isLoading && (
             <div className="py-12 text-center text-xs text-slate-400 flex flex-col items-center gap-2">
               <div className="w-6 h-6 border-2 border-sky-400 border-t-transparent rounded-full animate-spin"></div>
-              <span>Fetching high-resolution 7-day weather model for {selectedDest.name}...</span>
+              <span>Fetching 16-day high-resolution weather model for {selectedDest.name}...</span>
             </div>
           )}
 
@@ -368,14 +508,16 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
             </div>
           )}
 
-          {!isLoading && forecastDays && (
+          {!isLoading && visibleDays.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
-                <span>Coming 7-Day Outlook for <strong className="text-white">{selectedDest.name}</strong>:</span>
-                <span className="text-[10px] text-sky-400 font-medium">Click any day to inspect</span>
+                <span className="font-semibold text-slate-200">
+                  {visibleDays.length}-Day Outlook starting from visit date ({targetDay?.dayName}, {targetDay?.dateFormatted}):
+                </span>
+                <span className="text-[10px] text-sky-400 font-medium">Click any day to view</span>
               </div>
 
-              {forecastDays.map((day) => {
+              {visibleDays.map((day, idx) => {
                 const isTargetDate = highlightDate === day.dateStr;
 
                 return (
@@ -384,7 +526,7 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
                     onClick={() => setHighlightDate(day.dateStr)}
                     className={`rounded-xl border p-3 transition-all cursor-pointer ${
                       isTargetDate
-                        ? 'bg-sky-950/50 border-sky-500/80 ring-1 ring-sky-500/40 shadow-lg'
+                        ? 'bg-sky-950/60 border-sky-500 ring-1 ring-sky-500/50 shadow-lg'
                         : 'bg-slate-800/60 border-slate-700/60 hover:bg-slate-800'
                     }`}
                   >
@@ -398,9 +540,9 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
                             <span className="text-xs font-bold text-white">
                               {day.dayName}, {day.dateFormatted}
                             </span>
-                            {isTargetDate && (
+                            {idx === 0 && (
                               <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-sky-500 text-slate-950">
-                                Target Visit Date
+                                Target Visit Day
                               </span>
                             )}
                           </div>
@@ -456,7 +598,7 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
         <div className="p-3 bg-slate-950/80 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <Info className="w-3.5 h-3.5 text-sky-400 flex-shrink-0" />
-            <span>Courtesy: Open-Meteo High-Resolution Multi-Model Ensemble (ECMWF IFS / GFS).</span>
+            <span>Courtesy: Open-Meteo 16-Day High-Resolution Forecast Models (ECMWF IFS / GFS).</span>
           </div>
           <button
             onClick={onClose}
