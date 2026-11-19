@@ -10,6 +10,8 @@ import EmergencyDirectoryModal from './components/EmergencyDirectoryModal';
 import SafetyModal from './components/SafetyModal';
 import PwaInstallPrompt from './components/PwaInstallPrompt';
 import BottomNav from './components/BottomNav';
+import TravelPlannerModal from './components/TravelPlannerModal';
+import DistrictPickerModal from './components/DistrictPickerModal';
 
 import { ALL_INDIA_REGIONS, findNearestDistrict } from './data/districts';
 import { fetchLiveWeather } from './services/weatherApi';
@@ -22,11 +24,12 @@ import {
   generateVoiceBriefing
 } from './services/cycloneEngine';
 
-import { MapPin, Locate, RefreshCw, AlertCircle, Navigation, Globe } from 'lucide-react';
+import { MapPin, Locate, RefreshCw, AlertCircle, Navigation, Globe, Calendar, ChevronDown } from 'lucide-react';
 
 export default function App() {
   const [selectedDistrictId, setSelectedDistrictId] = useState('puri');
   const [customGpsLocation, setCustomGpsLocation] = useState(null);
+  const [isDistrictPickerOpen, setIsDistrictPickerOpen] = useState(false);
   const [selectedStormId, setSelectedStormId] = useState('BOB-01-2026');
   const [autoSelectNearestStorm, setAutoSelectNearestStorm] = useState(true);
 
@@ -45,6 +48,7 @@ export default function App() {
   // Modals
   const [isEmergencyOpen, setIsEmergencyOpen] = useState(false);
   const [isSafetyOpen, setIsSafetyOpen] = useState(false);
+  const [isTravelPlannerOpen, setIsTravelPlannerOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('alert');
 
   const scrollToSection = (sectionId) => {
@@ -282,73 +286,49 @@ export default function App() {
           </div>
         </section>
 
-        {/* District & GPS Selector Bar (All-India Coverage) */}
-        <section className="bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-          <div className="flex items-center gap-2 flex-1">
-            <MapPin className="w-4 h-4 text-sky-400 flex-shrink-0" />
-            <span className="text-xs font-bold text-slate-300">Field Area:</span>
-            <select
-              value={customGpsLocation ? 'gps' : selectedDistrictId}
-              onChange={(e) => {
-                if (e.target.value !== 'gps') {
-                  if (watchIdRef.current !== null) {
-                    navigator.geolocation.clearWatch(watchIdRef.current);
-                    watchIdRef.current = null;
-                    setIsWatchActive(false);
-                  }
-                  setCustomGpsLocation(null);
-                  setSelectedDistrictId(e.target.value);
-                }
-              }}
-              className="flex-1 bg-slate-800 text-slate-100 text-xs font-semibold rounded-lg px-2.5 py-1.5 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-sky-500"
+        {/* District & GPS Selector Bar (Mobile-Boundary Safe) */}
+        <section className="bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 overflow-hidden">
+          <div className="flex items-center gap-1.5 flex-1 min-w-0 w-full">
+            <span className="text-xs font-bold text-slate-400 flex-shrink-0">Area:</span>
+            
+            {/* Mobile-Friendly Searchable District Trigger */}
+            <button
+              type="button"
+              onClick={() => setIsDistrictPickerOpen(true)}
+              className="flex-1 min-w-0 flex items-center justify-between bg-slate-800/90 hover:bg-slate-800 active:bg-slate-750 text-slate-100 text-xs font-semibold rounded-lg px-2.5 py-1.5 border border-slate-700/80 focus:outline-none focus:ring-1 focus:ring-sky-500 transition-colors"
+              title="Click to search and change district / state"
             >
-              {customGpsLocation && (
-                <option value="gps">📍 {customGpsLocation.name}</option>
-              )}
-              <optgroup label="East Coast: Odisha">
-                {ALL_INDIA_REGIONS.filter((d) => d.state === 'Odisha').map((d) => (
-                  <option key={d.id} value={d.id}>{d.name} {d.highRisk ? '⚠️' : ''}</option>
-                ))}
-              </optgroup>
-              <optgroup label="East Coast: West Bengal">
-                {ALL_INDIA_REGIONS.filter((d) => d.state === 'West Bengal').map((d) => (
-                  <option key={d.id} value={d.id}>{d.name} {d.highRisk ? '⚠️' : ''}</option>
-                ))}
-              </optgroup>
-              <optgroup label="East Coast: Andhra Pradesh">
-                {ALL_INDIA_REGIONS.filter((d) => d.state === 'Andhra Pradesh').map((d) => (
-                  <option key={d.id} value={d.id}>{d.name} {d.highRisk ? '⚠️' : ''}</option>
-                ))}
-              </optgroup>
-              <optgroup label="South Coast: Tamil Nadu & Puducherry">
-                {ALL_INDIA_REGIONS.filter((d) => d.state === 'Tamil Nadu' || d.state === 'Puducherry' || d.state === 'Andaman & Nicobar').map((d) => (
-                  <option key={d.id} value={d.id}>{d.name} ({d.state})</option>
-                ))}
-              </optgroup>
-              <optgroup label="West Coast (Arabian Sea): Gujarat">
-                {ALL_INDIA_REGIONS.filter((d) => d.state === 'Gujarat').map((d) => (
-                  <option key={d.id} value={d.id}>{d.name}</option>
-                ))}
-              </optgroup>
-              <optgroup label="West Coast (Arabian Sea): Maharashtra, Goa, Karnataka, Kerala">
-                {ALL_INDIA_REGIONS.filter((d) => ['Maharashtra', 'Goa', 'Karnataka', 'Kerala'].includes(d.state)).map((d) => (
-                  <option key={d.id} value={d.id}>{d.name} ({d.state})</option>
-                ))}
-              </optgroup>
-              <optgroup label="Inland Depression & Monsoon Storm Belts">
-                {ALL_INDIA_REGIONS.filter((d) => ['Jharkhand', 'Chhattisgarh', 'Telangana', 'Bihar', 'Madhya Pradesh', 'Delhi NCR'].includes(d.state)).map((d) => (
-                  <option key={d.id} value={d.id}>{d.name} ({d.state})</option>
-                ))}
-              </optgroup>
-            </select>
+              <div className="flex items-center gap-1.5 min-w-0 truncate">
+                <MapPin className="w-3.5 h-3.5 text-sky-400 flex-shrink-0" />
+                <span className="truncate font-bold">
+                  {customGpsLocation ? customGpsLocation.name : `${activeLocation.name} (${activeLocation.state})`}
+                </span>
+                {activeLocation.highRisk && (
+                  <span className="text-[9px] bg-red-950/80 text-red-300 border border-red-700/60 px-1 py-0.2 rounded font-medium flex-shrink-0">
+                    Risk
+                  </span>
+                )}
+              </div>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 ml-1.5" />
+            </button>
           </div>
 
           <div className="flex items-center gap-1.5 flex-wrap">
+            {/* Future Visit Planner Button */}
+            <button
+              onClick={() => setIsTravelPlannerOpen(true)}
+              className="flex items-center justify-center gap-1 px-2.5 py-1.5 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex-shrink-0"
+              title="Plan field visit on future dates (Coming 5-7 days weather outlook)"
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Plan Visit</span>
+            </button>
+
             {/* Instant GPS Refresh Button */}
             <button
               onClick={handleUseGps}
               disabled={isLoading}
-              className={`flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+              className={`flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all border flex-shrink-0 ${
                 customGpsLocation
                   ? 'bg-sky-600 text-white border-sky-500 shadow-sm'
                   : 'bg-slate-800 hover:bg-slate-700 text-sky-400 border-slate-700'
@@ -356,13 +336,13 @@ export default function App() {
               title="Detect or refresh exact GPS location"
             >
               <Locate className="w-3.5 h-3.5" />
-              <span>{customGpsLocation ? 'Refresh GPS' : 'Use GPS'}</span>
+              <span>{customGpsLocation ? 'GPS' : 'Use GPS'}</span>
             </button>
 
             {/* Continuous Live Watch Toggle */}
             <button
               onClick={toggleLiveTracking}
-              className={`flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+              className={`flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-xs font-bold transition-all border flex-shrink-0 ${
                 isWatchActive
                   ? 'bg-emerald-600 text-white border-emerald-400 shadow-sm ring-1 ring-emerald-400/50'
                   : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
@@ -370,14 +350,14 @@ export default function App() {
               title="Continuously track GPS as you move in the field"
             >
               <Navigation className={`w-3.5 h-3.5 ${isWatchActive ? 'animate-pulse text-white' : 'text-slate-400'}`} />
-              <span>{isWatchActive ? 'Live: ON' : 'Live: OFF'}</span>
+              <span>{isWatchActive ? 'ON' : 'OFF'}</span>
             </button>
 
             {/* Reload Weather & Bulletin */}
             <button
               onClick={loadWeather}
               disabled={isLoading}
-              className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition-colors"
+              className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition-colors flex-shrink-0"
               title="Refresh weather data and IMD status"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-sky-400' : ''}`} />
@@ -477,6 +457,30 @@ export default function App() {
       />
 
       {/* Modals */}
+      <DistrictPickerModal
+        isOpen={isDistrictPickerOpen}
+        onClose={() => setIsDistrictPickerOpen(false)}
+        selectedDistrictId={selectedDistrictId}
+        isGpsActive={!!customGpsLocation}
+        gpsLocationName={customGpsLocation?.name}
+        onSelectDistrict={(id) => {
+          if (watchIdRef.current !== null) {
+            navigator.geolocation.clearWatch(watchIdRef.current);
+            watchIdRef.current = null;
+            setIsWatchActive(false);
+          }
+          setCustomGpsLocation(null);
+          setSelectedDistrictId(id);
+        }}
+        onUseGps={handleUseGps}
+      />
+
+      <TravelPlannerModal
+        isOpen={isTravelPlannerOpen}
+        onClose={() => setIsTravelPlannerOpen(false)}
+        initialDistrictId={selectedDistrictId}
+      />
+
       <EmergencyDirectoryModal
         isOpen={isEmergencyOpen}
         onClose={() => setIsEmergencyOpen(false)}
