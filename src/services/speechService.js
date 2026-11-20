@@ -1,4 +1,4 @@
-// Web Speech Synthesis Engine with Sentence Chunking, Watchdog Timers & Anti-Stall Guard
+// Web Speech Synthesis Engine with Sentence Chunking, Watchdog Timers & Pure Vernacular TTS
 
 export class SpeechService {
   constructor() {
@@ -7,36 +7,77 @@ export class SpeechService {
     this.sentences = [];
     this.currentIndex = 0;
     this.currentLang = 'english';
-    this.keepAliveTimer = null;
     this.watchdogTimer = null;
     this.transitionTimer = null;
+    this.keepAliveTimer = null;
     this.currentUtterance = null;
     this.onSentenceCallback = null;
     this.onEndCallback = null;
+
+    // Attach to window to guarantee V8 garbage collector never collects active utterances
+    if (typeof window !== 'undefined') {
+      window.__activeSpeechUtterances = window.__activeSpeechUtterances || [];
+    }
   }
 
   isSupported() {
     return !!this.synth;
   }
 
-  // Split text into clean, manageable sentences without breaking on decimal numbers (e.g. 18.10 or 1.5)
-  splitIntoSentences(text) {
+  // Sanitize text for regional TTS engines (strips English parentheses & translates system keywords)
+  cleanTextForSpeech(text, lang) {
+    if (!text) return '';
+    let cleaned = text;
+
+    // Replace English "Live Tracking (City)" with clean localized pronunciation
+    if (lang === 'hindi') {
+      cleaned = cleaned.replace(/Live Tracking \(([^)]+)\)/gi, '$1 लाइव ट्रैकिंग');
+      cleaned = cleaned.replace(/Live Tracking/gi, 'लाइव ट्रैकिंग');
+    } else if (lang === 'odia') {
+      cleaned = cleaned.replace(/Live Tracking \(([^)]+)\)/gi, '$1 ଲାଇଭ୍ ଟ୍ରାକିଂ');
+      cleaned = cleaned.replace(/Live Tracking/gi, 'ଲାଇଭ୍ ଟ୍ରାକିଂ');
+    } else if (lang === 'bengali') {
+      cleaned = cleaned.replace(/Live Tracking \(([^)]+)\)/gi, '$1 লাইভ ট্র্যাকিং');
+      cleaned = cleaned.replace(/Live Tracking/gi, 'লাইভ ট্র্যাকিং');
+    } else if (lang === 'gujarati') {
+      cleaned = cleaned.replace(/Live Tracking \(([^)]+)\)/gi, '$1 લાઇવ ટ્રેકિંગ');
+      cleaned = cleaned.replace(/Live Tracking/gi, 'લાઇવ ટ્રેકિંગ');
+    } else if (lang === 'telugu') {
+      cleaned = cleaned.replace(/Live Tracking \(([^)]+)\)/gi, '$1 లైవ్ ట్రాకింగ్');
+      cleaned = cleaned.replace(/Live Tracking/gi, 'లైవ్ ట్రాకింగ్');
+    }
+
+    // Remove residual English parenthetical notes (e.g. "(Coat)", "(Heavy Jacket)", "(Jacket/Coat)")
+    if (lang !== 'english') {
+      cleaned = cleaned.replace(/\s*\([A-Za-z0-9\/\s\-]+\)/g, '');
+    }
+
+    // Clean symbols that cause TTS tokenizer halts
+    cleaned = cleaned.replace(/[•\*#_~`]/g, ' ');
+    cleaned = cleaned.replace(/\s+/g, ' ').trim();
+
+    return cleaned;
+  }
+
+  // Split text into clean sentences without breaking on decimal numbers
+  splitIntoSentences(text, lang) {
     if (!text) return [];
+    const sanitized = this.cleanTextForSpeech(text, lang);
+
     // Normalize newlines to purna biram
-    const normalized = text.replace(/[\r\n]+/g, ' । ');
+    const normalized = sanitized.replace(/[\r\n]+/g, ' । ');
     // Split by purna biram (।), or punctuation followed by whitespace or end-of-string
     const rawParts = normalized.split(/(?:[।|]+|(?<=[^\d])[\.!\?]+(?:\s+|$))/g);
     const result = [];
 
     for (let part of rawParts) {
       const clean = part.replace(/[।|]+/g, '').trim();
-      // Only keep sentences with meaningful characters
       if (clean.length > 2) {
         result.push(clean);
       }
     }
 
-    return result.length > 0 ? result : [text.trim()];
+    return result.length > 0 ? result : [sanitized];
   }
 
   speakFullMessage(briefing, lang = 'english', onSentenceChange, onComplete) {
@@ -52,7 +93,7 @@ export class SpeechService {
     this.onEndCallback = onComplete;
     this.isPlaying = true;
 
-    // Check if browser has native regional voices
+    // Check available voices
     const voices = this.synth.getVoices();
     const hasOdiaVoice = voices.some(v => v.lang.startsWith('or'));
     const hasBengaliVoice = voices.some(v => v.lang.startsWith('bn'));
@@ -64,7 +105,7 @@ export class SpeechService {
 
     let textToSpeak = briefing.speech;
 
-    // Fallback to phonetic speech for devices lacking regional Indian TTS synthesis
+    // Phonetic fallback for devices lacking specific regional TTS fonts
     if (lang === 'odia' && !hasOdiaVoice && briefing.phoneticSpeech) {
       textToSpeak = briefing.phoneticSpeech;
     } else if (lang === 'bengali' && !hasBengaliVoice && briefing.phoneticSpeech) {
@@ -81,11 +122,11 @@ export class SpeechService {
       textToSpeak = briefing.phoneticSpeech;
     }
 
-    this.sentences = this.splitIntoSentences(textToSpeak);
+    this.sentences = this.splitIntoSentences(textToSpeak, lang);
     this.currentIndex = 0;
 
-    // Start keep-alive loop to prevent Chrome's 15-second silent pause bug
-    this.startKeepAlive();
+    // Safe unpause monitor
+    this.startSafeKeepAlive();
 
     this.playNextSentence();
     return true;
@@ -94,7 +135,6 @@ export class SpeechService {
   playNextSentence() {
     if (!this.isPlaying) return;
 
-    // Clear previous sentence watchdog
     this.clearWatchdog();
 
     if (this.currentIndex >= this.sentences.length) {
@@ -107,14 +147,18 @@ export class SpeechService {
       this.onSentenceCallback(this.currentIndex, this.sentences.length);
     }
 
-    // Ensure synth is unpaused before starting next utterance
+    // Ensure synth is unpaused
     if (this.synth.paused) {
       this.synth.resume();
     }
 
     const utterance = new SpeechSynthesisUtterance(sentenceText);
-    // CRITICAL: Retain reference on this instance to prevent V8 garbage collection mid-speech
     this.currentUtterance = utterance;
+
+    // Retain global reference to completely prevent V8 garbage collection
+    if (typeof window !== 'undefined' && window.__activeSpeechUtterances) {
+      window.__activeSpeechUtterances.push(utterance);
+    }
 
     // Map language tag
     let langCode = 'en-IN';
@@ -129,7 +173,7 @@ export class SpeechService {
     else langCode = 'en-IN';
 
     utterance.lang = langCode;
-    utterance.rate = 0.95; // Clear speed for field workers
+    utterance.rate = 0.95;
     utterance.pitch = 1.0;
 
     // Select best available Indian voice
@@ -147,10 +191,15 @@ export class SpeechService {
 
     let isHandled = false;
 
-    const handleNext = () => {
+    const advance = () => {
       if (isHandled) return;
       isHandled = true;
       this.clearWatchdog();
+
+      // Clean up global reference
+      if (typeof window !== 'undefined' && window.__activeSpeechUtterances) {
+        window.__activeSpeechUtterances = window.__activeSpeechUtterances.filter(u => u !== utterance);
+      }
       this.currentUtterance = null;
 
       if (!this.isPlaying) return;
@@ -161,7 +210,7 @@ export class SpeechService {
         return;
       }
 
-      // Small natural pause between sentences, ensuring clean unpaused transition
+      // Small natural pause between sentences (60ms)
       this.transitionTimer = setTimeout(() => {
         if (this.isPlaying) {
           if (this.synth.paused) {
@@ -169,62 +218,51 @@ export class SpeechService {
           }
           this.playNextSentence();
         }
-      }, 100);
+      }, 60);
     };
 
     utterance.onend = () => {
-      handleNext();
+      advance();
     };
 
     utterance.onerror = (err) => {
-      console.warn('Utterance error or interrupt:', err);
-      // If user stopped playback intentionally, do not advance
-      if (!this.isPlaying || err?.error === 'canceled' || err?.error === 'interrupted') {
-        if (!this.isPlaying) return;
-      }
-      handleNext();
+      console.warn('[SpeechService] Utterance error/event:', err);
+      advance();
     };
 
-    // Watchdog Timer: If browser fails to fire onend (common Chrome/Android bug), auto-advance
-    // Compute expected duration: ~8 chars per sec at rate 0.95 + 4 sec safety buffer
-    const expectedDurationMs = Math.max(4500, Math.ceil((sentenceText.length / 7) * 1000) + 4000);
+    // Watchdog Timer: Guarantees progression if Android Chrome fails to fire onend
+    const durationMs = Math.max(3500, Math.ceil((sentenceText.length / 6) * 1000) + 3000);
     this.watchdogTimer = setTimeout(() => {
       if (this.isPlaying && !isHandled) {
-        console.warn(`[SpeechService] Watchdog triggered for sentence ${this.currentIndex + 1}/${this.sentences.length}. Advancing.`);
-        handleNext();
+        console.warn(`[SpeechService] Watchdog advancing sentence ${this.currentIndex + 1}/${this.sentences.length}`);
+        advance();
       }
-    }, expectedDurationMs);
+    }, durationMs);
 
-    // Speak the utterance
     try {
       this.synth.speak(utterance);
-      // Android Chrome bugfix: immediately trigger resume if stuck in pending
       if (this.synth.paused) {
         this.synth.resume();
       }
     } catch (e) {
-      console.error('[SpeechService] speak failed:', e);
-      handleNext();
+      console.error('[SpeechService] speak invocation failed:', e);
+      advance();
     }
   }
 
-  startKeepAlive() {
-    this.stopKeepAlive();
-    // Chrome bug: long speech sessions freeze after ~12s.
-    // SAFE keep-alive: only nudge pause/resume if synthesis is ACTIVELY speaking, never between lines!
+  startSafeKeepAlive() {
+    this.stopSafeKeepAlive();
+    // Non-destructive keep-alive: ONLY calls resume() if paused. Never calls pause()!
     this.keepAliveTimer = setInterval(() => {
       if (this.synth && this.isPlaying) {
         if (this.synth.paused) {
           this.synth.resume();
-        } else if (this.synth.speaking && this.currentUtterance) {
-          this.synth.pause();
-          this.synth.resume();
         }
       }
-    }, 9000);
+    }, 3000);
   }
 
-  stopKeepAlive() {
+  stopSafeKeepAlive() {
     if (this.keepAliveTimer) {
       clearInterval(this.keepAliveTimer);
       this.keepAliveTimer = null;
@@ -243,12 +281,16 @@ export class SpeechService {
   }
 
   stop() {
-    this.stopKeepAlive();
+    this.stopSafeKeepAlive();
     this.clearWatchdog();
     this.isPlaying = false;
     this.currentIndex = 0;
     this.sentences = [];
     this.currentUtterance = null;
+
+    if (typeof window !== 'undefined') {
+      window.__activeSpeechUtterances = [];
+    }
 
     if (this.synth) {
       try {

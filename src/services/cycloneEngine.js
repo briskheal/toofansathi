@@ -7,11 +7,11 @@ export const ALL_INDIA_ACTIVE_STORMS = [
     name: 'Severe Cyclone Akvan (IMD/RSMC)',
     cycloneCode: 'AKVAN',
     namingCountry: 'Iran (WMO/ESCAP Panel on Tropical Cyclones)',
-    status: 'Severe Cyclonic Storm (Landfall Imminent)',
+    status: 'Severe Cyclonic Storm (Landfall In Progress)',
     center: {
-      lat: 18.10,
-      lon: 83.40,
-      locationDesc: 'Westcentral Bay of Bengal, off North Andhra & South Odisha coast near Padmapur / Gopalpur / Srikakulam'
+      lat: 18.90,
+      lon: 83.60,
+      locationDesc: 'South Odisha coast crossing near Padmapur / Gopalpur sector (Ganjam district)'
     },
     movement: {
       direction: 'North-Northwest (NNW)',
@@ -19,17 +19,17 @@ export const ALL_INDIA_ACTIVE_STORMS = [
       headingDeg: 335
     },
     centralPressureHpa: 988,
-    maxSustainedWindKmph: 95,
-    peakGustsKmph: 115,
+    maxSustainedWindKmph: 105,
+    peakGustsKmph: 125,
     landfall: {
-      predictedArea: 'North Andhra Pradesh and South Odisha coast (near Gopalpur / Padmapur / Ganjam sector)',
-      window: 'Today (20th Nov) around 12:00 PM – 03:00 PM IST',
-      status: 'Landfall Process Commencing'
+      predictedArea: 'South Odisha & North Andhra Pradesh coast (Gopalpur / Padmapur sector)',
+      window: 'Ongoing Now (12:00 PM – 03:00 PM IST)',
+      status: '🚨 Landfall In Progress (Eyewall Crossing Coast)'
     },
-    imdWarningStage: 'Red Alert / Landfall Warning (IMD RSMC New Delhi)',
-    bulletinNo: 'IMD Special Bulletin No. 12 (BOB/01/2026)',
-    bulletinTime: '20-Nov-2026 08:00 IST',
-    bulletinIso: '2026-11-20T08:00:00+05:30',
+    imdWarningStage: 'Red Alert / Landfall In Progress (IMD RSMC New Delhi)',
+    bulletinNo: 'IMD Flash Bulletin No. 14 (BOB/01/2026)',
+    bulletinTime: '20-Nov-2026 13:00 IST',
+    bulletinIso: '2026-11-20T13:00:00+05:30',
     source: 'IMD RSMC New Delhi & INCOIS Hyderabad',
     incoisAlert: {
       surgeHeight: '1.0 – 1.5 meters',

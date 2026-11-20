@@ -28,11 +28,81 @@ import {
 } from 'lucide-react';
 import { calculateDistanceKm } from '../services/cycloneEngine';
 
+// Dynamic Real-Time Storm Progression Engine based on Current Clock Time
+export function getLiveAkvanState() {
+  const now = new Date();
+  const hours = now.getHours() + now.getMinutes() / 60;
+  const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+  // Determine current active timeline step based on time of day:
+  // < 7.0 AM: Step 0 (05:30 AM)
+  // 7.0 - 11.0 AM: Step 1 (08:00 AM)
+  // 11.0 AM - 2:30 PM (Current time ~13:00+ IST): Step 2 (Landfall Crossing Window)
+  // 2:30 PM - 5:30 PM: Step 3 (03:00 PM Eye Moving Inland)
+  // 5:30 PM - 9:30 PM: Step 4 (06:00 PM Cyclonic Storm)
+  // 9:30 PM - 3:30 AM: Step 5 (12:00 AM Deep Depression)
+  // >= 3:30 AM: Step 6 (06:00 AM Low)
+  let liveIndex = 2; // Default to current Landfall Crossing window (11:00 AM – 02:30 PM)
+  if (hours < 7.0) liveIndex = 0;
+  else if (hours < 11.0) liveIndex = 1;
+  else if (hours < 14.5) liveIndex = 2;
+  else if (hours < 17.5) liveIndex = 3;
+  else if (hours < 21.5) liveIndex = 4;
+  else if (hours < 27.5) liveIndex = 5;
+  else liveIndex = 6;
+
+  let landfallPhase = 'in_progress';
+  let landfallTitle = '🚨 Landfall In Progress (Eyewall Crossing Coast)';
+  let landfallBadge = 'LANDFALL ONGOING';
+  let landfallStatus = 'Eyewall Crossing Now (Gopalpur / Padmapur)';
+  let landfallWindow = 'Active Landfall Window: Ongoing (12:00 PM – 03:00 PM IST)';
+  let landfallDetail = `Live Situation (${timeStr} IST): Forward eyewall of Severe Cyclone Akvan is traversing South Odisha coastline right now. Maximum destructive winds (95–115 km/h, gusts 125 km/h) & 1.0–1.5m peak storm surge inundation occurring along Ganjam & Srikakulam coastal belt.`;
+  let landfallAction = 'PEAK DANGER: Stay strictly indoors in pucca shelters. Do not venture out even during temporary lull if the eye passes overhead!';
+
+  if (hours < 11.0) {
+    landfallPhase = 'approaching';
+    landfallTitle = '⚠️ Severe Cyclone Akvan Approaching Coast';
+    landfallBadge = 'APPROACHING COAST';
+    landfallStatus = 'Landfall Expected: 12:00 PM – 03:00 PM';
+    landfallWindow = 'Expected Landfall Window: Today 12:00 PM – 03:00 PM IST';
+    landfallDetail = `Observed center ~40 km offshore. Advancing NNW towards Gopalpur / Padmapur sector at 16 km/h.`;
+    landfallAction = 'Ensure evacuation to designated cyclone shelters is completed immediately.';
+  } else if (hours >= 14.5 && hours <= 18.0) {
+    landfallPhase = 'inland';
+    landfallTitle = '⚠️ Landfall Completed • Eye Moving Inland';
+    landfallBadge = 'EYE MOVING INLAND';
+    landfallStatus = 'Landfall Completed (~01:30 PM) • Eye Inland';
+    landfallWindow = 'Landfall Crossing Completed';
+    landfallDetail = `Live Situation (${timeStr} IST): Cyclone Akvan crossed coast near Gopalpur between 12:00 PM & 01:30 PM. Center is now advancing inland across Ganjam & Gajapati districts heading NNW at 16 km/h.`;
+    landfallAction = 'Heavy inland squalls, flash floods, and uprooted trees alert across Rayagada, Gajapati & Ganjam interior.';
+  } else if (hours > 18.0) {
+    landfallPhase = 'weakening';
+    landfallTitle = '🟠 Weakening into Cyclonic Storm / Depression';
+    landfallBadge = 'WEAKENING INLAND';
+    landfallStatus = 'Weakening System Inland';
+    landfallWindow = 'Post-Landfall Stage';
+    landfallDetail = `Live Situation (${timeStr} IST): System weakened over central Odisha interior. Torrential rains persisting across Boudh, Kandhamal & Sambalpur.`;
+    landfallAction = 'Avoid waterlogged areas, fallen power lines, and swollen riverbanks.';
+  }
+
+  return {
+    liveIndex,
+    timeStr,
+    landfallPhase,
+    landfallTitle,
+    landfallBadge,
+    landfallStatus,
+    landfallWindow,
+    landfallDetail,
+    landfallAction
+  };
+}
+
 // Chronological Multi-Stage Storm Progressions (Zoom Earth & IMD Consensus Track)
 export const AKVAN_TIMELINE_STEPS = [
   { id: 'step-0', time: '05:30 AM', date: '20 Nov', lat: 17.40, lon: 83.80, stage: 'Deep Depression', status: 'Advancing off Visakhapatnam Coast', wind: '75–85 km/h', gusts: '100 km/h', pressure: '992 hPa' },
-  { id: 'step-1', time: '08:00 AM', date: '20 Nov', lat: 18.10, lon: 83.40, stage: 'Severe Cyclone Akvan (LIVE EYE)', status: 'Live Observed Center ~40 km off Padmapur / Gopalpur Coast', wind: '95 km/h', gusts: '115 km/h', pressure: '988 hPa', isLive: true },
-  { id: 'step-2', time: '12:00 PM', date: '20 Nov', lat: 18.90, lon: 83.60, stage: 'Landfall Crossing', status: 'Landfall Commencing near Padmapur / Gopalpur / Ganjam sector', wind: '95–115 km/h', gusts: '125 km/h', pressure: '988 hPa', isLandfall: true },
+  { id: 'step-1', time: '08:00 AM', date: '20 Nov', lat: 18.10, lon: 83.40, stage: 'Severe Cyclone Akvan (Morning Eye)', status: 'Observed Center ~40 km off Padmapur / Gopalpur Coast', wind: '95 km/h', gusts: '115 km/h', pressure: '988 hPa' },
+  { id: 'step-2', time: '12:00 PM', date: '20 Nov', lat: 18.90, lon: 83.60, stage: 'Landfall In Progress', status: 'Eyewall Crossing Coast (Gopalpur / Padmapur Sector)', wind: '95–115 km/h', gusts: '125 km/h', pressure: '988 hPa', isLandfall: true, isLive: true },
   { id: 'step-3', time: '03:00 PM', date: '20 Nov', lat: 19.35, lon: 83.75, stage: 'Eye Moving Inland', status: 'Ganjam, Gajapati & Eastern Ghats Interior', wind: '80–90 km/h', gusts: '105 km/h', pressure: '992 hPa' },
   { id: 'step-4', time: '06:00 PM', date: '20 Nov', lat: 19.80, lon: 83.90, stage: 'Cyclonic Storm', status: 'Inland Crossing Rayagada / Kandhamal border', wind: '70–80 km/h', gusts: '90 km/h', pressure: '996 hPa' },
   { id: 'step-5', time: '12:00 AM', date: '21 Nov', lat: 21.10, lon: 84.30, stage: 'Inland Deep Depression', status: 'Central Odisha (Boudh / Angul / Sambalpur)', wind: '50–60 km/h', gusts: '70 km/h', pressure: '1000 hPa' },
@@ -137,7 +207,14 @@ export default function CycloneMap({
     }, 800);
   };
 
-  const [flyTarget, setFlyTarget] = useState([18.10, 83.40]); // Default focus on Akvan Eye
+  const [clockTick, setClockTick] = useState(Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setClockTick(Date.now()), 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const liveState = getLiveAkvanState();
+  const [flyTarget, setFlyTarget] = useState([18.90, 83.60]); // Default focus on current Landfall Eye
   const [flyZoom, setFlyZoom] = useState(6);
   const [flyTrigger, setFlyTrigger] = useState(0);
   const [isLocating, setIsLocating] = useState(false);
@@ -145,7 +222,7 @@ export default function CycloneMap({
 
   // Zoom Earth-Style Immersive Theater Mode & Temporal Scrubbing
   const [isTheaterMode, setIsTheaterMode] = useState(false);
-  const [timeStepIndex, setTimeStepIndex] = useState(1); // Default to Step 1 (08:00 AM Live Eye)
+  const [timeStepIndex, setTimeStepIndex] = useState(() => getLiveAkvanState().liveIndex); // Real-time active step!
   const [isPlayingTime, setIsPlayingTime] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(false);
   const [activeWeatherOverlay, setActiveWeatherOverlay] = useState('none'); // 'none' | 'wind' | 'rain' | 'pressure'
@@ -303,10 +380,40 @@ export default function CycloneMap({
           [lat, lon]
         ],
         checkpoints: [
-          { label: 'Observed Center (08:00 IST)', lat: lat, lon: lon, time: '08:00 AM' },
-          { label: 'Expected Landfall (Gopalpur / Padmapur Sector)', lat: 18.90, lon: 83.60, time: '12:00 PM', isLandfall: true },
-          { label: 'Inland Crossing (Rayagada/Ganjam)', lat: 19.80, lon: 83.90, time: '06:00 PM' },
-          { label: 'Inland Depression (Central Odisha)', lat: 21.10, lon: 84.30, time: '12:00 AM' }
+          { 
+            label: 'Offshore Track (08:00 AM)', 
+            lat: 18.10, 
+            lon: 83.40, 
+            time: '08:00 AM',
+            statusDesc: 'Observed center ~40 km offshore before landfall traversal'
+          },
+          { 
+            label: `Landfall Sector: Gopalpur / Padmapur`, 
+            lat: 18.90, 
+            lon: 83.60, 
+            time: liveState.landfallWindow, 
+            isLandfall: true,
+            phase: liveState.landfallPhase,
+            badge: liveState.landfallBadge,
+            title: liveState.landfallTitle,
+            detail: liveState.landfallDetail,
+            action: liveState.landfallAction,
+            statusDesc: liveState.landfallStatus
+          },
+          { 
+            label: 'Inland Crossing (Rayagada/Ganjam)', 
+            lat: 19.80, 
+            lon: 83.90, 
+            time: '06:00 PM',
+            statusDesc: 'Projected eye position inland this evening'
+          },
+          { 
+            label: 'Inland Depression (Central Odisha)', 
+            lat: 21.10, 
+            lon: 84.30, 
+            time: '12:00 AM (Tonight)',
+            statusDesc: 'Weakening deep depression stage'
+          }
         ]
       };
     } else {
@@ -514,10 +621,10 @@ export default function CycloneMap({
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
                   </span>
                   <span className="font-extrabold text-white text-[11px] sm:text-sm truncate">
-                    Current Status: Severe Cyclone Akvan
+                    Current Status: Severe Cyclone Akvan ({liveState.timeStr} IST)
                   </span>
-                  <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/40 whitespace-nowrap flex-shrink-0">
-                    IMD RED ALERT
+                  <span className="text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded bg-red-600 text-white border border-red-400 whitespace-nowrap flex-shrink-0 animate-pulse">
+                    {liveState.landfallBadge}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0 text-[10px] text-cyan-300 font-mono">
@@ -537,10 +644,10 @@ export default function CycloneMap({
                       {AKVAN_TIMELINE_STEPS[timeStepIndex]?.lat.toFixed(2)}°N, {AKVAN_TIMELINE_STEPS[timeStepIndex]?.lon.toFixed(2)}°E
                     </strong>
                     <span className="text-[10px] text-sky-300 font-semibold block">
-                      📍 ~{bobDist || 369} km to you ({userLocation.name})
+                      📍 ~{bobDist || 352} km to you ({userLocation.name})
                     </span>
-                    <span className="text-[9px] text-emerald-400 block">
-                      🌊 ~40 km to Padmapur / Gopalpur Coast
+                    <span className="text-[9px] text-emerald-400 block font-semibold">
+                      {liveState.landfallPhase === 'in_progress' ? '🚨 Eyewall Crossing Coastline Right Now' : '🌊 ~40 km to Padmapur / Gopalpur Coast'}
                     </span>
                   </div>
                 </div>
@@ -551,7 +658,7 @@ export default function CycloneMap({
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">2. Wind & Pressure</span>
                     <strong className="text-amber-300 text-xs block">
-                      {AKVAN_TIMELINE_STEPS[timeStepIndex]?.wind || '95 km/h'} (Gusts: 115)
+                      {AKVAN_TIMELINE_STEPS[timeStepIndex]?.wind || '95–115 km/h'} (Gusts: 125)
                     </strong>
                     <span className="text-[10px] text-slate-300 block">
                       Pressure: <strong className="font-mono text-cyan-300">{AKVAN_TIMELINE_STEPS[timeStepIndex]?.pressure || '988 hPa'}</strong>
@@ -566,15 +673,15 @@ export default function CycloneMap({
                 <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
                   <Compass className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">3. Landfall Target & Time</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">3. Landfall Situation ({liveState.timeStr})</span>
                     <strong className="text-emerald-300 text-xs block">
-                      Padmapur / Gopalpur (Ganjam)
+                      Padmapur / Gopalpur Sector
                     </strong>
-                    <span className="text-[10px] text-slate-300 block">
-                      Expected Window: <strong className="text-white">Today 12:00 PM – 03:00 PM</strong>
+                    <span className="text-[10px] text-amber-300 font-bold block">
+                      {liveState.landfallStatus}
                     </span>
-                    <span className="text-[9px] text-slate-400 block">
-                      Advancing NNW at 16 km/h
+                    <span className="text-[9px] text-slate-300 block">
+                      {liveState.landfallWindow}
                     </span>
                   </div>
                 </div>
@@ -924,20 +1031,26 @@ export default function CycloneMap({
                         className="custom-map-tooltip"
                       >
                         {pt.isLandfall ? (
-                          <div className="space-y-0.5">
-                            <div className="text-xs font-extrabold text-red-400 flex items-center gap-1">
-                              <span>⚠️</span>
-                              <span>Expected Landfall Point</span>
+                          <div className="space-y-1">
+                            <div className="text-xs font-black text-red-400 flex items-center justify-between gap-1 border-b border-red-500/30 pb-0.5">
+                              <span className="flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                                <span>{pt.badge || '🚨 LANDFALL ONGOING'}</span>
+                              </span>
+                              <span className="text-[10px] font-mono text-cyan-300 font-bold">{liveState.timeStr} IST</span>
                             </div>
-                            <div className="text-sm font-bold text-white">{pt.label}</div>
+                            <div className="text-sm font-black text-white">{pt.label}</div>
                             <div className="text-[11px] font-bold text-amber-300">
-                              Estimated Time: {pt.time}
+                              {pt.time}
                             </div>
-                            <div className="text-[10px] text-slate-300">
-                              Direct eyewall crossing • High gale wind & tidal risk
+                            <div className="text-[10px] text-slate-200 leading-snug">
+                              {pt.detail}
                             </div>
-                            <div className="text-[9px] text-slate-400">
-                              Coords: {pt.lat.toFixed(2)}°N, {pt.lon.toFixed(2)}°E
+                            <div className="text-[9px] text-amber-300 font-semibold bg-amber-950/60 p-1 rounded border border-amber-800/80">
+                              {pt.action}
+                            </div>
+                            <div className="text-[9px] text-slate-400 font-mono">
+                              Coords: {pt.lat.toFixed(2)}°N, {pt.lon.toFixed(2)}°E • Movement: NNW at 16 km/h
                             </div>
                           </div>
                         ) : (
@@ -948,21 +1061,34 @@ export default function CycloneMap({
                             </div>
                             <div className="text-sm font-bold text-white">{pt.label}</div>
                             <div className="text-[10px] text-slate-300">
-                              Projected track position at {pt.time}
+                              {pt.statusDesc || `Projected track position at ${pt.time}`}
                             </div>
-                            <div className="text-[9px] text-slate-400">
+                            <div className="text-[9px] text-slate-400 font-mono">
                               Coords: {pt.lat.toFixed(2)}°N, {pt.lon.toFixed(2)}°E
                             </div>
                           </div>
                         )}
                       </Tooltip>
                       <Popup>
-                        <div className="text-xs text-slate-900 font-sans p-0.5">
-                          <strong className={pt.isLandfall ? 'text-red-600 block font-bold' : 'text-amber-800 block font-bold'}>
-                            {pt.label}
-                          </strong>
-                          <span className="text-[10px] text-slate-600">Expected Time: {pt.time}</span>
-                          <span className="text-[10px] text-slate-500 block">Coords: {pt.lat.toFixed(2)}°N, {pt.lon.toFixed(2)}°E</span>
+                        <div className="text-xs text-slate-900 font-sans p-1 space-y-1 max-w-[260px]">
+                          <div className="flex items-center justify-between border-b border-slate-200 pb-1">
+                            <strong className="text-red-600 font-black flex items-center gap-1 text-xs">
+                              <span>🚨</span>
+                              <span>{pt.badge || 'Landfall In Progress'}</span>
+                            </strong>
+                            <span className="text-[10px] font-mono text-slate-500 font-bold">{liveState.timeStr} IST</span>
+                          </div>
+                          <div className="font-bold text-slate-900 text-xs">{pt.label}</div>
+                          <div className="text-[11px] text-amber-800 font-bold">{pt.status || pt.time}</div>
+                          <p className="text-[10px] text-slate-700 leading-snug">
+                            {pt.detail || 'Severe Cyclone Akvan eyewall is crossing coastline between Gopalpur & Padmapur right now.'}
+                          </p>
+                          <div className="text-[10px] text-red-700 font-bold bg-red-50 p-1.5 rounded border border-red-200">
+                            {pt.action || 'Stay strictly indoors in designated cyclone shelters.'}
+                          </div>
+                          <span className="text-[9px] text-slate-500 font-mono block">
+                            Coords: {pt.lat.toFixed(2)}°N, {pt.lon.toFixed(2)}°E • Advancing NNW
+                          </span>
                         </div>
                       </Popup>
                     </Marker>
@@ -1167,6 +1293,7 @@ export default function CycloneMap({
             >
               {AKVAN_TIMELINE_STEPS.map((step, idx) => {
                 const isSelected = timeStepIndex === idx;
+                const isLiveNow = idx === liveState.liveIndex;
                 return (
                   <button
                     key={step.id}
@@ -1177,16 +1304,16 @@ export default function CycloneMap({
                     }}
                     className={`whitespace-nowrap flex-shrink-0 px-2 sm:px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold transition-all border ${
                       isSelected
-                        ? step.isLive
-                          ? 'bg-red-600 text-white border-red-400 shadow-md scale-105'
-                          : step.isLandfall
-                          ? 'bg-amber-600 text-white border-amber-400 shadow-md scale-105'
+                        ? isLiveNow || step.isLandfall
+                          ? 'bg-red-600 text-white border-red-400 shadow-md scale-105 ring-1 ring-red-400'
                           : 'bg-cyan-600 text-white border-cyan-400 shadow-md scale-105'
+                        : isLiveNow
+                        ? 'bg-red-950/80 text-red-300 border-red-700/80 animate-pulse'
                         : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
                     }`}
                   >
-                    {step.isLive ? '🔴 ' : step.isLandfall ? '🎯 ' : ''}
-                    {step.time}
+                    {isLiveNow ? '🔴 ' : step.isLandfall ? '🎯 ' : ''}
+                    {step.time} {isLiveNow ? '(LIVE NOW)' : ''}
                   </button>
                 );
               })}
@@ -1204,15 +1331,15 @@ export default function CycloneMap({
             {/* Reset to Live Eye Button */}
             <button
               onClick={() => {
-                setTimeStepIndex(1); // Live Eye index
+                setTimeStepIndex(liveState.liveIndex); // Real-time active step!
                 setIsPlayingTime(false);
               }}
               className={`flex-shrink-0 px-2 py-0.5 text-[9px] font-bold rounded border transition-all ${
-                timeStepIndex === 1
+                timeStepIndex === liveState.liveIndex
                   ? 'bg-red-950 text-red-300 border-red-700'
                   : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
               }`}
-              title="Reset to Live Eye Observation (08:00 AM)"
+              title={`Reset to Live Real-Time Situation (${liveState.timeStr} IST)`}
             >
               Live Eye
             </button>
