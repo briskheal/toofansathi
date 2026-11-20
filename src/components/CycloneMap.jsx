@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, Circle, Polyline, Polygon, useMap, ZoomControl } from 'react-leaflet';
 import L from 'leaflet';
 import {
@@ -151,6 +151,9 @@ export default function CycloneMap({
   const [activeWeatherOverlay, setActiveWeatherOverlay] = useState('none'); // 'none' | 'wind' | 'rain' | 'pressure'
   const [isLayerDrawerOpen, setIsLayerDrawerOpen] = useState(false);
 
+  const timelineScrollRef = useRef(null);
+  const timeStepButtonRefs = useRef([]);
+
   // Time scrubber auto-playback
   useEffect(() => {
     let interval = null;
@@ -163,6 +166,23 @@ export default function CycloneMap({
       if (interval) clearInterval(interval);
     };
   }, [isPlayingTime]);
+
+  // Auto-scroll timeline scrubber to keep active time step centered & visible on mobile
+  useEffect(() => {
+    const container = timelineScrollRef.current;
+    const activeButton = timeStepButtonRefs.current[timeStepIndex];
+    if (container && activeButton) {
+      const containerWidth = container.offsetWidth;
+      const buttonLeft = activeButton.offsetLeft;
+      const buttonWidth = activeButton.offsetWidth;
+      // Center the active button smoothly within the scrollable container
+      const targetScrollLeft = buttonLeft - (containerWidth / 2) + (buttonWidth / 2);
+      container.scrollTo({
+        left: Math.max(0, targetScrollLeft),
+        behavior: 'smooth'
+      });
+    }
+  }, [timeStepIndex]);
 
   // Switch map viewports
   const switchMapView = (mode) => {
@@ -1119,7 +1139,7 @@ export default function CycloneMap({
 
 
           {/* Bottom Floating Time Scrubber Bar (Zoom Earth Style) */}
-          <div className="absolute bottom-2.5 inset-x-2 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-[400] bg-slate-950/95 backdrop-blur-md border border-slate-800/90 rounded-2xl p-1.5 shadow-2xl flex items-center justify-between sm:justify-center gap-1.5 max-w-full overflow-x-auto no-scrollbar">
+          <div className="absolute bottom-2.5 inset-x-2 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-[400] bg-slate-950/95 backdrop-blur-md border border-slate-800/90 rounded-2xl p-1.5 shadow-2xl flex items-center justify-between sm:justify-center gap-1 sm:gap-1.5 max-w-full overflow-hidden">
             {/* Play / Pause Toggle */}
             <button
               onClick={() => setIsPlayingTime(!isPlayingTime)}
@@ -1140,18 +1160,22 @@ export default function CycloneMap({
               <ChevronLeft className="w-4 h-4" />
             </button>
 
-            {/* Step Time Buttons */}
-            <div className="flex items-center gap-1 flex-nowrap overflow-x-auto no-scrollbar py-0.5">
+            {/* Step Time Buttons - Auto-scrolling on Mobile to keep active step centered */}
+            <div 
+              ref={timelineScrollRef}
+              className="flex-1 min-w-0 relative flex items-center gap-1 flex-nowrap overflow-x-auto no-scrollbar py-0.5 scroll-smooth"
+            >
               {AKVAN_TIMELINE_STEPS.map((step, idx) => {
                 const isSelected = timeStepIndex === idx;
                 return (
                   <button
                     key={step.id}
+                    ref={(el) => (timeStepButtonRefs.current[idx] = el)}
                     onClick={() => {
                       setTimeStepIndex(idx);
                       setIsPlayingTime(false);
                     }}
-                    className={`whitespace-nowrap px-2 py-0.5 rounded-md text-[10px] font-mono font-bold transition-all border ${
+                    className={`whitespace-nowrap flex-shrink-0 px-2 sm:px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold transition-all border ${
                       isSelected
                         ? step.isLive
                           ? 'bg-red-600 text-white border-red-400 shadow-md scale-105'
