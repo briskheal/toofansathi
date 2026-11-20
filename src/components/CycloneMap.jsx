@@ -22,7 +22,9 @@ import {
   ChevronLeft,
   Waves,
   Eye,
-  Sliders
+  Sliders,
+  Wind,
+  ShieldAlert
 } from 'lucide-react';
 import { calculateDistanceKm } from '../services/cycloneEngine';
 
@@ -112,12 +114,18 @@ export default function CycloneMap({
   allStorms = []
 }) {
   const [activeTab, setActiveTab] = useState('trajectory'); // 'trajectory' | 'radar' | 'satellite' | 'global' | 'zoomearth'
-  const [mapViewMode, setMapViewMode] = useState('all-india'); // 'all-india' | 'bay-of-bengal' | 'arabian-sea' | 'my-location'
+  const [mapViewMode, setMapViewMode] = useState('bay-of-bengal'); // Focus on active Severe Cyclone by default
   const [satChannel, setSatChannel] = useState('ir1'); // 'ir1' | 'vis' | 'wv'
   const [selectedRadarStation, setSelectedRadarStation] = useState('gopalpur');
   const [satTimestamp, setSatTimestamp] = useState(Date.now());
   const [isRefreshingSat, setIsRefreshingSat] = useState(false);
   const [satRefreshedToast, setSatRefreshedToast] = useState(false);
+
+  // Storm distance helpers
+  const bobStorm = allStorms.find(s => s.basin === 'Bay of Bengal') || activeStorm;
+  const arbStorm = allStorms.find(s => s.basin === 'Arabian Sea');
+  const bobDist = bobStorm ? calculateDistanceKm(userLocation.lat, userLocation.lon, bobStorm.center.lat, bobStorm.center.lon) : null;
+  const arbDist = arbStorm ? calculateDistanceKm(userLocation.lat, userLocation.lon, arbStorm.center.lat, arbStorm.center.lon) : null;
 
   const handleRefreshSatFeed = () => {
     setIsRefreshingSat(true);
@@ -129,8 +137,8 @@ export default function CycloneMap({
     }, 800);
   };
 
-  const [flyTarget, setFlyTarget] = useState([20.5937, 80.9629]); // Default All-India Center
-  const [flyZoom, setFlyZoom] = useState(5);
+  const [flyTarget, setFlyTarget] = useState([18.10, 83.40]); // Default focus on Akvan Eye
+  const [flyZoom, setFlyZoom] = useState(6);
   const [flyTrigger, setFlyTrigger] = useState(0);
   const [isLocating, setIsLocating] = useState(false);
   const [justUpdated, setJustUpdated] = useState(false);
@@ -409,7 +417,7 @@ export default function CycloneMap({
         </div>
       </div>
 
-      {/* Basin Split Quick Navigation Bar (Swipeable on mobile) */}
+      {/* 1. Basin Focus Switcher & Quick Navigation Bar (Swipeable on mobile) */}
       {activeTab === 'trajectory' && (
         <div className="bg-slate-950 px-2.5 py-2 border-b border-slate-800 flex items-center overflow-x-auto no-scrollbar gap-1.5 text-xs">
           <div className="flex items-center gap-1 flex-shrink-0 pr-1">
@@ -418,50 +426,275 @@ export default function CycloneMap({
           </div>
 
           <div className="flex items-center gap-1.5 flex-nowrap">
+            {/* Severe Cyclone Akvan / Bay of Bengal Button */}
+            <button
+              onClick={() => switchMapView('bay-of-bengal')}
+              className={`whitespace-nowrap flex-shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all border flex items-center gap-1.5 ${
+                mapViewMode === 'bay-of-bengal'
+                  ? 'bg-red-600 text-white border-red-400 shadow-md ring-1 ring-red-400'
+                  : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-red-400 animate-ping"></span>
+              <span>🌀 Severe Cyclone Akvan (Bay of Bengal)</span>
+              {bobDist && <span className="text-[10px] opacity-90 font-mono">• {bobDist} km</span>}
+            </button>
+
+            {/* Arabian Sea Depression Button */}
+            <button
+              onClick={() => switchMapView('arabian-sea')}
+              className={`whitespace-nowrap flex-shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all border flex items-center gap-1.5 ${
+                mapViewMode === 'arabian-sea'
+                  ? 'bg-amber-600 text-white border-amber-400 shadow-md ring-1 ring-amber-400'
+                  : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
+              }`}
+            >
+              <span>🟠 Arabian Sea System</span>
+              {arbDist && <span className="text-[10px] opacity-90 font-mono">• {arbDist} km</span>}
+            </button>
+
+            {/* Entire India Button */}
             <button
               onClick={() => switchMapView('all-india')}
-              className={`whitespace-nowrap flex-shrink-0 px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all border ${
+              className={`whitespace-nowrap flex-shrink-0 px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all border ${
                 mapViewMode === 'all-india'
-                  ? 'bg-sky-600 text-white border-sky-400 shadow-sm'
+                  ? 'bg-sky-600 text-white border-sky-400 shadow-md'
                   : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
               }`}
             >
               🇮🇳 Entire India
             </button>
 
-            <button
-              onClick={() => switchMapView('bay-of-bengal')}
-              className={`whitespace-nowrap flex-shrink-0 px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all border ${
-                mapViewMode === 'bay-of-bengal'
-                  ? 'bg-red-600 text-white border-red-400 shadow-sm'
-                  : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
-              }`}
-            >
-              🌊 Bay of Bengal
-            </button>
-
-            <button
-              onClick={() => switchMapView('arabian-sea')}
-              className={`whitespace-nowrap flex-shrink-0 px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all border ${
-                mapViewMode === 'arabian-sea'
-                  ? 'bg-amber-600 text-white border-amber-400 shadow-sm'
-                  : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
-              }`}
-            >
-              🌊 Arabian Sea
-            </button>
-
+            {/* My Location Button */}
             <button
               onClick={() => switchMapView('my-location')}
-              className={`whitespace-nowrap flex-shrink-0 px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all border ${
+              className={`whitespace-nowrap flex-shrink-0 px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all border ${
                 mapViewMode === 'my-location'
-                  ? 'bg-emerald-600 text-white border-emerald-400 shadow-sm'
+                  ? 'bg-emerald-600 text-white border-emerald-400 shadow-md'
                   : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
               }`}
             >
               📍 My Location
             </button>
           </div>
+        </div>
+      )}
+
+      {/* 2. Key Status Briefing Bar (3 to 4 points ABOVE the map) */}
+      {activeTab === 'trajectory' && (
+        <div className="bg-slate-950/95 border-b border-slate-800/90 px-3 py-2.5 text-xs">
+          {mapViewMode === 'bay-of-bengal' || mapViewMode === 'all-india' ? (
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-slate-800/60 pb-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-2.5 w-2.5 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
+                  </span>
+                  <span className="font-extrabold text-white text-xs sm:text-sm">
+                    Current Status: Severe Cyclonic Storm Akvan (Bay of Bengal)
+                  </span>
+                  <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/40">
+                    IMD RED ALERT
+                  </span>
+                </div>
+                <span className="text-[10px] text-cyan-300 font-mono">
+                  {AKVAN_TIMELINE_STEPS[timeStepIndex]?.isLive ? '🔴 LIVE OBSERVATION' : `⏱️ Scrubber: ${AKVAN_TIMELINE_STEPS[timeStepIndex]?.time}`}
+                </span>
+              </div>
+
+              {/* 4 Points Grid (Mobile 1 or 2 col, Desktop 4 col) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-[11px]">
+                {/* Point 1: Location & Distance */}
+                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                  <MapPin className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">1. Live Eye & Proximity</span>
+                    <strong className="text-white text-xs block">
+                      {AKVAN_TIMELINE_STEPS[timeStepIndex]?.lat.toFixed(2)}°N, {AKVAN_TIMELINE_STEPS[timeStepIndex]?.lon.toFixed(2)}°E
+                    </strong>
+                    <span className="text-[10px] text-sky-300 font-semibold block">
+                      📍 ~{bobDist || 369} km to you ({userLocation.name})
+                    </span>
+                    <span className="text-[9px] text-emerald-400 block">
+                      🌊 ~40 km to Padmapur / Gopalpur Coast
+                    </span>
+                  </div>
+                </div>
+
+                {/* Point 2: Winds & Intensity */}
+                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                  <Wind className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">2. Wind & Pressure</span>
+                    <strong className="text-amber-300 text-xs block">
+                      {AKVAN_TIMELINE_STEPS[timeStepIndex]?.wind || '95 km/h'} (Gusts: 115)
+                    </strong>
+                    <span className="text-[10px] text-slate-300 block">
+                      Pressure: <strong className="font-mono text-cyan-300">{AKVAN_TIMELINE_STEPS[timeStepIndex]?.pressure || '988 hPa'}</strong>
+                    </span>
+                    <span className="text-[9px] text-slate-400 block">
+                      Stage: {AKVAN_TIMELINE_STEPS[timeStepIndex]?.stage || 'Severe Cyclone'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Point 3: Landfall & Speed */}
+                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                  <Compass className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">3. Landfall Target & Time</span>
+                    <strong className="text-emerald-300 text-xs block">
+                      Padmapur / Gopalpur (Ganjam)
+                    </strong>
+                    <span className="text-[10px] text-slate-300 block">
+                      Expected Window: <strong className="text-white">Today 12:00 PM – 03:00 PM</strong>
+                    </span>
+                    <span className="text-[9px] text-slate-400 block">
+                      Advancing NNW at 16 km/h
+                    </span>
+                  </div>
+                </div>
+
+                {/* Point 4: Govt Alerts */}
+                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                  <ShieldAlert className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">4. Official Threat Level</span>
+                    <strong className="text-red-400 text-xs block">
+                      Severe Coastal Gale & Surge
+                    </strong>
+                    <span className="text-[10px] text-slate-300 block">
+                      INCOIS: <strong className="text-cyan-300">1.0–1.5m storm surge</strong>
+                    </span>
+                    <span className="text-[9px] text-amber-300 block">
+                      High waves: 3.5–5.5m (Ganjam/AP)
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : mapViewMode === 'arabian-sea' ? (
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-slate-800/60 pb-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                  <span className="font-extrabold text-white text-xs sm:text-sm">
+                    Current Status: Arabian Sea Low Pressure / Depression System
+                  </span>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                    YELLOW ADVISORY
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono">Moving away from Indian Coast</span>
+              </div>
+
+              {/* 4 Points Grid for Arabian Sea */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-[11px]">
+                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                  <MapPin className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">1. Location & Distance</span>
+                    <strong className="text-white text-xs block">20.80°N, 67.20°E</strong>
+                    <span className="text-[10px] text-sky-300 font-semibold block">
+                      📍 ~{arbDist || 2043} km to you ({userLocation.name})
+                    </span>
+                    <span className="text-[9px] text-slate-400 block">
+                      ~260 km WSW of Porbandar Coast
+                    </span>
+                  </div>
+                </div>
+
+                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                  <Wind className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">2. Wind & Pressure</span>
+                    <strong className="text-amber-300 text-xs block">Sustained 45 km/h (Gusts: 60)</strong>
+                    <span className="text-[10px] text-slate-300 block">
+                      Pressure: <strong className="font-mono text-cyan-300">1000 hPa</strong>
+                    </span>
+                    <span className="text-[9px] text-slate-400 block">Well-Marked Low / Depression</span>
+                  </div>
+                </div>
+
+                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                  <Compass className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">3. Movement & Trajectory</span>
+                    <strong className="text-emerald-300 text-xs block">Moving WNW at 14 km/h</strong>
+                    <span className="text-[10px] text-slate-300 block">Heading into open Arabian Sea</span>
+                    <span className="text-[9px] text-emerald-400 block">Zero Direct Indian Coast Landfall</span>
+                  </div>
+                </div>
+
+                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                  <ShieldAlert className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">4. Official Threat Level</span>
+                    <strong className="text-amber-400 text-xs block">Squally Weather for Fishermen</strong>
+                    <span className="text-[10px] text-slate-300 block">IMD: Fishermen warning in deep sea</span>
+                    <span className="text-[9px] text-slate-400 block">Coastal Gujarat/Maharashtra safe</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* My Location Summary */
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-slate-800/60 pb-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-sky-500"></span>
+                  <span className="font-extrabold text-white text-xs sm:text-sm">
+                    Location Status: {userLocation.name}
+                  </span>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/40">
+                    LOCAL WEATHER ZONE
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono">
+                  {userLocation.lat.toFixed(4)}°N, {userLocation.lon.toFixed(4)}°E
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-[11px]">
+                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                  <MapPin className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">1. Nearest Cyclone</span>
+                    <strong className="text-red-400 text-xs block">Akvan: ~{bobDist || 369} km away</strong>
+                    <span className="text-[10px] text-slate-300 block">Advancing towards South Odisha</span>
+                  </div>
+                </div>
+
+                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                  <Wind className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">2. Inflow Winds</span>
+                    <strong className="text-amber-300 text-xs block">Gusts 35–45 km/h</strong>
+                    <span className="text-[10px] text-slate-300 block">Outer squall bands active</span>
+                  </div>
+                </div>
+
+                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                  <Compass className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">3. Landfall Impact</span>
+                    <strong className="text-emerald-300 text-xs block">Gopalpur / Padmapur Crossing</strong>
+                    <span className="text-[10px] text-slate-300 block">Inland track through South Odisha</span>
+                  </div>
+                </div>
+
+                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                  <ShieldAlert className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">4. Emergency Readiness</span>
+                    <strong className="text-sky-300 text-xs block">Keep Helpline & PWA Ready</strong>
+                    <span className="text-[10px] text-slate-300 block">Follow State DEOC instructions</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -745,54 +978,7 @@ export default function CycloneMap({
             )}
           </div>
 
-          {/* Dual Storm Distance Floating Overlay (Top Left) */}
-          <div className="absolute top-2.5 left-2.5 z-[400] flex flex-col gap-1 max-w-[210px] sm:max-w-none">
-            {allStorms.map(storm => {
-              const isBob = storm.basin === 'Bay of Bengal';
-              const activeStep = (isBob && AKVAN_TIMELINE_STEPS[timeStepIndex]) ? AKVAN_TIMELINE_STEPS[timeStepIndex] : null;
-              const sLat = (isBob && activeStep) ? activeStep.lat : storm.center.lat;
-              const sLon = (isBob && activeStep) ? activeStep.lon : storm.center.lon;
-              const dist = calculateDistanceKm(userLocation.lat, userLocation.lon, sLat, sLon);
-              const coastDist = storm.distanceToCoastKm;
-              return (
-                <button
-                  key={storm.id}
-                  onClick={() => switchMapView(isBob ? 'bay-of-bengal' : 'arabian-sea')}
-                  className="px-2.5 py-1.5 bg-slate-950/95 backdrop-blur-md border border-slate-800 hover:border-sky-500 rounded-xl text-[10px] text-left transition-all shadow-lg"
-                >
-                  <div className="flex items-center justify-between gap-1.5 font-bold text-white">
-                    <span className="flex items-center gap-1">
-                      <span>{isBob ? '🔴' : '🟠'}</span>
-                      <span className="truncate">{storm.basin}</span>
-                    </span>
-                    <span className={dist < 300 ? 'text-red-400 font-extrabold' : 'text-slate-300'}>
-                      {dist} km to you
-                    </span>
-                  </div>
-                  {coastDist && (
-                    <div className="mt-0.5 pt-0.5 border-t border-slate-800/70 flex items-center justify-between text-[9px] text-emerald-400 font-medium">
-                      <span>🌊 Coast:</span>
-                      <span>~{coastDist} km ({storm.nearestCoastName ? storm.nearestCoastName.split(' ')[0] : 'Land'})</span>
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
 
-          {/* Active Timeline Scrub Status Overlay (Top Left below buttons) */}
-          <div className="absolute top-16 left-2.5 z-[400] bg-slate-950/90 backdrop-blur-md border border-slate-800 px-3 py-1.5 rounded-xl text-[10px] text-slate-300 shadow-xl max-w-[240px] sm:max-w-sm pointer-events-none">
-            <div className="flex items-center gap-1.5 font-bold">
-              <span className="text-cyan-400">⏱️ {AKVAN_TIMELINE_STEPS[timeStepIndex].time}:</span>
-              <span className="text-white truncate">{AKVAN_TIMELINE_STEPS[timeStepIndex].stage}</span>
-              {AKVAN_TIMELINE_STEPS[timeStepIndex].isLive && (
-                <span className="px-1 py-0.2 rounded bg-red-600 text-white text-[8px] font-extrabold animate-pulse">LIVE</span>
-              )}
-            </div>
-            <div className="text-[9px] text-slate-400 mt-0.5 truncate">
-              {AKVAN_TIMELINE_STEPS[timeStepIndex].status}
-            </div>
-          </div>
 
           {/* Bottom Floating Time Scrubber Bar (Zoom Earth Style) */}
           <div className="absolute bottom-2.5 inset-x-2 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-[400] bg-slate-950/95 backdrop-blur-md border border-slate-800/90 rounded-2xl p-1.5 shadow-2xl flex items-center justify-between sm:justify-center gap-1.5 max-w-full overflow-x-auto no-scrollbar">
