@@ -949,15 +949,43 @@ export default function CycloneMap({
             </div>
           </div>
 
-          {/* Embedded Interactive Tracker Container */}
-          <div className="relative rounded-xl overflow-hidden border border-slate-800 bg-slate-900 min-h-[360px] max-h-[500px]">
-            <iframe
-              src="https://zoom.earth/maps/satellite/#view=18.066,83.368,6z"
-              title="Zoom Earth Live Cyclone Eye & Satellite Wind Vector"
-              className="w-full h-[400px] border-0"
-              allow="geolocation"
+          {/* Interactive Live Eye Satellite Preview Card */}
+          <div className="relative rounded-xl overflow-hidden border border-slate-800 bg-slate-900 min-h-[340px] max-h-[460px] flex flex-col items-center justify-center">
+            <img
+              src="https://mausam.imd.gov.in/Satellite/3Dasiasec_ir1.jpg"
+              alt="Live Geostationary Cyclone Akvan Satellite Observation"
+              className="w-full h-auto max-h-[420px] object-contain rounded-lg opacity-90 hover:opacity-100 transition-opacity"
               loading="lazy"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = 'https://mausam.imd.gov.in/Satellite/3Dasiasec_ir1.jpg';
+              }}
             />
+            {/* Live Eye Overlay Badge */}
+            <div className="absolute top-3 left-3 bg-slate-950/90 backdrop-blur-md border border-cyan-500/50 px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-2">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
+              </span>
+              <div>
+                <span className="text-[10px] uppercase tracking-wider font-extrabold text-cyan-300 block">Akvan Eye Center</span>
+                <span className="text-[11px] font-mono font-bold text-white">18.10°N, 83.40°E (Gopalpur Sector)</span>
+              </div>
+            </div>
+
+            {/* Launch Zoom Earth Overlay Button */}
+            <div className="absolute bottom-3 inset-x-3 sm:inset-x-auto sm:right-3 flex items-center justify-center">
+              <a
+                href="https://zoom.earth/maps/satellite/#view=18.066,83.368,6z"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold rounded-xl shadow-xl transition-all border border-cyan-400/40 active:scale-95"
+              >
+                <Compass className="w-4 h-4 animate-spin text-cyan-200" style={{ animationDuration: '6s' }} />
+                <span>Open Live Radar & Eye in Zoom Earth HD</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </a>
+            </div>
           </div>
 
           <div className="bg-slate-900/80 border border-slate-800 rounded-lg p-2.5 text-[11px] text-slate-300 space-y-1">
