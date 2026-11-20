@@ -27,9 +27,16 @@ export const ALL_INDIA_ACTIVE_STORMS = [
       status: 'Landfall Process Commencing'
     },
     imdWarningStage: 'Red Alert / Landfall Warning (IMD RSMC New Delhi)',
+    bulletinNo: 'IMD Special Bulletin No. 12 (BOB/01/2026)',
     bulletinTime: '20-Nov-2026 08:00 IST',
     bulletinIso: '2026-11-20T08:00:00+05:30',
-    source: 'IMD RSMC New Delhi & JTWC Hawaii',
+    source: 'IMD RSMC New Delhi & INCOIS Hyderabad',
+    incoisAlert: {
+      surgeHeight: '1.0 – 1.5 meters',
+      waveHeight: '3.5 – 5.5 meters',
+      inundationAreas: 'Ganjam, Gajapati & Srikakulam low-lying coastal belts',
+      fishermenAdvisory: 'Total suspension of fishing operations. High surf advisory along South Odisha & North AP coast.'
+    },
 
     // Foreign Meteorological Agencies Comparison
     agencyComparison: [

@@ -12,9 +12,30 @@ import {
   Globe2,
   Compass,
   Layers,
-  ArrowRight
+  ArrowRight,
+  Maximize2,
+  Minimize2,
+  Play,
+  Pause,
+  RotateCcw,
+  ChevronRight,
+  ChevronLeft,
+  Waves,
+  Eye,
+  Sliders
 } from 'lucide-react';
 import { calculateDistanceKm } from '../services/cycloneEngine';
+
+// Chronological Multi-Stage Storm Progressions (Zoom Earth & IMD Consensus Track)
+export const AKVAN_TIMELINE_STEPS = [
+  { id: 'step-0', time: '05:30 AM', date: '20 Nov', lat: 17.40, lon: 83.80, stage: 'Deep Depression', status: 'Advancing off Visakhapatnam Coast', wind: '75–85 km/h', gusts: '100 km/h', pressure: '992 hPa' },
+  { id: 'step-1', time: '08:00 AM', date: '20 Nov', lat: 18.10, lon: 83.40, stage: 'Severe Cyclone Akvan (LIVE EYE)', status: 'Live Observed Center ~40 km off Padmapur / Gopalpur Coast', wind: '95 km/h', gusts: '115 km/h', pressure: '988 hPa', isLive: true },
+  { id: 'step-2', time: '12:00 PM', date: '20 Nov', lat: 18.90, lon: 83.60, stage: 'Landfall Crossing', status: 'Landfall Commencing near Padmapur / Gopalpur / Ganjam sector', wind: '95–115 km/h', gusts: '125 km/h', pressure: '988 hPa', isLandfall: true },
+  { id: 'step-3', time: '03:00 PM', date: '20 Nov', lat: 19.35, lon: 83.75, stage: 'Eye Moving Inland', status: 'Ganjam, Gajapati & Eastern Ghats Interior', wind: '80–90 km/h', gusts: '105 km/h', pressure: '992 hPa' },
+  { id: 'step-4', time: '06:00 PM', date: '20 Nov', lat: 19.80, lon: 83.90, stage: 'Cyclonic Storm', status: 'Inland Crossing Rayagada / Kandhamal border', wind: '70–80 km/h', gusts: '90 km/h', pressure: '996 hPa' },
+  { id: 'step-5', time: '12:00 AM', date: '21 Nov', lat: 21.10, lon: 84.30, stage: 'Inland Deep Depression', status: 'Central Odisha (Boudh / Angul / Sambalpur)', wind: '50–60 km/h', gusts: '70 km/h', pressure: '1000 hPa' },
+  { id: 'step-6', time: '06:00 AM', date: '21 Nov', lat: 22.50, lon: 84.80, stage: 'Well-Marked Low', status: 'Jharkhand Border / Sundargarh Belt', wind: '35–45 km/h', gusts: '55 km/h', pressure: '1004 hPa' }
+];
 
 // Clean Minimalist Map Dot Icons - Clutter-Free with Hover/Tap Details
 const userDotIcon = L.divIcon({
@@ -113,6 +134,25 @@ export default function CycloneMap({
   const [flyTrigger, setFlyTrigger] = useState(0);
   const [isLocating, setIsLocating] = useState(false);
   const [justUpdated, setJustUpdated] = useState(false);
+
+  // Zoom Earth-Style Immersive Theater Mode & Temporal Scrubbing
+  const [isTheaterMode, setIsTheaterMode] = useState(false);
+  const [timeStepIndex, setTimeStepIndex] = useState(1); // Default to Step 1 (08:00 AM Live Eye)
+  const [isPlayingTime, setIsPlayingTime] = useState(false);
+  const [isLegendOpen, setIsLegendOpen] = useState(false);
+
+  // Time scrubber auto-playback
+  useEffect(() => {
+    let interval = null;
+    if (isPlayingTime) {
+      interval = setInterval(() => {
+        setTimeStepIndex((prev) => (prev + 1) % AKVAN_TIMELINE_STEPS.length);
+      }, 2200);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isPlayingTime]);
 
   // Switch map viewports
   const switchMapView = (mode) => {
@@ -270,9 +310,11 @@ export default function CycloneMap({
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+    <div className={isTheaterMode 
+      ? "fixed inset-0 z-[99999] bg-slate-950 flex flex-col w-screen h-screen overflow-hidden" 
+      : "bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl transition-all"}>
       {/* Top Header with Tab Switcher - Mobile Optimized Swipeable Bar */}
-      <div className="p-2.5 sm:p-3 border-b border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 bg-slate-900/90">
+      <div className="p-2 sm:p-2.5 border-b border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 bg-slate-900/95 backdrop-blur-md">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <MapPin className="w-4 h-4 text-sky-400" />
@@ -280,55 +322,89 @@ export default function CycloneMap({
               Live Radar & Basin Monitor
             </h3>
           </div>
-          {isGpsActive && (
-            <span className="sm:hidden flex items-center gap-1 text-[9px] font-semibold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-800">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-              Live GPS
-            </span>
-          )}
+          <div className="flex items-center gap-1.5">
+            {isGpsActive && (
+              <span className="sm:hidden flex items-center gap-1 text-[9px] font-semibold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-800">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                Live GPS
+              </span>
+            )}
+            <button
+              onClick={() => setIsTheaterMode(!isTheaterMode)}
+              className="sm:hidden flex items-center gap-1 px-2 py-1 text-[10px] font-bold rounded-lg border border-cyan-800/80 bg-cyan-950/50 text-cyan-300"
+              title={isTheaterMode ? "Exit Fullscreen" : "Fullscreen"}
+            >
+              {isTheaterMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+              <span>{isTheaterMode ? 'Exit' : 'Full'}</span>
+            </button>
+          </div>
         </div>
 
-        {/* Tab Controls (Swipeable on mobile) */}
-        <div className="flex items-center bg-slate-800/90 rounded-xl p-1 border border-slate-700/80 overflow-x-auto no-scrollbar gap-1 scroll-smooth">
+        {/* Tab Controls (Swipeable on mobile) + Desktop Theater Mode */}
+        <div className="flex items-center justify-between sm:justify-end gap-1.5">
+          <div className="flex items-center bg-slate-800/90 rounded-xl p-1 border border-slate-700/80 overflow-x-auto no-scrollbar gap-1 scroll-smooth">
+            <button
+              onClick={() => setActiveTab('trajectory')}
+              className={`whitespace-nowrap flex-shrink-0 px-2.5 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+                activeTab === 'trajectory' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              Dual Track Vector
+            </button>
+            <button
+              onClick={() => setActiveTab('satellite')}
+              className={`whitespace-nowrap flex-shrink-0 px-2.5 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+                activeTab === 'satellite' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              Live INSAT-3DR
+            </button>
+            <button
+              onClick={() => setActiveTab('radar')}
+              className={`whitespace-nowrap flex-shrink-0 px-2.5 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+                activeTab === 'radar' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              IMD Radar
+            </button>
+            <button
+              onClick={() => setActiveTab('zoomearth')}
+              className={`whitespace-nowrap flex-shrink-0 px-2.5 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+                activeTab === 'zoomearth' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              🌀 Zoom Earth Live Eye
+            </button>
+            <button
+              onClick={() => setActiveTab('global')}
+              className={`whitespace-nowrap flex-shrink-0 px-2.5 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+                activeTab === 'global' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              Foreign (JTWC/ECMWF)
+            </button>
+          </div>
+
           <button
-            onClick={() => setActiveTab('trajectory')}
-            className={`whitespace-nowrap flex-shrink-0 px-2.5 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
-              activeTab === 'trajectory' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+            onClick={() => setIsTheaterMode(!isTheaterMode)}
+            className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-bold rounded-xl border transition-all ${
+              isTheaterMode
+                ? 'bg-cyan-600 border-cyan-400 text-white shadow-md'
+                : 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-300'
             }`}
+            title={isTheaterMode ? "Exit Fullscreen Theater Mode" : "Expand to Fullscreen Theater Mode"}
           >
-            Dual Track Vector
-          </button>
-          <button
-            onClick={() => setActiveTab('satellite')}
-            className={`whitespace-nowrap flex-shrink-0 px-2.5 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
-              activeTab === 'satellite' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Live INSAT-3DR
-          </button>
-          <button
-            onClick={() => setActiveTab('radar')}
-            className={`whitespace-nowrap flex-shrink-0 px-2.5 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
-              activeTab === 'radar' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            IMD Radar
-          </button>
-          <button
-            onClick={() => setActiveTab('zoomearth')}
-            className={`whitespace-nowrap flex-shrink-0 px-2.5 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
-              activeTab === 'zoomearth' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            🌀 Zoom Earth Live Eye
-          </button>
-          <button
-            onClick={() => setActiveTab('global')}
-            className={`whitespace-nowrap flex-shrink-0 px-2.5 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
-              activeTab === 'global' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Foreign (JTWC/ECMWF)
+            {isTheaterMode ? (
+              <>
+                <Minimize2 className="w-3.5 h-3.5 text-white" />
+                <span>Exit Fullscreen</span>
+              </>
+            ) : (
+              <>
+                <Maximize2 className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Fullscreen Radar</span>
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -391,7 +467,7 @@ export default function CycloneMap({
 
       {/* 1. Track Vector Map View (All-India + Both Basins Plotted Simultaneously) */}
       {activeTab === 'trajectory' && (
-        <div className="h-[340px] w-full relative z-0">
+        <div className={isTheaterMode ? "flex-1 h-full w-full relative z-0" : "h-[380px] sm:h-[460px] w-full relative z-0"}>
           <MapContainer
             center={flyTarget}
             zoom={flyZoom}
@@ -435,14 +511,17 @@ export default function CycloneMap({
             {/* Plot ALL active storms simultaneously across India */}
             {allStorms.map((storm) => {
               const isBob = storm.basin === 'Bay of Bengal';
-              const stormDist = calculateDistanceKm(userLocation.lat, userLocation.lon, storm.center.lat, storm.center.lon);
+              const activeStep = (isBob && AKVAN_TIMELINE_STEPS[timeStepIndex]) ? AKVAN_TIMELINE_STEPS[timeStepIndex] : null;
+              const stormLat = (isBob && activeStep) ? activeStep.lat : storm.center.lat;
+              const stormLon = (isBob && activeStep) ? activeStep.lon : storm.center.lon;
+              const stormDist = calculateDistanceKm(userLocation.lat, userLocation.lon, stormLat, stormLon);
               const trackData = getTrackForStorm(storm);
 
               return (
                 <React.Fragment key={storm.id}>
                   {/* Storm Center Marker with hover/tap description */}
                   <Marker
-                    position={[storm.center.lat, storm.center.lon]}
+                    position={[stormLat, stormLon]}
                     icon={isBob ? cycloneBobIcon : cycloneArbIcon}
                   >
                     <Tooltip direction="top" offset={[0, -16]} opacity={0.96} className="custom-map-tooltip">
@@ -450,64 +529,90 @@ export default function CycloneMap({
                         <span>🌀</span>
                         <span>{storm.name} ({storm.basin})</span>
                       </div>
-                      <div className="text-[11px] font-semibold text-white mt-0.5">{storm.center.locationDesc}</div>
+                      <div className="text-[11px] font-semibold text-white mt-0.5">
+                        {activeStep ? activeStep.status : storm.center.locationDesc}
+                      </div>
                       <div className="text-[10px] text-sky-300 mt-1">
                         📍 To You ({userLocation.name}): <strong>{stormDist} km</strong>
                       </div>
+                      {isBob && activeStep && (
+                        <div className="text-[10px] text-amber-300">
+                          ⏱️ Track Stage: {activeStep.time} • {activeStep.stage} ({activeStep.wind})
+                        </div>
+                      )}
                       {storm.distanceToCoastKm && (
                         <div className="text-[10px] text-emerald-300">
                           🌊 To Coast: ~<strong>{storm.distanceToCoastKm} km</strong> ({storm.nearestCoastName})
                         </div>
                       )}
-                      <div className="text-[10px] text-amber-300">
-                        ⏱️ Advancing at {storm.movement?.speedKmph || 18} km/h {storm.movement?.direction || 'NNW'}
+                      <div className="text-[10px] text-slate-300">
+                        Coords: {stormLat.toFixed(2)}°N, {stormLon.toFixed(2)}°E
                       </div>
                     </Tooltip>
                     <Popup>
                       <div className="text-xs text-slate-900 font-sans p-1">
                         <strong className="block text-red-600 text-sm font-bold">{storm.name}</strong>
                         <span className="text-[11px] font-semibold text-slate-700 block">Basin: {storm.basin}</span>
-                        <span className="text-[10px] text-slate-600 block mt-1">{storm.center.locationDesc}</span>
+                        <span className="text-[10px] text-slate-600 block mt-1">
+                          {activeStep ? activeStep.status : storm.center.locationDesc}
+                        </span>
                         <div className="mt-1 pt-1 border-t border-slate-200 space-y-0.5">
                           <span className="text-[11px] font-bold text-sky-700 block">
                             📍 To You ({userLocation.name}): {stormDist} km
                           </span>
+                          {isBob && activeStep && (
+                            <span className="text-[10px] font-bold text-amber-700 block">
+                              ⏱️ Projected Stage: {activeStep.time} ({activeStep.wind})
+                            </span>
+                          )}
                           {storm.distanceToCoastKm && (
                             <span className="text-[11px] font-bold text-emerald-700 block">
                               🌊 To Coast ({storm.nearestCoastName}): ~{storm.distanceToCoastKm} km
                             </span>
                           )}
-                          <span className="text-[10px] text-slate-700 block">
-                            ⏱️ Advancing at {storm.movement?.speedKmph || 18} km/h {storm.movement?.direction || 'NNW'}
-                          </span>
                           <span className="text-[10px] text-slate-800 block">Status: {storm.status}</span>
                         </div>
                       </div>
                     </Popup>
                   </Marker>
 
-                  {/* Gale Wind Danger Zone (120 km radius) */}
+                  {/* Eyewall Core Zone (35 km radius) */}
+                  {isBob && (
+                    <Circle
+                      center={[stormLat, stormLon]}
+                      radius={35000}
+                      pathOptions={{
+                        color: '#ef4444',
+                        fillColor: '#dc2626',
+                        fillOpacity: 0.35,
+                        weight: 2
+                      }}
+                    />
+                  )}
+
+                  {/* Gale Wind Danger Zone (85 km radius) */}
                   <Circle
-                    center={[storm.center.lat, storm.center.lon]}
-                    radius={120000}
+                    center={[stormLat, stormLon]}
+                    radius={85000}
                     pathOptions={{
-                      color: isBob ? '#ef4444' : '#f59e0b',
-                      fillColor: isBob ? '#ef4444' : '#f59e0b',
-                      fillOpacity: 0.15,
+                      color: isBob ? '#ea580c' : '#f59e0b',
+                      fillColor: isBob ? '#ea580c' : '#f59e0b',
+                      fillOpacity: 0.16,
                       weight: 1.5,
                       dashArray: '4, 4'
                     }}
                   />
 
-                  {/* Squally Wind Zone (250 km radius) */}
+                  {/* Squally Wind Zone (180 km radius) */}
                   <Circle
-                    center={[storm.center.lat, storm.center.lon]}
-                    radius={250000}
+                    center={[stormLat, stormLon]}
+                    radius={180000}
                     pathOptions={{
-                      color: isBob ? '#f59e0b' : '#fbbf24',
-                      fillColor: isBob ? '#f59e0b' : '#fbbf24',
+                      color: isBob ? '#eab308' : '#fbbf24',
+                      fillColor: isBob ? '#eab308' : '#fbbf24',
                       fillOpacity: 0.08,
-                      weight: 1
+                      weight: 1,
+                      dashArray: '6, 6'
                     }}
                   />
 
@@ -601,7 +706,7 @@ export default function CycloneMap({
             })}
           </MapContainer>
 
-          {/* Floating Action Controls on Map */}
+          {/* Floating Action Controls on Map (Top Right) */}
           <div className="absolute top-2.5 right-2.5 z-[400] flex flex-col gap-1.5">
             <button
               onClick={() => switchMapView('my-location')}
@@ -640,11 +745,14 @@ export default function CycloneMap({
             )}
           </div>
 
-          {/* Dual Storm Distance Floating Overlay */}
+          {/* Dual Storm Distance Floating Overlay (Top Left) */}
           <div className="absolute top-2.5 left-2.5 z-[400] flex flex-col gap-1 max-w-[210px] sm:max-w-none">
             {allStorms.map(storm => {
-              const dist = calculateDistanceKm(userLocation.lat, userLocation.lon, storm.center.lat, storm.center.lon);
               const isBob = storm.basin === 'Bay of Bengal';
+              const activeStep = (isBob && AKVAN_TIMELINE_STEPS[timeStepIndex]) ? AKVAN_TIMELINE_STEPS[timeStepIndex] : null;
+              const sLat = (isBob && activeStep) ? activeStep.lat : storm.center.lat;
+              const sLon = (isBob && activeStep) ? activeStep.lon : storm.center.lon;
+              const dist = calculateDistanceKm(userLocation.lat, userLocation.lon, sLat, sLon);
               const coastDist = storm.distanceToCoastKm;
               return (
                 <button
@@ -672,32 +780,137 @@ export default function CycloneMap({
             })}
           </div>
 
-          {/* Legend Overlay */}
-          <div className="absolute bottom-2 left-2 z-[400] bg-slate-950/95 backdrop-blur-md border border-slate-800 rounded-lg p-2 text-[10px] text-slate-300 space-y-1.5 shadow-xl">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-sky-500 border border-white inline-block shadow-sm"></span>
-              <span className="font-semibold text-white">Your Location (Hover/tap dot)</span>
+          {/* Active Timeline Scrub Status Overlay (Top Left below buttons) */}
+          <div className="absolute top-16 left-2.5 z-[400] bg-slate-950/90 backdrop-blur-md border border-slate-800 px-3 py-1.5 rounded-xl text-[10px] text-slate-300 shadow-xl max-w-[240px] sm:max-w-sm pointer-events-none">
+            <div className="flex items-center gap-1.5 font-bold">
+              <span className="text-cyan-400">⏱️ {AKVAN_TIMELINE_STEPS[timeStepIndex].time}:</span>
+              <span className="text-white truncate">{AKVAN_TIMELINE_STEPS[timeStepIndex].stage}</span>
+              {AKVAN_TIMELINE_STEPS[timeStepIndex].isLive && (
+                <span className="px-1 py-0.2 rounded bg-red-600 text-white text-[8px] font-extrabold animate-pulse">LIVE</span>
+              )}
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-600 border border-white inline-block"></span>
-              <span className="text-red-400 font-semibold">🎯 Expected Landfall</span>
+            <div className="text-[9px] text-slate-400 mt-0.5 truncate">
+              {AKVAN_TIMELINE_STEPS[timeStepIndex].status}
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-orange-500 border border-white inline-block"></span>
-              <span className="text-orange-300 font-medium">⏱️ Forecast Milestones</span>
+          </div>
+
+          {/* Bottom Floating Time Scrubber Bar (Zoom Earth Style) */}
+          <div className="absolute bottom-2.5 inset-x-2 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-[400] bg-slate-950/95 backdrop-blur-md border border-slate-800/90 rounded-2xl p-1.5 shadow-2xl flex items-center justify-between sm:justify-center gap-1.5 max-w-full overflow-x-auto no-scrollbar">
+            {/* Play / Pause Toggle */}
+            <button
+              onClick={() => setIsPlayingTime(!isPlayingTime)}
+              className="flex items-center gap-1 px-2.5 py-1 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-bold transition-all shadow-sm active:scale-95 flex-shrink-0"
+              title={isPlayingTime ? "Pause Storm Timeline" : "Play Storm Progression"}
+            >
+              {isPlayingTime ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+              <span className="hidden sm:inline">{isPlayingTime ? 'Pause' : 'Play'}</span>
+            </button>
+
+            {/* Stepper Chevrons */}
+            <button
+              onClick={() => setTimeStepIndex((prev) => Math.max(0, prev - 1))}
+              disabled={timeStepIndex === 0}
+              className="p-1 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
+              title="Previous Time Step"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            {/* Step Time Buttons */}
+            <div className="flex items-center gap-1 flex-nowrap overflow-x-auto no-scrollbar py-0.5">
+              {AKVAN_TIMELINE_STEPS.map((step, idx) => {
+                const isSelected = timeStepIndex === idx;
+                return (
+                  <button
+                    key={step.id}
+                    onClick={() => {
+                      setTimeStepIndex(idx);
+                      setIsPlayingTime(false);
+                    }}
+                    className={`whitespace-nowrap px-2 py-0.5 rounded-md text-[10px] font-mono font-bold transition-all border ${
+                      isSelected
+                        ? step.isLive
+                          ? 'bg-red-600 text-white border-red-400 shadow-md scale-105'
+                          : step.isLandfall
+                          ? 'bg-amber-600 text-white border-amber-400 shadow-md scale-105'
+                          : 'bg-cyan-600 text-white border-cyan-400 shadow-md scale-105'
+                        : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
+                    }`}
+                  >
+                    {step.isLive ? '🔴 ' : step.isLandfall ? '🎯 ' : ''}
+                    {step.time}
+                  </button>
+                );
+              })}
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-4 h-1 bg-red-500 inline-block rounded"></span>
-              <span>Projected Forecast Track Vector</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-3.5 h-2.5 bg-red-500/25 border border-dashed border-red-500 inline-block rounded"></span>
-              <span>IMD Landfall Cone of Uncertainty</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-4 h-0.5 border-b border-dashed border-slate-400 inline-block"></span>
-              <span>Past Observed Path</span>
-            </div>
+
+            <button
+              onClick={() => setTimeStepIndex((prev) => Math.min(AKVAN_TIMELINE_STEPS.length - 1, prev + 1))}
+              disabled={timeStepIndex === AKVAN_TIMELINE_STEPS.length - 1}
+              className="p-1 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
+              title="Next Time Step"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
+            {/* Reset to Live Eye Button */}
+            <button
+              onClick={() => {
+                setTimeStepIndex(1); // Live Eye index
+                setIsPlayingTime(false);
+              }}
+              className={`flex-shrink-0 px-2 py-0.5 text-[9px] font-bold rounded border transition-all ${
+                timeStepIndex === 1
+                  ? 'bg-red-950 text-red-300 border-red-700'
+                  : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+              }`}
+              title="Reset to Live Eye Observation (08:00 AM)"
+            >
+              Live Eye
+            </button>
+          </div>
+
+          {/* Legend Overlay - Responsive & Collapsible on Mobile */}
+          <div className="absolute bottom-14 left-2.5 z-[400]">
+            {!isLegendOpen ? (
+              <button
+                onClick={() => setIsLegendOpen(true)}
+                className="px-2 py-1 bg-slate-950/90 hover:bg-slate-900 backdrop-blur-md border border-slate-800 rounded-lg text-[10px] text-slate-300 hover:text-white shadow-lg flex items-center gap-1 transition-all"
+              >
+                <span>ℹ️ Map Legend</span>
+              </button>
+            ) : (
+              <div className="bg-slate-950/95 backdrop-blur-md border border-slate-800 rounded-xl p-2.5 text-[10px] text-slate-300 space-y-1.5 shadow-2xl max-w-[220px]">
+                <div className="flex items-center justify-between pb-1 border-b border-slate-800">
+                  <span className="font-bold text-white text-[11px]">Map Legend</span>
+                  <button onClick={() => setIsLegendOpen(false)} className="text-slate-400 hover:text-white text-xs px-1">✕</button>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-sky-500 border border-white inline-block shadow-sm"></span>
+                  <span className="font-semibold text-white">Your Location</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-600 border border-white inline-block"></span>
+                  <span className="text-red-400 font-semibold">🎯 Expected Landfall</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-orange-500 border border-white inline-block"></span>
+                  <span className="text-orange-300 font-medium">⏱️ Forecast Milestones</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-4 h-1 bg-red-500 inline-block rounded"></span>
+                  <span>Forecast Track Vector</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3.5 h-2.5 bg-red-500/25 border border-dashed border-red-500 inline-block rounded"></span>
+                  <span>IMD Cone of Uncertainty</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-4 h-0.5 border-b border-dashed border-slate-400 inline-block"></span>
+                  <span>Past Observed Path</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
