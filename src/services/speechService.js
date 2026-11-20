@@ -1,4 +1,4 @@
-// Web Speech Synthesis Engine with Sentence Chunking & Chrome Keep-Alive
+// Web Speech Synthesis Engine with Sentence Chunking, Watchdog Timers & Anti-Stall Guard
 
 export class SpeechService {
   constructor() {
@@ -8,6 +8,9 @@ export class SpeechService {
     this.currentIndex = 0;
     this.currentLang = 'english';
     this.keepAliveTimer = null;
+    this.watchdogTimer = null;
+    this.transitionTimer = null;
+    this.currentUtterance = null;
     this.onSentenceCallback = null;
     this.onEndCallback = null;
   }
@@ -16,21 +19,24 @@ export class SpeechService {
     return !!this.synth;
   }
 
-  // Split text into clean, manageable sentences
+  // Split text into clean, manageable sentences without breaking on decimal numbers (e.g. 18.10 or 1.5)
   splitIntoSentences(text) {
     if (!text) return [];
-    // Split by Odia/Bengali/Hindi purna biram (।), periods, question marks, or exclamation marks
-    const raw = text.split(/([।\.!\?]+)/g);
+    // Normalize newlines to purna biram
+    const normalized = text.replace(/[\r\n]+/g, ' । ');
+    // Split by purna biram (।), or punctuation followed by whitespace or end-of-string
+    const rawParts = normalized.split(/(?:[।|]+|(?<=[^\d])[\.!\?]+(?:\s+|$))/g);
     const result = [];
-    for (let i = 0; i < raw.length; i += 2) {
-      const sentence = (raw[i] || '').trim();
-      const punct = (raw[i + 1] || '').trim();
-      const combined = `${sentence} ${punct}`.trim();
-      if (combined.length > 2) {
-        result.push(combined);
+
+    for (let part of rawParts) {
+      const clean = part.replace(/[।|]+/g, '').trim();
+      // Only keep sentences with meaningful characters
+      if (clean.length > 2) {
+        result.push(clean);
       }
     }
-    return result.length > 0 ? result : [text];
+
+    return result.length > 0 ? result : [text.trim()];
   }
 
   speakFullMessage(briefing, lang = 'english', onSentenceChange, onComplete) {
@@ -88,9 +94,11 @@ export class SpeechService {
   playNextSentence() {
     if (!this.isPlaying) return;
 
+    // Clear previous sentence watchdog
+    this.clearWatchdog();
+
     if (this.currentIndex >= this.sentences.length) {
       this.stop();
-      if (this.onEndCallback) this.onEndCallback();
       return;
     }
 
@@ -99,7 +107,14 @@ export class SpeechService {
       this.onSentenceCallback(this.currentIndex, this.sentences.length);
     }
 
+    // Ensure synth is unpaused before starting next utterance
+    if (this.synth.paused) {
+      this.synth.resume();
+    }
+
     const utterance = new SpeechSynthesisUtterance(sentenceText);
+    // CRITICAL: Retain reference on this instance to prevent V8 garbage collection mid-speech
+    this.currentUtterance = utterance;
 
     // Map language tag
     let langCode = 'en-IN';
@@ -114,7 +129,7 @@ export class SpeechService {
     else langCode = 'en-IN';
 
     utterance.lang = langCode;
-    utterance.rate = 0.92; // Clear speed for field workers
+    utterance.rate = 0.95; // Clear speed for field workers
     utterance.pitch = 1.0;
 
     // Select best available Indian voice
@@ -124,39 +139,89 @@ export class SpeechService {
       bestVoice = voices.find(v => v.lang.startsWith(langCode.substring(0, 2)));
     }
     if (!bestVoice) {
-      // Fallback to Indian English or Hindi voice
       bestVoice = voices.find(v => v.lang.includes('IN') || v.name.includes('India'));
     }
     if (bestVoice) {
       utterance.voice = bestVoice;
     }
 
-    utterance.onend = () => {
+    let isHandled = false;
+
+    const handleNext = () => {
+      if (isHandled) return;
+      isHandled = true;
+      this.clearWatchdog();
+      this.currentUtterance = null;
+
+      if (!this.isPlaying) return;
+
       this.currentIndex++;
-      // Small natural pause between sentences
-      setTimeout(() => {
-        this.playNextSentence();
-      }, 150);
+      if (this.currentIndex >= this.sentences.length) {
+        this.stop();
+        return;
+      }
+
+      // Small natural pause between sentences, ensuring clean unpaused transition
+      this.transitionTimer = setTimeout(() => {
+        if (this.isPlaying) {
+          if (this.synth.paused) {
+            this.synth.resume();
+          }
+          this.playNextSentence();
+        }
+      }, 100);
+    };
+
+    utterance.onend = () => {
+      handleNext();
     };
 
     utterance.onerror = (err) => {
       console.warn('Utterance error or interrupt:', err);
-      this.currentIndex++;
-      this.playNextSentence();
+      // If user stopped playback intentionally, do not advance
+      if (!this.isPlaying || err?.error === 'canceled' || err?.error === 'interrupted') {
+        if (!this.isPlaying) return;
+      }
+      handleNext();
     };
 
-    this.synth.speak(utterance);
+    // Watchdog Timer: If browser fails to fire onend (common Chrome/Android bug), auto-advance
+    // Compute expected duration: ~8 chars per sec at rate 0.95 + 4 sec safety buffer
+    const expectedDurationMs = Math.max(4500, Math.ceil((sentenceText.length / 7) * 1000) + 4000);
+    this.watchdogTimer = setTimeout(() => {
+      if (this.isPlaying && !isHandled) {
+        console.warn(`[SpeechService] Watchdog triggered for sentence ${this.currentIndex + 1}/${this.sentences.length}. Advancing.`);
+        handleNext();
+      }
+    }, expectedDurationMs);
+
+    // Speak the utterance
+    try {
+      this.synth.speak(utterance);
+      // Android Chrome bugfix: immediately trigger resume if stuck in pending
+      if (this.synth.paused) {
+        this.synth.resume();
+      }
+    } catch (e) {
+      console.error('[SpeechService] speak failed:', e);
+      handleNext();
+    }
   }
 
   startKeepAlive() {
     this.stopKeepAlive();
-    // Chrome stops long speeches after ~12s. Calling pause & resume resets the timer.
+    // Chrome bug: long speech sessions freeze after ~12s.
+    // SAFE keep-alive: only nudge pause/resume if synthesis is ACTIVELY speaking, never between lines!
     this.keepAliveTimer = setInterval(() => {
       if (this.synth && this.isPlaying) {
-        this.synth.pause();
-        this.synth.resume();
+        if (this.synth.paused) {
+          this.synth.resume();
+        } else if (this.synth.speaking && this.currentUtterance) {
+          this.synth.pause();
+          this.synth.resume();
+        }
       }
-    }, 8000);
+    }, 9000);
   }
 
   stopKeepAlive() {
@@ -166,16 +231,37 @@ export class SpeechService {
     }
   }
 
+  clearWatchdog() {
+    if (this.watchdogTimer) {
+      clearTimeout(this.watchdogTimer);
+      this.watchdogTimer = null;
+    }
+    if (this.transitionTimer) {
+      clearTimeout(this.transitionTimer);
+      this.transitionTimer = null;
+    }
+  }
+
   stop() {
     this.stopKeepAlive();
+    this.clearWatchdog();
     this.isPlaying = false;
     this.currentIndex = 0;
     this.sentences = [];
+    this.currentUtterance = null;
+
     if (this.synth) {
-      this.synth.cancel();
+      try {
+        this.synth.cancel();
+      } catch (e) {
+        // ignore
+      }
     }
+
     if (this.onEndCallback) {
-      this.onEndCallback();
+      const cb = this.onEndCallback;
+      this.onEndCallback = null;
+      cb();
     }
   }
 }
