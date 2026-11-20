@@ -61,7 +61,8 @@ html, body {
   font-family: 'Inter', sans-serif !important;
   pointer-events: none;
   white-space: normal !important;
-  max-width: 240px !important;
+  max-width: 260px !important;
+  min-width: 180px !important;
 }
 .leaflet-tooltip-top.custom-map-tooltip:before {
   border-top-color: rgba(15, 23, 42, 0.96) !important;
@@ -75,9 +76,15 @@ html, body {
 }
 
 /* Elevate Leaflet zoom controls (+ / -) above the bottom timeline scrubber */
+.leaflet-bottom.leaflet-right {
+  bottom: 58px !important;
+  right: 10px !important;
+  margin-bottom: 0 !important;
+  transition: bottom 0.2s ease-in-out;
+}
+
 .leaflet-control-zoom {
-  margin-bottom: 58px !important;
-  margin-right: 10px !important;
+  margin-bottom: 0 !important;
   border: 1px solid rgba(51, 65, 85, 0.9) !important;
   border-radius: 10px !important;
   overflow: hidden !important;
@@ -85,9 +92,9 @@ html, body {
 }
 
 @media (max-width: 640px) {
-  .leaflet-control-zoom {
-    margin-bottom: 64px !important;
-    margin-right: 8px !important;
+  .leaflet-bottom.leaflet-right {
+    bottom: 68px !important;
+    right: 8px !important;
   }
 }
 

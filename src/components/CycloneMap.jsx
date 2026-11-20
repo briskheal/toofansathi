@@ -148,6 +148,8 @@ export default function CycloneMap({
   const [timeStepIndex, setTimeStepIndex] = useState(1); // Default to Step 1 (08:00 AM Live Eye)
   const [isPlayingTime, setIsPlayingTime] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(false);
+  const [activeWeatherOverlay, setActiveWeatherOverlay] = useState('none'); // 'none' | 'wind' | 'rain' | 'pressure'
+  const [isLayerDrawerOpen, setIsLayerDrawerOpen] = useState(false);
 
   // Time scrubber auto-playback
   useEffect(() => {
@@ -480,33 +482,34 @@ export default function CycloneMap({
         </div>
       )}
 
-      {/* 2. Key Status Briefing Bar (3 to 4 points ABOVE the map) */}
+      {/* 2. Key Status Briefing Bar (Swipeable Horizontal Slider on Mobile, 4-Col Grid on Desktop) */}
       {activeTab === 'trajectory' && (
-        <div className="bg-slate-950/95 border-b border-slate-800/90 px-3 py-2.5 text-xs">
+        <div className="bg-slate-950/95 border-b border-slate-800/90 px-2.5 sm:px-3 py-2 text-xs">
           {mapViewMode === 'bay-of-bengal' || mapViewMode === 'all-india' ? (
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-slate-800/60 pb-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="flex h-2.5 w-2.5 relative">
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between gap-1.5 border-b border-slate-800/60 pb-1">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="flex h-2.5 w-2.5 relative flex-shrink-0">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
                   </span>
-                  <span className="font-extrabold text-white text-xs sm:text-sm">
-                    Current Status: Severe Cyclonic Storm Akvan (Bay of Bengal)
+                  <span className="font-extrabold text-white text-[11px] sm:text-sm truncate">
+                    Current Status: Severe Cyclone Akvan
                   </span>
-                  <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/40">
+                  <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/40 whitespace-nowrap flex-shrink-0">
                     IMD RED ALERT
                   </span>
                 </div>
-                <span className="text-[10px] text-cyan-300 font-mono">
-                  {AKVAN_TIMELINE_STEPS[timeStepIndex]?.isLive ? '🔴 LIVE OBSERVATION' : `⏱️ Scrubber: ${AKVAN_TIMELINE_STEPS[timeStepIndex]?.time}`}
-                </span>
+                <div className="flex items-center gap-2 flex-shrink-0 text-[10px] text-cyan-300 font-mono">
+                  <span>{AKVAN_TIMELINE_STEPS[timeStepIndex]?.isLive ? '🔴 LIVE' : `⏱️ ${AKVAN_TIMELINE_STEPS[timeStepIndex]?.time}`}</span>
+                  <span className="sm:hidden text-[9px] text-sky-400 font-sans font-medium">Swipe cards 👉</span>
+                </div>
               </div>
 
-              {/* 4 Points Grid (Mobile 1 or 2 col, Desktop 4 col) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-[11px]">
+              {/* 4 Points Horizontal Slider (Mobile horizontal slider with snap, Desktop 4-col grid) */}
+              <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 overflow-x-auto sm:overflow-visible gap-2 text-[11px] pb-1 sm:pb-0 no-scrollbar snap-x snap-mandatory">
                 {/* Point 1: Location & Distance */}
-                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
                   <MapPin className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">1. Live Eye & Proximity</span>
@@ -523,7 +526,7 @@ export default function CycloneMap({
                 </div>
 
                 {/* Point 2: Winds & Intensity */}
-                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
                   <Wind className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">2. Wind & Pressure</span>
@@ -540,7 +543,7 @@ export default function CycloneMap({
                 </div>
 
                 {/* Point 3: Landfall & Speed */}
-                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
                   <Compass className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">3. Landfall Target & Time</span>
@@ -557,7 +560,7 @@ export default function CycloneMap({
                 </div>
 
                 {/* Point 4: Govt Alerts */}
-                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
                   <ShieldAlert className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">4. Official Threat Level</span>
@@ -575,23 +578,26 @@ export default function CycloneMap({
               </div>
             </div>
           ) : mapViewMode === 'arabian-sea' ? (
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-slate-800/60 pb-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                  <span className="font-extrabold text-white text-xs sm:text-sm">
-                    Current Status: Arabian Sea Low Pressure / Depression System
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between gap-1.5 border-b border-slate-800/60 pb-1">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse flex-shrink-0"></span>
+                  <span className="font-extrabold text-white text-[11px] sm:text-sm truncate">
+                    Current Status: Arabian Sea Low Pressure / Depression
                   </span>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                  <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 whitespace-nowrap flex-shrink-0">
                     YELLOW ADVISORY
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-400 font-mono">Moving away from Indian Coast</span>
+                <div className="flex items-center gap-2 flex-shrink-0 text-[10px] text-slate-400 font-mono">
+                  <span className="hidden sm:inline">Moving away from Indian Coast</span>
+                  <span className="sm:hidden text-[9px] text-sky-400 font-sans font-medium">Swipe cards 👉</span>
+                </div>
               </div>
 
-              {/* 4 Points Grid for Arabian Sea */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-[11px]">
-                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+              {/* 4 Points Horizontal Slider for Arabian Sea */}
+              <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 overflow-x-auto sm:overflow-visible gap-2 text-[11px] pb-1 sm:pb-0 no-scrollbar snap-x snap-mandatory">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
                   <MapPin className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">1. Location & Distance</span>
@@ -605,7 +611,7 @@ export default function CycloneMap({
                   </div>
                 </div>
 
-                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
                   <Wind className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">2. Wind & Pressure</span>
@@ -617,7 +623,7 @@ export default function CycloneMap({
                   </div>
                 </div>
 
-                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
                   <Compass className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">3. Movement & Trajectory</span>
@@ -627,7 +633,7 @@ export default function CycloneMap({
                   </div>
                 </div>
 
-                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
                   <ShieldAlert className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">4. Official Threat Level</span>
@@ -640,24 +646,26 @@ export default function CycloneMap({
             </div>
           ) : (
             /* My Location Summary */
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-slate-800/60 pb-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-sky-500"></span>
-                  <span className="font-extrabold text-white text-xs sm:text-sm">
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between gap-1.5 border-b border-slate-800/60 pb-1">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="w-2.5 h-2.5 rounded-full bg-sky-500 flex-shrink-0"></span>
+                  <span className="font-extrabold text-white text-[11px] sm:text-sm truncate">
                     Location Status: {userLocation.name}
                   </span>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/40">
+                  <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/40 whitespace-nowrap flex-shrink-0">
                     LOCAL WEATHER ZONE
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-400 font-mono">
-                  {userLocation.lat.toFixed(4)}°N, {userLocation.lon.toFixed(4)}°E
-                </span>
+                <div className="flex items-center gap-2 flex-shrink-0 text-[10px] text-slate-400 font-mono">
+                  <span className="hidden sm:inline">{userLocation.lat.toFixed(4)}°N, {userLocation.lon.toFixed(4)}°E</span>
+                  <span className="sm:hidden text-[9px] text-sky-400 font-sans font-medium">Swipe cards 👉</span>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-[11px]">
-                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+              {/* 4 Points Horizontal Slider for My Location */}
+              <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 overflow-x-auto sm:overflow-visible gap-2 text-[11px] pb-1 sm:pb-0 no-scrollbar snap-x snap-mandatory">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
                   <MapPin className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">1. Nearest Cyclone</span>
@@ -666,7 +674,7 @@ export default function CycloneMap({
                   </div>
                 </div>
 
-                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
                   <Wind className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">2. Inflow Winds</span>
@@ -675,7 +683,7 @@ export default function CycloneMap({
                   </div>
                 </div>
 
-                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
                   <Compass className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">3. Landfall Impact</span>
@@ -684,7 +692,7 @@ export default function CycloneMap({
                   </div>
                 </div>
 
-                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
                   <ShieldAlert className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">4. Emergency Readiness</span>
@@ -719,7 +727,7 @@ export default function CycloneMap({
 
             {/* User Location Marker (Clean, clutter-free dot with hover/tap tooltip) */}
             <Marker position={[userLocation.lat, userLocation.lon]} icon={userDotIcon}>
-              <Tooltip direction="top" offset={[0, -10]} opacity={0.96} className="custom-map-tooltip">
+              <Tooltip direction="auto" offset={[0, -10]} opacity={0.96} className="custom-map-tooltip">
                 <div className="font-bold text-xs text-sky-400 flex items-center gap-1">
                   <span>📍</span>
                   <span>Your Location</span>
@@ -757,7 +765,7 @@ export default function CycloneMap({
                     position={[stormLat, stormLon]}
                     icon={isBob ? cycloneBobIcon : cycloneArbIcon}
                   >
-                    <Tooltip direction="top" offset={[0, -16]} opacity={0.96} className="custom-map-tooltip">
+                    <Tooltip direction="auto" offset={[0, -16]} opacity={0.96} className="custom-map-tooltip">
                       <div className="text-xs font-extrabold text-red-400 flex items-center gap-1">
                         <span>🌀</span>
                         <span>{storm.name} ({storm.basin})</span>
@@ -889,7 +897,12 @@ export default function CycloneMap({
                       position={[pt.lat, pt.lon]}
                       icon={pt.isLandfall ? landfallDotIcon : milestoneDotIcon}
                     >
-                      <Tooltip direction="top" offset={[0, -10]} opacity={0.96} className="custom-map-tooltip">
+                      <Tooltip
+                        direction={pt.isLandfall ? "bottom" : "auto"}
+                        offset={[0, pt.isLandfall ? 14 : -10]}
+                        opacity={0.96}
+                        className="custom-map-tooltip"
+                      >
                         {pt.isLandfall ? (
                           <div className="space-y-0.5">
                             <div className="text-xs font-extrabold text-red-400 flex items-center gap-1">
@@ -977,6 +990,131 @@ export default function CycloneMap({
               </button>
             )}
           </div>
+
+          {/* Floating Layer Menu (Zoom Earth Style from animation2.mp4) */}
+          <div className="absolute top-2.5 left-2.5 z-[400]">
+            <button
+              onClick={() => setIsLayerDrawerOpen(!isLayerDrawerOpen)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-950/90 hover:bg-slate-900 backdrop-blur-md border border-slate-700/80 rounded-xl text-xs font-bold text-slate-200 shadow-xl transition-all active:scale-95"
+            >
+              <Layers className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Layers</span>
+              {activeWeatherOverlay !== 'none' && (
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+              )}
+            </button>
+
+            {/* Floating Layer Drawer Modal */}
+            {isLayerDrawerOpen && (
+              <div className="mt-1.5 bg-slate-950/95 backdrop-blur-xl border border-slate-800 rounded-2xl p-3 shadow-2xl text-xs text-slate-200 w-56 space-y-2 animate-in fade-in duration-150">
+                <div className="flex items-center justify-between pb-1.5 border-b border-slate-800">
+                  <span className="font-extrabold text-white text-xs">Meteorological Layers</span>
+                  <button onClick={() => setIsLayerDrawerOpen(false)} className="text-slate-400 hover:text-white px-1">✕</button>
+                </div>
+
+                <div>
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1">Live Overlays</span>
+                  <div className="space-y-1">
+                    <button
+                      onClick={() => { setActiveWeatherOverlay('none'); setIsLayerDrawerOpen(false); }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        activeWeatherOverlay === 'none' ? 'bg-sky-600 text-white font-bold' : 'hover:bg-slate-800 text-slate-300'
+                      }`}
+                    >
+                      🌀 Track Vector & Cone
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-1.5 border-t border-slate-800">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1">Forecast Dynamics</span>
+                  <div className="space-y-1">
+                    <button
+                      onClick={() => { setActiveWeatherOverlay('wind'); setIsLayerDrawerOpen(false); }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center justify-between ${
+                        activeWeatherOverlay === 'wind' ? 'bg-amber-600 text-white font-bold' : 'hover:bg-slate-800 text-slate-300'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Wind className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Wind Speed & Gusts</span>
+                      </span>
+                      <span className="text-[9px] font-mono text-amber-200">115 km/h</span>
+                    </button>
+
+                    <button
+                      onClick={() => { setActiveWeatherOverlay('rain'); setIsLayerDrawerOpen(false); }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center justify-between ${
+                        activeWeatherOverlay === 'rain' ? 'bg-blue-600 text-white font-bold' : 'hover:bg-slate-800 text-slate-300'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Waves className="w-3.5 h-3.5 text-blue-400" />
+                        <span>Precipitation Rates</span>
+                      </span>
+                      <span className="text-[9px] font-mono text-blue-200">Heavy</span>
+                    </button>
+
+                    <button
+                      onClick={() => { setActiveWeatherOverlay('pressure'); setIsLayerDrawerOpen(false); }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center justify-between ${
+                        activeWeatherOverlay === 'pressure' ? 'bg-rose-600 text-white font-bold' : 'hover:bg-slate-800 text-slate-300'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Compass className="w-3.5 h-3.5 text-rose-400" />
+                        <span>Pressure & Isobars</span>
+                      </span>
+                      <span className="text-[9px] font-mono text-rose-200">988 hPa</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Top Horizontal Metric Scale Bar (Zoom Earth Style from animation2.mp4) */}
+          {activeWeatherOverlay !== 'none' && (
+            <div className="absolute top-2.5 left-24 right-28 sm:left-32 sm:right-32 z-[400] bg-slate-950/90 backdrop-blur-md border border-slate-800 rounded-xl px-2.5 py-1 text-center shadow-lg pointer-events-none">
+              {activeWeatherOverlay === 'wind' && (
+                <div>
+                  <div className="flex items-center justify-between text-[8px] sm:text-[9px] font-mono text-slate-300 font-bold mb-0.5">
+                    <span>0</span>
+                    <span>30</span>
+                    <span>60</span>
+                    <span>90</span>
+                    <span>115 (Gale)</span>
+                    <span>150+ km/h</span>
+                  </div>
+                  <div className="h-1.5 sm:h-2 w-full rounded-full bg-gradient-to-r from-sky-400 via-emerald-400 via-amber-400 via-orange-500 to-rose-600 shadow-inner"></div>
+                </div>
+              )}
+
+              {activeWeatherOverlay === 'rain' && (
+                <div>
+                  <div className="flex items-center justify-between text-[8px] sm:text-[9px] font-mono text-slate-300 font-bold mb-0.5">
+                    <span>Drizzle (0.5)</span>
+                    <span>Mod (5)</span>
+                    <span>Heavy (25)</span>
+                    <span>Extreme (&gt;50 mm/h)</span>
+                  </div>
+                  <div className="h-1.5 sm:h-2 w-full rounded-full bg-gradient-to-r from-sky-300 via-blue-500 via-indigo-600 to-purple-600 shadow-inner"></div>
+                </div>
+              )}
+
+              {activeWeatherOverlay === 'pressure' && (
+                <div>
+                  <div className="flex items-center justify-between text-[8px] sm:text-[9px] font-mono text-slate-300 font-bold mb-0.5">
+                    <span className="text-red-400 font-extrabold">Deep Low (&lt;990)</span>
+                    <span>1000</span>
+                    <span>1008</span>
+                    <span>High (&gt;1018 hPa)</span>
+                  </div>
+                  <div className="h-1.5 sm:h-2 w-full rounded-full bg-gradient-to-r from-red-600 via-amber-500 via-sky-500 to-blue-700 shadow-inner"></div>
+                </div>
+              )}
+            </div>
+          )}
 
 
 

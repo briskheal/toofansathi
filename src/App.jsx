@@ -548,10 +548,17 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950/80 p-4 text-center text-xs text-slate-500 mb-14 sm:mb-0">
-        <p className="font-semibold text-slate-400">ToofanSathi.in • Pan-India Cyclone & Weather Alert PWA</p>
-        <p className="text-[11px] mt-1">Covering Bay of Bengal, Arabian Sea & Inland Depression Belts (IMD RSMC & Open-Meteo High-Res Models).</p>
-        <p className="text-[10px] text-slate-600 mt-1">Designed for agricultural, utility, coastal & relief teams operating with low connectivity across India.</p>
+      <footer className="border-t border-slate-900 bg-slate-950/80 p-4 sm:p-6 text-center text-xs text-slate-500 mb-16 sm:mb-0 space-y-1.5">
+        <p className="font-semibold text-slate-300">ToofanSathi.in • Pan-India Cyclone & Disaster Early Warning System</p>
+        <p className="text-[11px] text-slate-400">
+          Covering Bay of Bengal, Arabian Sea & Coastal Belts (Data: IMD RSMC New Delhi, INCOIS & ECMWF/GFS High-Res Models).
+        </p>
+        <p className="text-[10px] text-slate-500">
+          Offline-first PWA designed for agricultural, coastal communities, and emergency disaster relief teams across India.
+        </p>
+        <div className="pt-2 border-t border-slate-900/80 text-[11px] text-slate-400">
+          © {new Date().getFullYear()} ToofanSathi. All Rights Reserved.
+        </div>
       </footer>
 
       {/* Native Mobile Bottom Navigation Bar */}
