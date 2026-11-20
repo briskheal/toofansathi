@@ -90,10 +90,10 @@ export default function CycloneMap({
   activeStorm,
   allStorms = []
 }) {
-  const [activeTab, setActiveTab] = useState('trajectory'); // 'trajectory' | 'radar' | 'satellite' | 'global'
+  const [activeTab, setActiveTab] = useState('trajectory'); // 'trajectory' | 'radar' | 'satellite' | 'global' | 'zoomearth'
   const [mapViewMode, setMapViewMode] = useState('all-india'); // 'all-india' | 'bay-of-bengal' | 'arabian-sea' | 'my-location'
   const [satChannel, setSatChannel] = useState('ir1'); // 'ir1' | 'vis' | 'wv'
-  const [selectedRadarStation, setSelectedRadarStation] = useState('paradip');
+  const [selectedRadarStation, setSelectedRadarStation] = useState('gopalpur');
   const [satTimestamp, setSatTimestamp] = useState(Date.now());
   const [isRefreshingSat, setIsRefreshingSat] = useState(false);
   const [satRefreshedToast, setSatRefreshedToast] = useState(false);
@@ -177,25 +177,25 @@ export default function CycloneMap({
   };
 
   const radarStations = {
-    paradip: {
-      name: 'Paradip Coastal DWR (Odisha)',
-      range: '400 km radial coverage',
-      status: 'Tracking North-West Bay of Bengal Storm Core'
-    },
     gopalpur: {
-      name: 'Gopalpur DWR (South Odisha)',
+      name: 'Gopalpur Coastal DWR (South Odisha)',
       range: '400 km radial coverage',
-      status: 'Tracking Peripheral Spiral Bands'
-    },
-    kolkata: {
-      name: 'Kolkata Subhasgram DWR (WB)',
-      range: '400 km radial coverage',
-      status: 'Tracking North Bay & Sunderbans Coastal Inundation'
+      status: 'Direct Real-Time Tracking: Akvan Eyewall & Landfall Crossing'
     },
     visakhapatnam: {
       name: 'Visakhapatnam Naval DWR (AP)',
       range: '400 km radial coverage',
-      status: 'Tracking Western Inflow Winds'
+      status: 'Direct Real-Time Tracking: Southern Eye Quadrant & Gale Inflow'
+    },
+    paradip: {
+      name: 'Paradip Coastal DWR (Odisha)',
+      range: '400 km radial coverage',
+      status: 'Tracking Northern Inflow & Heavy Rain Feeder Bands'
+    },
+    kolkata: {
+      name: 'Kolkata Subhasgram DWR (WB)',
+      range: '400 km radial coverage',
+      status: 'Tracking Outer Squall Bands'
     }
   };
 
@@ -207,32 +207,36 @@ export default function CycloneMap({
     if (storm.basin === 'Bay of Bengal') {
       return {
         pastCoords: [
-          [16.20, 89.60],
-          [17.40, 88.90],
-          [18.60, 88.20],
-          [lat, lon]
+          [12.40, 86.20], // Southwest Bay origin
+          [14.50, 84.80], // Deep depression stage
+          [16.20, 84.20], // Upgraded to Cyclonic Storm Akvan off AP coast
+          [17.40, 83.80], // Severe Cyclone off Visakhapatnam
+          [lat, lon]      // Live Eye (near Padmapur / Gopalpur / Srikakulam)
         ],
         forecastCoords: [
           [lat, lon],
-          [20.45, 87.35],
-          [20.85, 87.05], // Landfall near Dhamra / Bhadrak coast
-          [21.45, 86.70], // Inland Balasore / Mayurbhanj
-          [22.20, 86.20]  // Jharkhand / Bengal border
+          [18.90, 83.60], // Expected Landfall: Gopalpur / Padmapur sector (South Odisha / North AP)
+          [19.80, 83.90], // Inland Rayagada / Kandhamal / Ganjam
+          [21.10, 84.30], // Central Odisha (Boudh / Nayagarh / Sambalpur)
+          [22.50, 84.80]  // Weakening depression towards Jharkhand
         ],
         coneCoords: [
           [lat, lon],
-          [20.10, 86.60], // Left cone bound (near Paradip / Kendrapara)
-          [20.70, 86.30], // Left bound inland
-          [21.90, 85.80], // North-West inland apex
-          [22.40, 86.80], // North bound
-          [21.65, 88.10], // Right bound (Sagar Island / Sundarbans)
-          [20.80, 88.30], // Right bound (Northern Bay)
+          [17.60, 83.20], // Left coastal bound (Visakhapatnam)
+          [18.60, 82.80], // Left inland bound (Eastern Ghats / Koraput)
+          [20.50, 83.30], // Western interior apex (Bolanagir / Bargarh)
+          [22.80, 84.30], // Northern apex (Sundargarh / Jharkhand)
+          [22.20, 85.80], // East-North bound (Keonjhar / Mayurbhanj)
+          [20.30, 86.00], // East bound (Cuttack / Bhubaneswar)
+          [19.70, 85.80], // Right coastal bound (Puri)
+          [18.90, 84.80], // Right coastal bound (Gopalpur offshore)
           [lat, lon]
         ],
         checkpoints: [
-          { label: '00:00 (Offshore Squall)', lat: 20.45, lon: 87.35, time: '12:00 AM' },
-          { label: 'Expected Landfall (Dhamra/Bhadrak)', lat: 20.85, lon: 87.05, time: '06:00 AM', isLandfall: true },
-          { label: 'Inland Crossing (Balasore)', lat: 21.45, lon: 86.70, time: '12:00 PM' }
+          { label: 'Observed Center (08:00 IST)', lat: lat, lon: lon, time: '08:00 AM' },
+          { label: 'Expected Landfall (Gopalpur / Padmapur Sector)', lat: 18.90, lon: 83.60, time: '12:00 PM', isLandfall: true },
+          { label: 'Inland Crossing (Rayagada/Ganjam)', lat: 19.80, lon: 83.90, time: '06:00 PM' },
+          { label: 'Inland Depression (Central Odisha)', lat: 21.10, lon: 84.30, time: '12:00 AM' }
         ]
       };
     } else {
@@ -309,6 +313,14 @@ export default function CycloneMap({
             }`}
           >
             IMD Radar
+          </button>
+          <button
+            onClick={() => setActiveTab('zoomearth')}
+            className={`whitespace-nowrap flex-shrink-0 px-2.5 py-1.5 text-[11px] font-bold rounded-lg transition-colors ${
+              activeTab === 'zoomearth' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            🌀 Zoom Earth Live Eye
           </button>
           <button
             onClick={() => setActiveTab('global')}
@@ -888,6 +900,70 @@ export default function CycloneMap({
 
           <div className="bg-sky-950/40 border border-sky-800/60 rounded-xl p-2.5 text-[11px] text-sky-200">
             <strong>Key Difference Note:</strong> IMD measures wind speeds over a <strong>3-minute sustained window</strong> (Indian Standard), whereas the US Navy JTWC uses a <strong>1-minute sustained window</strong> (which results in ~10–12% higher reported wind speeds for the exact same storm system).
+          </div>
+        </div>
+      )}
+
+      {/* 5. Live Zoom Earth & Satellite Wind Vector Tracker */}
+      {activeTab === 'zoomearth' && (
+        <div className="p-3 bg-slate-950 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
+            <div className="flex items-center gap-1.5">
+              <Compass className="w-4 h-4 text-cyan-400" />
+              <span className="text-xs font-bold text-white">
+                Live Eye & Wind Vector Tracker: Severe Cyclone Akvan
+              </span>
+            </div>
+            <a
+              href="https://zoom.earth/maps/satellite/#view=18.066,83.368,6z"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 px-2.5 py-1 bg-cyan-600 hover:bg-cyan-500 text-white text-[11px] font-bold rounded-lg transition-colors shadow-sm"
+            >
+              <span>Launch Fullscreen HD</span>
+              <ArrowRight className="w-3 h-3" />
+            </a>
+          </div>
+
+          {/* Quick Storm Stats Strip */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg">
+              <span className="text-[10px] text-slate-400 block">System Name</span>
+              <strong className="text-red-400 font-extrabold text-xs">Cyclone Akvan</strong>
+              <span className="text-[9px] text-slate-500 block">Name contributed by Iran</span>
+            </div>
+            <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg">
+              <span className="text-[10px] text-slate-400 block">Live Eye Coordinates</span>
+              <strong className="text-cyan-300 font-mono text-xs">18.1°N, 83.4°E</strong>
+              <span className="text-[9px] text-emerald-400 block">~40 km to Padmapur Coast</span>
+            </div>
+            <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg">
+              <span className="text-[10px] text-slate-400 block">Winds & Peak Gusts</span>
+              <strong className="text-amber-400 font-bold text-xs">95 km/h (Gusts: 115)</strong>
+              <span className="text-[9px] text-slate-500 block">Severe Cyclone Standard</span>
+            </div>
+            <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-lg">
+              <span className="text-[10px] text-slate-400 block">Central Pressure</span>
+              <strong className="text-slate-100 font-mono text-xs">988 hPa</strong>
+              <span className="text-[9px] text-rose-400 block">Deep Pressure Well</span>
+            </div>
+          </div>
+
+          {/* Embedded Interactive Tracker Container */}
+          <div className="relative rounded-xl overflow-hidden border border-slate-800 bg-slate-900 min-h-[360px] max-h-[500px]">
+            <iframe
+              src="https://zoom.earth/maps/satellite/#view=18.066,83.368,6z"
+              title="Zoom Earth Live Cyclone Eye & Satellite Wind Vector"
+              className="w-full h-[400px] border-0"
+              allow="geolocation"
+              loading="lazy"
+            />
+          </div>
+
+          <div className="bg-slate-900/80 border border-slate-800 rounded-lg p-2.5 text-[11px] text-slate-300 space-y-1">
+            <p>
+              <strong>Multi-Model Real-Time Observation:</strong> Zoom Earth integrates high-resolution geostationary satellite feeds (INSAT-3DR / EUMETSAT) and real-time wind vector forecasts from ECMWF & GFS. The live eyewall is tracking North-Northwest towards the <strong>North Andhra Pradesh – South Odisha coast (Padmapur / Gopalpur sector)</strong>, with landfall commencing today (20-Nov) around noon to afternoon.
+            </p>
           </div>
         </div>
       )}

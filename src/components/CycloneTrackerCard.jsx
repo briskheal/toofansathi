@@ -46,7 +46,12 @@ export default function CycloneTrackerCard({ bulletin }) {
           <div>
             <span className="text-slate-400">Expected Landfall: </span>
             <span className="text-amber-300 font-bold block">{bulletin.landfall.predictedArea}</span>
-            <span className="text-[11px] text-slate-400">Time window: {bulletin.landfall.window}</span>
+            <span className="text-[11px] text-slate-400 block">Time window: {bulletin.landfall.window}</span>
+            {bulletin.namingCountry && (
+              <span className="text-[10px] text-cyan-400 font-medium block mt-1">
+                🏷️ Official Name: <strong>{bulletin.name}</strong> • Contributed by {bulletin.namingCountry}
+              </span>
+            )}
           </div>
         </div>
       </div>

@@ -4,30 +4,32 @@ export const ALL_INDIA_ACTIVE_STORMS = [
   {
     id: 'BOB-01-2026',
     basin: 'Bay of Bengal',
-    name: 'Dana / Bay of Bengal System',
-    status: 'Deep Depression / Cyclonic Storm',
+    name: 'Severe Cyclone Akvan (IMD/RSMC)',
+    cycloneCode: 'AKVAN',
+    namingCountry: 'Iran (WMO/ESCAP Panel on Tropical Cyclones)',
+    status: 'Severe Cyclonic Storm (Landfall Imminent)',
     center: {
-      lat: 19.45,
-      lon: 87.80,
-      locationDesc: 'Northwest Bay of Bengal, ~160 km SE of Paradip, ~220 km SSE of Sagar Island'
+      lat: 18.10,
+      lon: 83.40,
+      locationDesc: 'Westcentral Bay of Bengal, off North Andhra & South Odisha coast near Padmapur / Gopalpur / Srikakulam'
     },
     movement: {
       direction: 'North-Northwest (NNW)',
-      speedKmph: 18,
-      headingDeg: 340
+      speedKmph: 16,
+      headingDeg: 335
     },
-    centralPressureHpa: 994,
-    maxSustainedWindKmph: 75,
-    peakGustsKmph: 95,
+    centralPressureHpa: 988,
+    maxSustainedWindKmph: 95,
+    peakGustsKmph: 115,
     landfall: {
-      predictedArea: 'Between Puri and Digha (near Dhamra/Bhadrak coast)',
-      window: 'Within next 18-24 hours',
-      status: 'Approaching Coast'
+      predictedArea: 'North Andhra Pradesh and South Odisha coast (near Gopalpur / Padmapur / Ganjam sector)',
+      window: 'Today (20th Nov) around 12:00 PM – 03:00 PM IST',
+      status: 'Landfall Process Commencing'
     },
-    imdWarningStage: 'Cyclone Warning (Orange to Red for coastal belts)',
-    bulletinTime: '19-Nov-2026 15:30 IST',
-    bulletinIso: '2026-11-19T15:30:00+05:30',
-    source: 'IMD RSMC New Delhi',
+    imdWarningStage: 'Red Alert / Landfall Warning (IMD RSMC New Delhi)',
+    bulletinTime: '20-Nov-2026 08:00 IST',
+    bulletinIso: '2026-11-20T08:00:00+05:30',
+    source: 'IMD RSMC New Delhi & JTWC Hawaii',
 
     // Foreign Meteorological Agencies Comparison
     agencyComparison: [
@@ -35,36 +37,36 @@ export const ALL_INDIA_ACTIVE_STORMS = [
         agency: 'IMD (India)',
         fullname: 'India Meteorological Department (RSMC New Delhi)',
         flag: '🇮🇳',
-        status: 'Deep Depression / Cyclonic Storm',
-        windSpeed: '75 km/h (40 knots)',
+        status: 'Severe Cyclonic Storm Akvan',
+        windSpeed: '95 km/h (51 knots)',
         windStandard: '3-min sustained (IMD Standard)',
-        peakGusts: '95 km/h (51 knots)',
-        centralPressure: '994 hPa',
-        landfallEstimate: 'Between Puri & Digha (near Dhamra/Bhadrak coast)',
+        peakGusts: '115 km/h (62 knots)',
+        centralPressure: '988 hPa',
+        landfallEstimate: 'North AP & South Odisha coast (Padmapur / Gopalpur sector)',
         confidence: 'High (Primary RSMC Mandate)'
       },
       {
         agency: 'JTWC (USA)',
         fullname: 'Joint Typhoon Warning Center (US Navy / Air Force, Hawaii)',
         flag: '🇺🇸',
-        status: 'Tropical Cyclone 01B (Developing)',
-        windSpeed: '85 km/h (45 knots)',
+        status: 'Tropical Cyclone 01B (Akvan)',
+        windSpeed: '100 km/h (54 knots)',
         windStandard: '1-min sustained (US Saffir-Simpson Standard)',
-        peakGusts: '105 km/h (57 knots)',
-        centralPressure: '992 hPa',
-        landfallEstimate: 'Northern Odisha / West Bengal border, expected in 20-22 hrs',
-        confidence: 'High (Close track alignment with IMD)'
+        peakGusts: '125 km/h (67 knots)',
+        centralPressure: '986 hPa',
+        landfallEstimate: 'South Odisha coast near Gopalpur/Padmapur in 4-6 hours',
+        confidence: 'High (Track aligned with Zoom Earth satellite feed)'
       },
       {
         agency: 'ECMWF (Europe)',
         fullname: 'European Centre for Medium-Range Weather Forecasts (IFS Model)',
         flag: '🇪🇺',
-        status: 'Deep Cyclonic Depression (Ensemble Mean)',
-        windSpeed: '78 km/h (42 knots)',
+        status: 'Severe Tropical Cyclone (Ensemble Mean)',
+        windSpeed: '92 km/h (50 knots)',
         windStandard: '10-min sustained (WMO Standard)',
-        peakGusts: '98 km/h (53 knots)',
-        centralPressure: '993 hPa',
-        landfallEstimate: 'Coastal Odisha (Bhadrak / Balasore sector), landfall window ~18:00 UTC',
+        peakGusts: '118 km/h (64 knots)',
+        centralPressure: '989 hPa',
+        landfallEstimate: 'South Odisha & North AP border, crossing ~08:00 UTC (13:30 IST)',
         confidence: 'Very High (Consensus Model)'
       }
     ]
@@ -178,11 +180,12 @@ export function getLiveEstimatedStorm(storm, currentTime = new Date()) {
   // Nearest coastal landfall reference points
   const coastalPoints = storm.basin === 'Bay of Bengal'
     ? [
-        { name: 'Dhamra/Bhadrak Coast', lat: 20.80, lon: 86.95 },
-        { name: 'Paradip Port Coast', lat: 20.31, lon: 86.61 },
+        { name: 'Gopalpur/Padmapur Coast', lat: 18.90, lon: 84.40 },
+        { name: 'Srikakulam Coast', lat: 18.33, lon: 84.13 },
         { name: 'Puri Beach Coast', lat: 19.81, lon: 85.83 },
-        { name: 'Digha Coast', lat: 21.62, lon: 87.50 },
-        { name: 'Sagar Island Coast', lat: 21.65, lon: 88.07 }
+        { name: 'Visakhapatnam Coast', lat: 17.68, lon: 83.21 },
+        { name: 'Paradip Port Coast', lat: 20.31, lon: 86.61 },
+        { name: 'Dhamra/Bhadrak Coast', lat: 20.80, lon: 86.95 }
       ]
     : [
         { name: 'Porbandar Coast', lat: 21.64, lon: 69.62 },
