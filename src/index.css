@@ -51,6 +51,41 @@ html, body {
   }
 }
 
+/* 3D Left-to-Right Horizontal Spin / Flip effect on open & channel switch */
+@keyframes spin-flip-y {
+  0% {
+    transform: perspective(1400px) rotateY(-90deg) scale(0.92);
+    opacity: 0;
+  }
+  60% {
+    transform: perspective(1400px) rotateY(8deg) scale(1.01);
+    opacity: 0.95;
+  }
+  100% {
+    transform: perspective(1400px) rotateY(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-spin-flip {
+  animation: spin-flip-y 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+}
+
+@keyframes spin-360-y {
+  0% {
+    transform: perspective(1000px) rotateY(0deg);
+  }
+  100% {
+    transform: perspective(1000px) rotateY(360deg);
+  }
+}
+
+.animate-spin-360 {
+  animation: spin-360-y 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
 /* Custom Leaflet Dark Mode Tooltips */
 .leaflet-tooltip.custom-map-tooltip {
   background: rgba(15, 23, 42, 0.96) !important;

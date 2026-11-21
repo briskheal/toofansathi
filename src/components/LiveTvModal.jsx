@@ -5,6 +5,7 @@ import {
   Minimize2,
   Maximize2,
   Volume2,
+  VolumeX,
   Radio,
   ExternalLink,
   MapPin,
@@ -16,7 +17,8 @@ import {
   Flame,
   RadioTower,
   Sparkles,
-  Zap
+  Zap,
+  Radio as RadioIcon
 } from 'lucide-react';
 import { LIVE_NEWS_REGIONS, getChannelsForLocation } from '../data/liveNewsChannels';
 
@@ -33,6 +35,7 @@ export default function LiveTvModal({
   const [activeChannelId, setActiveChannelId] = useState(initialRegion.channels[0].id);
   const [playerMode, setPlayerMode] = useState('youtube'); // 'youtube' | 'webtv' | 'audio'
   const [iframeKey, setIframeKey] = useState(0);
+  const [isAudioMuted, setIsAudioMuted] = useState(false);
 
   // Sync state when activeLocation changes or modal opens
   useEffect(() => {
@@ -86,28 +89,40 @@ export default function LiveTvModal({
           </div>
         </div>
 
-        {/* Video / Audio Surface */}
-        <div className="relative aspect-video bg-black">
-          {playerMode === 'audio' ? (
-            <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center bg-slate-950">
+        {/* Video / Audio Surface with persistent audio stream and 3D left-to-right spin on switch */}
+        <div
+          key={`mini-surface-${iframeKey}-${activeChannel.videoId}`}
+          className="relative aspect-video bg-black overflow-hidden animate-spin-flip"
+        >
+          {/* Real Audio & Video stream (kept alive in background so voice plays) */}
+          <iframe
+            key={`mini-${iframeKey}-${activeChannel.videoId}`}
+            src={`https://www.youtube.com/embed/${activeChannel.videoId}?autoplay=1&mute=${isAudioMuted ? 1 : 0}&rel=0&live=1&modestbranding=1`}
+            title={activeChannel.name}
+            className={`w-full h-full border-0 transition-opacity duration-300 ${
+              playerMode === 'audio' ? 'opacity-15 blur-sm scale-110 pointer-events-none' : 'opacity-100'
+            }`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+
+          {/* Audio Visualizer Overlay (Audio continues playing from iframe behind) */}
+          {playerMode === 'audio' && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-3 text-center bg-slate-950/85 backdrop-blur-sm pointer-events-auto">
               <div className="flex items-center gap-1 mb-2">
-                <span className="w-1 h-3 bg-red-500 animate-bounce"></span>
-                <span className="w-1 h-5 bg-red-500 animate-bounce [animation-delay:0.1s]"></span>
-                <span className="w-1 h-2 bg-red-500 animate-bounce [animation-delay:0.2s]"></span>
-                <span className="w-1 h-4 bg-red-500 animate-bounce [animation-delay:0.3s]"></span>
+                <span className="w-1.5 h-3 bg-red-500 animate-bounce"></span>
+                <span className="w-1.5 h-5 bg-red-500 animate-bounce [animation-delay:0.1s]"></span>
+                <span className="w-1.5 h-2 bg-red-500 animate-bounce [animation-delay:0.2s]"></span>
+                <span className="w-1.5 h-4 bg-red-500 animate-bounce [animation-delay:0.3s]"></span>
               </div>
-              <span className="text-[10px] text-slate-300 font-bold block truncate max-w-[200px]">{activeChannel.name}</span>
-              <span className="text-[9px] text-emerald-400 font-mono">🎧 Emergency Audio Mode</span>
+              <span className="text-[10px] text-slate-200 font-bold block truncate max-w-[220px]">
+                {activeChannel.name}
+              </span>
+              <span className="text-[9px] text-emerald-400 font-mono mt-0.5 flex items-center gap-1">
+                <Volume2 className="w-3 h-3 animate-pulse" />
+                Live Audio Streaming
+              </span>
             </div>
-          ) : (
-            <iframe
-              key={`mini-${iframeKey}-${activeChannel.videoId}`}
-              src={`https://www.youtube.com/embed/${activeChannel.videoId}?autoplay=1&mute=0&rel=0&live=1&modestbranding=1`}
-              title={activeChannel.name}
-              className="w-full h-full border-0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
           )}
         </div>
 
@@ -119,7 +134,7 @@ export default function LiveTvModal({
               onClick={() => setPlayerMode(playerMode === 'audio' ? 'youtube' : 'audio')}
               className="text-amber-400 hover:text-amber-300 font-semibold"
             >
-              {playerMode === 'audio' ? 'Video' : 'Audio Only'}
+              {playerMode === 'audio' ? 'Show Video' : 'Audio Only'}
             </button>
             <a
               href={activeChannel.directLiveUrl}
@@ -223,13 +238,14 @@ export default function LiveTvModal({
               <button
                 key={chan.id}
                 onClick={() => handleChannelSelect(chan.id)}
-                className={`whitespace-nowrap flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border flex items-center gap-1.5 ${
+                className={`whitespace-nowrap flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border flex items-center gap-1.5 active:scale-95 group ${
                   isActive
-                    ? 'bg-sky-600 text-white border-sky-400 shadow-md ring-1 ring-sky-400'
+                    ? 'bg-sky-600 text-white border-sky-400 shadow-md ring-1 ring-sky-400 scale-[1.02]'
                     : 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
                 }`}
               >
-                <span>📺 {chan.name}</span>
+                <span className="inline-block transition-transform duration-500 group-hover:rotate-12">📺</span>
+                <span>{chan.name}</span>
                 <span className={`text-[9px] px-1 py-0.2 rounded font-mono ${isActive ? 'bg-sky-900 text-sky-200' : 'bg-slate-800 text-slate-400'}`}>
                   {chan.badge}
                 </span>
@@ -257,7 +273,7 @@ export default function LiveTvModal({
                   : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
               }`}
             >
-              Live Bulletin
+              Live Video
             </button>
             {activeChannel.webTvUrl && (
               <button
@@ -284,29 +300,86 @@ export default function LiveTvModal({
           </div>
         </div>
 
-        {/* Main Video Surface & Player */}
+        {/* Main Video Surface & Player with 3D Left-to-Right Spin Animation on Open & Channel Switch */}
         <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 bg-slate-950/40">
-          <div className="relative rounded-2xl overflow-hidden bg-black border border-slate-800 shadow-2xl aspect-video w-full max-h-[460px]">
-            {playerMode === 'audio' ? (
-              <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-                <div className="w-16 h-16 rounded-full bg-red-600/20 border border-red-500/40 flex items-center justify-center mb-3">
-                  <Headphones className="w-8 h-8 text-red-400 animate-pulse" />
+          <div
+            key={`player-surface-${iframeKey}-${activeChannel.videoId}`}
+            className="relative rounded-2xl overflow-hidden bg-black border border-slate-800 shadow-2xl aspect-video w-full max-h-[460px] animate-spin-flip"
+          >
+            {/* The Live Video & Audio Stream (ALWAYS active in the background so audio never cuts out) */}
+            <iframe
+              key={`main-${iframeKey}-${activeChannel.videoId}`}
+              src={`https://www.youtube.com/embed/${activeChannel.videoId}?autoplay=1&mute=${isAudioMuted ? 1 : 0}&rel=0&live=1&modestbranding=1`}
+              title={activeChannel.name}
+              className={`w-full h-full border-0 transition-opacity duration-300 ${
+                playerMode === 'audio' ? 'opacity-20 blur-sm scale-105' : (playerMode === 'webtv' ? 'hidden' : 'opacity-100')
+              }`}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+
+            {/* Audio-Only Emergency Radio Visualizer Overlay (Audio plays directly from the live stream behind) */}
+            {playerMode === 'audio' && (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 text-center bg-slate-950/85 backdrop-blur-md">
+                <div className="relative mb-3">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-600/30 to-red-600/30 border-2 border-amber-500/60 flex items-center justify-center shadow-lg shadow-amber-950/50">
+                    <Headphones className="w-8 h-8 text-amber-400 animate-pulse" />
+                  </div>
+                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 ring-4 ring-slate-950 flex items-center justify-center">
+                    <span className="w-2 h-2 rounded-full bg-white animate-ping"></span>
+                  </span>
                 </div>
-                <h4 className="text-base sm:text-lg font-bold text-white mb-1">
-                  Audio-Only Emergency Radio Mode
+
+                <h4 className="text-base sm:text-lg font-extrabold text-white mb-1 flex items-center gap-1.5">
+                  <span>Audio-Only Emergency Radio Mode</span>
                 </h4>
-                <p className="text-xs text-slate-300 max-w-md mb-3">
-                  Streaming live emergency audio from <strong>{activeChannel.name}</strong>. Saves 90% mobile battery and cellular data during disaster outages.
+                
+                <p className="text-xs text-amber-200/90 font-medium max-w-md mb-2">
+                  Broadcasting live emergency audio commentary from <strong className="text-white underline">{activeChannel.fullname}</strong>.
                 </p>
-                <div className="flex items-center gap-1.5 h-6">
-                  <span className="w-1.5 h-4 bg-red-500 rounded-full animate-bounce"></span>
+
+                <div className="flex items-center gap-1.5 h-7 mb-3 px-3 py-1 rounded-full bg-slate-900/90 border border-slate-800">
+                  <Volume2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 animate-pulse" />
+                  <span className="text-[11px] text-emerald-300 font-mono font-bold mr-1">Live Voice Active</span>
+                  <span className="w-1.5 h-3 bg-red-500 rounded-full animate-bounce"></span>
                   <span className="w-1.5 h-6 bg-red-500 rounded-full animate-bounce [animation-delay:0.1s]"></span>
-                  <span className="w-1.5 h-3 bg-red-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                  <span className="w-1.5 h-2 bg-red-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
                   <span className="w-1.5 h-5 bg-red-500 rounded-full animate-bounce [animation-delay:0.3s]"></span>
                   <span className="w-1.5 h-4 bg-red-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
                 </div>
+
+                <div className="flex items-center gap-2 flex-wrap justify-center">
+                  <button
+                    onClick={() => setIsAudioMuted(!isAudioMuted)}
+                    className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition-all flex items-center gap-1.5"
+                    title="Toggle Audio Mute"
+                  >
+                    {isAudioMuted ? (
+                      <>
+                        <VolumeX className="w-3.5 h-3.5 text-red-400" />
+                        <span>Unmute Audio</span>
+                      </>
+                    ) : (
+                      <>
+                        <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Mute Audio</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => setPlayerMode('youtube')}
+                    className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition-all shadow-sm flex items-center gap-1"
+                  >
+                    <Tv className="w-3.5 h-3.5" />
+                    <span>Switch to Full Video</span>
+                  </button>
+                </div>
               </div>
-            ) : playerMode === 'webtv' ? (
+            )}
+
+            {/* Master Web TV Launch Surface */}
+            {playerMode === 'webtv' && (
               <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-slate-950 border border-sky-800/40">
                 <Globe className="w-12 h-12 text-sky-400 mb-3 animate-pulse" />
                 <h4 className="text-base sm:text-lg font-bold text-white mb-1">
@@ -326,15 +399,6 @@ export default function LiveTvModal({
                   <ExternalLink className="w-3.5 h-3.5 ml-1" />
                 </a>
               </div>
-            ) : (
-              <iframe
-                key={`main-${iframeKey}-${activeChannel.videoId}`}
-                src={`https://www.youtube.com/embed/${activeChannel.videoId}?autoplay=1&mute=0&rel=0&live=1&modestbranding=1`}
-                title={activeChannel.name}
-                className="w-full h-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-              />
             )}
           </div>
 
