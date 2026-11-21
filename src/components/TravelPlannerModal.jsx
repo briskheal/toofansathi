@@ -22,9 +22,21 @@ const STATE_FILTER_TABS = [
   { id: 'mp_cg_raj', label: 'MP, CG & Rajasthan', states: ['Madhya Pradesh', 'Chhattisgarh', 'Rajasthan'] }
 ];
 
+// Helper to get local current date in YYYY-MM-DD
+function getTodayDateStr() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // Helper to build a single forecast day item
 function createForecastDay(dateObj, maxTemp, minTemp, rainSum, rainProb, maxGusts, maxWind, weatherCode) {
-  const timeStr = dateObj.toISOString().slice(0, 10);
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  const timeStr = `${year}-${month}-${day}`;
   const dayName = dateObj.toLocaleDateString('en-IN', { weekday: 'short' });
   const dateFormatted = dateObj.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
   const weather = getWeatherCodeDetails(weatherCode);
@@ -107,13 +119,18 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
   
-  // Default to 25th of current month or next 5 days
-  const [highlightDate, setHighlightDate] = useState(() => {
-    const d = new Date();
-    d.setDate(25);
-    // If 25th already passed this month, keep it in current month or future
-    return d.toISOString().slice(0, 10);
-  });
+  // Default to today's current date by default
+  const [highlightDate, setHighlightDate] = useState(() => getTodayDateStr());
+
+  // Reset date and destination when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setHighlightDate(getTodayDateStr());
+      if (initialDistrictId) {
+        setSelectedDestId(initialDistrictId);
+      }
+    }
+  }, [isOpen, initialDistrictId]);
 
   const selectedDest = ALL_INDIA_REGIONS.find((d) => d.id === selectedDestId) || ALL_INDIA_REGIONS[0];
 
@@ -323,9 +340,19 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
 
             {/* Visit Date Picker - REAL-TIME REACTIVE */}
             <div>
-              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
-                Planned Date of Visit (Auto-calculates next 5+ days):
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[10px] uppercase font-bold text-slate-400 block">
+                  Planned Date of Visit (Auto-calculates next 5+ days):
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setHighlightDate(getTodayDateStr())}
+                  className="text-[10px] text-sky-400 hover:text-sky-300 font-semibold underline"
+                  title="Reset date to today"
+                >
+                  Today
+                </button>
+              </div>
               <input
                 type="date"
                 value={highlightDate}
