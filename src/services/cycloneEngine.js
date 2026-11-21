@@ -7,35 +7,35 @@ export const ALL_INDIA_ACTIVE_STORMS = [
     name: 'Severe Cyclone Akvan (IMD/RSMC)',
     cycloneCode: 'AKVAN',
     namingCountry: 'Iran (WMO/ESCAP Panel on Tropical Cyclones)',
-    status: 'Severe Cyclonic Storm (Landfall In Progress)',
+    status: 'Well-Marked Low Pressure Area (Weakened Remnant of Severe Cyclone Akvan)',
     center: {
-      lat: 18.90,
-      lon: 83.60,
-      locationDesc: 'South Odisha coast crossing near Padmapur / Gopalpur sector (Ganjam district)'
+      lat: 22.50,
+      lon: 84.80,
+      locationDesc: 'Inland over North Odisha & Jharkhand border (Sundargarh belt, ~60 km NW of Rourkela, ~280 km NNW of Bhubaneswar)'
     },
     movement: {
-      direction: 'North-Northwest (NNW)',
-      speedKmph: 16,
-      headingDeg: 335
+      direction: 'North-Northeast (NNE)',
+      speedKmph: 12,
+      headingDeg: 25
     },
-    centralPressureHpa: 988,
-    maxSustainedWindKmph: 105,
-    peakGustsKmph: 125,
+    centralPressureHpa: 1004,
+    maxSustainedWindKmph: 40,
+    peakGustsKmph: 55,
     landfall: {
-      predictedArea: 'South Odisha & North Andhra Pradesh coast (Gopalpur / Padmapur sector)',
-      window: 'Ongoing Now (12:00 PM – 03:00 PM IST)',
-      status: '🚨 Landfall In Progress (Eyewall Crossing Coast)'
+      predictedArea: 'South Odisha coast near Gopalpur / Padmapur sector (Crossed 20 Nov)',
+      window: 'Completed Yesterday (20 Nov 12:30–13:30 IST)',
+      status: '✅ Landfall Completed'
     },
-    imdWarningStage: 'Red Alert / Landfall In Progress (IMD RSMC New Delhi)',
-    bulletinNo: 'IMD Flash Bulletin No. 14 (BOB/01/2026)',
-    bulletinTime: '20-Nov-2026 13:00 IST',
-    bulletinIso: '2026-11-20T13:00:00+05:30',
+    imdWarningStage: 'De-escalated: Coastal Red Alert Withdrawn • Inland Yellow Watch (Rainfall)',
+    bulletinNo: 'IMD Post-Landfall Final Bulletin No. 18 (BOB/01/2026)',
+    bulletinTime: '21-Nov-2026 08:00 IST',
+    bulletinIso: '2026-11-21T08:00:00+05:30',
     source: 'IMD RSMC New Delhi & INCOIS Hyderabad',
     incoisAlert: {
-      surgeHeight: '1.0 – 1.5 meters',
-      waveHeight: '3.5 – 5.5 meters',
-      inundationAreas: 'Ganjam, Gajapati & Srikakulam low-lying coastal belts',
-      fishermenAdvisory: 'Total suspension of fishing operations. High surf advisory along South Odisha & North AP coast.'
+      surgeHeight: 'Nil (Astronomical tide normal)',
+      waveHeight: '1.5 – 2.2 meters (Subsiding)',
+      inundationAreas: 'Surge threat cleared. Water receding in low-lying coastal belts.',
+      fishermenAdvisory: 'Sea condition improving along South Odisha & North AP coast. Nearshore fishing operations safe to resume from 21 Nov afternoon.'
     },
 
     // Foreign Meteorological Agencies Comparison
@@ -44,36 +44,36 @@ export const ALL_INDIA_ACTIVE_STORMS = [
         agency: 'IMD (India)',
         fullname: 'India Meteorological Department (RSMC New Delhi)',
         flag: '🇮🇳',
-        status: 'Severe Cyclonic Storm Akvan',
-        windSpeed: '95 km/h (51 knots)',
+        status: 'Well-Marked Low Pressure Area (Weakened from Cyclone Akvan)',
+        windSpeed: '40 km/h (22 knots)',
         windStandard: '3-min sustained (IMD Standard)',
-        peakGusts: '115 km/h (62 knots)',
-        centralPressure: '988 hPa',
-        landfallEstimate: 'North AP & South Odisha coast (Padmapur / Gopalpur sector)',
+        peakGusts: '55 km/h (30 knots)',
+        centralPressure: '1004 hPa',
+        landfallEstimate: 'Landfall completed 20 Nov 13:00 IST near Gopalpur; system inland',
         confidence: 'High (Primary RSMC Mandate)'
       },
       {
         agency: 'JTWC (USA)',
         fullname: 'Joint Typhoon Warning Center (US Navy / Air Force, Hawaii)',
         flag: '🇺🇸',
-        status: 'Tropical Cyclone 01B (Akvan)',
-        windSpeed: '100 km/h (54 knots)',
-        windStandard: '1-min sustained (US Saffir-Simpson Standard)',
-        peakGusts: '125 km/h (67 knots)',
-        centralPressure: '986 hPa',
-        landfallEstimate: 'South Odisha coast near Gopalpur/Padmapur in 4-6 hours',
-        confidence: 'High (Track aligned with Zoom Earth satellite feed)'
+        status: 'Remnant Circulation (01B Akvan - Final Warning)',
+        windSpeed: '45 km/h (25 knots)',
+        windStandard: '1-min sustained (US Standard)',
+        peakGusts: '60 km/h (32 knots)',
+        centralPressure: '1002 hPa',
+        landfallEstimate: 'Final Warning Issued: System Dissipated Inland Over East India',
+        confidence: 'High (Track Complete)'
       },
       {
         agency: 'ECMWF (Europe)',
         fullname: 'European Centre for Medium-Range Weather Forecasts (IFS Model)',
         flag: '🇪🇺',
-        status: 'Severe Tropical Cyclone (Ensemble Mean)',
-        windSpeed: '92 km/h (50 knots)',
+        status: 'Remnant Low Pressure Area (Dissipating)',
+        windSpeed: '38 km/h (20 knots)',
         windStandard: '10-min sustained (WMO Standard)',
-        peakGusts: '118 km/h (64 knots)',
-        centralPressure: '989 hPa',
-        landfallEstimate: 'South Odisha & North AP border, crossing ~08:00 UTC (13:30 IST)',
+        peakGusts: '52 km/h (28 knots)',
+        centralPressure: '1004 hPa',
+        landfallEstimate: 'Remnant circulation dissipating across Jharkhand/Chhota Nagpur',
         confidence: 'Very High (Consensus Model)'
       }
     ]
@@ -184,8 +184,18 @@ export function getLiveEstimatedStorm(storm, currentTime = new Date()) {
   const liveLat = Math.round((storm.center.lat + deltaLat) * 1000) / 1000;
   const liveLon = Math.round((storm.center.lon + deltaLon) * 1000) / 1000;
 
-  // Nearest coastal landfall reference points
-  const coastalPoints = storm.basin === 'Bay of Bengal'
+  // Reference landmarks (inland points if storm has moved inland, otherwise coastal points)
+  const isInland = storm.landfall?.status?.includes('Completed') || liveLat >= 20.5;
+
+  const coastalPoints = (storm.basin === 'Bay of Bengal' && isInland)
+    ? [
+        { name: 'Rourkela / Sundargarh Belt', lat: 22.25, lon: 84.85 },
+        { name: 'Jharsuguda Interior', lat: 21.85, lon: 84.00 },
+        { name: 'Sambalpur District', lat: 21.46, lon: 83.98 },
+        { name: 'Ranchi (Jharkhand)', lat: 23.34, lon: 85.31 },
+        { name: 'Bhubaneswar / Cuttack', lat: 20.30, lon: 85.85 }
+      ]
+    : storm.basin === 'Bay of Bengal'
     ? [
         { name: 'Gopalpur/Padmapur Coast', lat: 18.90, lon: 84.40 },
         { name: 'Srikakulam Coast', lat: 18.33, lon: 84.13 },
@@ -211,18 +221,22 @@ export function getLiveEstimatedStorm(storm, currentTime = new Date()) {
     }
   }
 
+  const locationSummary = isInland
+    ? `Inland Remnant: ~${minCoastDist} km from ${nearestCoastName} (Advancing at ${speedKmph} km/h ${storm.movement.direction})`
+    : `Estimated Live Center: ~${minCoastDist} km SE of ${nearestCoastName} (Advancing at ${speedKmph} km/h ${storm.movement.direction})`;
+
   return {
     ...storm,
     originalCenter: storm.originalCenter || storm.center,
     center: {
       lat: liveLat,
       lon: liveLon,
-      locationDesc: `Estimated Live Center: ~${minCoastDist} km SE of ${nearestCoastName} (Advancing at ${speedKmph} km/h ${storm.movement.direction})`
+      locationDesc: locationSummary
     },
     liveCenter: {
       lat: liveLat,
       lon: liveLon,
-      locationDesc: `Estimated Live Center: ~${minCoastDist} km SE of ${nearestCoastName} (Advancing at ${speedKmph} km/h ${storm.movement.direction})`
+      locationDesc: locationSummary
     },
     distanceTraveledKm: Math.round(distanceTraveledKm),
     elapsedMinutes: Math.round(elapsedHours * 60),
@@ -263,8 +277,46 @@ export function calculateBearingDirection(userLat, userLon, stormLat, stormLon) 
   };
 }
 
-// Determine Threat Level based on Distance, Local Wind, Gusts, and Rain
-export function evaluateThreatLevel(distanceKm, localWindKmph, localGustsKmph, rainMm3h) {
+// Determine Threat Level based on Distance, Local Wind, Gusts, Rain, and Storm Stage
+export function evaluateThreatLevel(distanceKm, localWindKmph, localGustsKmph, rainMm3h, storm = ALL_INDIA_ACTIVE_STORMS[0]) {
+  const isWeakenedRemnant = storm?.status?.toLowerCase().includes('low pressure') || 
+                            storm?.landfall?.status?.includes('Completed') ||
+                            (storm?.maxSustainedWindKmph && storm.maxSustainedWindKmph <= 45);
+
+  if (isWeakenedRemnant) {
+    if (localWindKmph >= 65 || localGustsKmph >= 80 || rainMm3h >= 60) {
+      return {
+        level: 'ORANGE',
+        color: 'bg-amber-600 text-white',
+        badge: 'border-amber-500 text-amber-400 bg-amber-950/60',
+        title: 'ORANGE ALERT: Heavy Rain & Squalls',
+        summary: 'POST-LANDFALL INLAND RAINFALL WARNING',
+        action: 'Watch for localized waterlogging, weak tree branches, and stay clear of snapped electrical cables.',
+        isPostLandfall: true
+      };
+    }
+    if (distanceKm <= 200 || rainMm3h >= 10 || localWindKmph >= 25 || localGustsKmph >= 40) {
+      return {
+        level: 'YELLOW',
+        color: 'bg-yellow-500 text-slate-950',
+        badge: 'border-yellow-500 text-yellow-400 bg-yellow-950/60',
+        title: 'IMD YELLOW WATCH: Post-Landfall Remnant',
+        summary: 'REMNANT LOW PRESSURE IN REGION',
+        action: 'Severe cyclone winds have ceased. Heavy to moderate rain intervals likely. Coastal Red Alerts withdrawn.',
+        isPostLandfall: true
+      };
+    }
+    return {
+      level: 'GREEN',
+      color: 'bg-emerald-600 text-white',
+      badge: 'border-emerald-500 text-emerald-400 bg-emerald-950/60',
+      title: 'GREEN: Normal / De-escalated',
+      summary: 'COASTAL ALERTS WITHDRAWN • WEATHER NORMALIZING',
+      action: 'Landfall completed. Regular field work and fishing operations can resume with standard precautions.',
+      isPostLandfall: true
+    };
+  }
+
   if (distanceKm <= 120 || localWindKmph >= 65 || localGustsKmph >= 80 || rainMm3h >= 45) {
     return {
       level: 'RED',
@@ -312,6 +364,7 @@ export function evaluateThreatLevel(distanceKm, localWindKmph, localGustsKmph, r
 export function generateVoiceBriefing(lang, threat, districtName, distanceKm, windSpeed, gustSpeed, directionText, minTemp = 17, maxTemp = 29) {
   const isRed = threat.level === 'RED';
   const isOrange = threat.level === 'ORANGE';
+  const isPostLandfall = threat.isPostLandfall || ALL_INDIA_ACTIVE_STORMS[0]?.landfall?.status?.includes('Completed');
 
   // Winter jacket / coat protection advisory based on minimum temperature
   const isSevereCold = minTemp <= 10;
@@ -321,9 +374,9 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
   switch (lang) {
     case 'odia': {
       const winterSpeech = isSevereCold
-        ? `ବିଶେଷ ଶୀତ ସତର୍କତା: ରାତି ଓ ସକାଳେ ସର୍ବନିମ୍ନ ତାପମାତ୍ରା ${minTemp} ଡିଗ୍ରୀକୁ ଖସିବ। ପ୍ରବଳ ଥଣ୍ଡା ପବନରୁ ରକ୍ଷା ପାଇବା ପାଇଁ ମୋଟା କୋଟ୍ (Coat) କିମ୍ବା ଭାରୀ ଜ୍ୟାକେଟ୍ (Heavy Jacket) ନିଶ୍ଚୟ ପିନ୍ଧନ୍ତୁ।`
+        ? `ବିଶେଷ ଶୀତ ସତର୍କତା: ରାତି ଓ ସକାଳେ ସର୍ବନିମ୍ନ ତାପମାତ୍ରା ${minTemp} ଡିଗ୍ରୀକୁ ଖସିବ। ପ୍ରବଳ ଥଣ୍ଡା ପବନରୁ ରକ୍ଷା ପାଇବା ପାଇଁ ମୋଟା କୋଟ୍ କିମ୍ବା ଭାରୀ ଜ୍ୟାକେଟ୍ ନିଶ୍ଚୟ ପିନ୍ଧନ୍ତୁ।`
         : isChillyWinter
-        ? `ଶୀତ ପରାମର୍ଶ: ସର୍ବନିମ୍ନ ତାପମାତ୍ରା ${minTemp} ଡିଗ୍ରୀ ରହିବ। ସକାଳ ଓ ସନ୍ଧ୍ୟା ଡ୍ୟୁଟିରେ ଥଣ୍ଡା କାକରରୁ ରକ୍ଷା ପାଇବା ପାଇଁ ଫିଲ୍ଡ କର୍ମଚାରୀମାନେ ଜ୍ୟାକେଟ୍ କିମ୍ବା କୋଟ୍ (Jacket/Coat) ସାଙ୍ଗରେ ନିଅନ୍ତୁ।`
+        ? `ଶୀତ ପରାମର୍ଶ: ସର୍ବନିମ୍ନ ତାପମାତ୍ରା ${minTemp} ଡିଗ୍ରୀ ରହିବ। ସକାଳ ଓ ସନ୍ଧ୍ୟା ଡ୍ୟୁଟିରେ ଥଣ୍ଡା କାକରରୁ ରକ୍ଷା ପାଇବା ପାଇଁ ଫିଲ୍ଡ କର୍ମଚାରୀମାନେ ଜ୍ୟାକେଟ୍ କିମ୍ବା କୋଟ୍ ସାଙ୍ଗରେ ନିଅନ୍ତୁ।`
         : isMildWinter
         ? `ସକାଳେ ହାଲୁକା ଶୀତ (${minTemp} ଡିଗ୍ରୀ) ରହିବ, ସୁରକ୍ଷା ପାଇଁ ହାଲୁକା ଜ୍ୟାକେଟ୍ ସାଙ୍ଗରେ ରଖନ୍ତୁ।`
         : '';
@@ -341,6 +394,20 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
         : isMildWinter
         ? `ହାଲୁକା ଜ୍ୟାକେଟ୍ ନିଅନ୍ତୁ (${minTemp}°C)`
         : 'ପାଗ ଅନୁଯାୟୀ ସତର୍କ ରୁହନ୍ତୁ';
+
+      if (isPostLandfall) {
+        return {
+          headline: `ତୁଫାନ ସାଥୀ ସୂଚନା: ବାତ୍ୟା ପରବର୍ତ୍ତୀ ସ୍ଥିତି ଓ ପୁନରୁଦ୍ଧାର - ${districtName}`,
+          speech: `ପାଣିପାଗ ସୂଚନା। ଭୀଷଣ ବାତ୍ୟା ଅକ୍‌ଭାନ ଗୋପାଳପୁର ନିକଟରେ ଲ୍ୟାଣ୍ଡଫଲ୍ ସମ୍ପୂର୍ଣ୍ଣ କରିବା ପରେ ଦୁର୍ବଳ ହୋଇ ଉତ୍ତର ଓଡ଼ିଶା ଓ ଝାଡ଼ଖଣ୍ଡ ସୀମାରେ ସ୍ପଷ୍ଟ ଚିହ୍ନିତ ଲଘୁଚାପରେ ପରିଣତ ହୋଇଛି। ଉପକୂଳରେ ଝଡ଼ ପବନ ସମ୍ପୂର୍ଣ୍ଣ ଥମି ଯାଇଛି ଏବଂ ରେଡ୍ ଆଲର୍ଟ ପ୍ରତ୍ୟାହାର କରାଯାଇଛି। ବର୍ତ୍ତମାନ ଏହାର ଅବଶେଷ କେନ୍ଦ୍ର ଆପଣଙ୍କ ଠାରୁ ପ୍ରାୟ ${distanceKm} କିଲୋମିଟର ଦୂରରେ ରହିଛି ଏବଂ ପବନର ବେଗ ${windSpeed} ରୁ ${gustSpeed} କିଲୋମିଟର ରହିଛି। କିଛି ସ୍ଥାନରେ ମଧ୍ୟମ ଧରଣର ବର୍ଷା ଜାରି ରହିପାରେ। ଛିଣ୍ଡି ପଡ଼ିଥିବା ବିଦ୍ୟୁତ ତାର, ଦୁର୍ବଳ ଗଛଡ଼ାଳ ଏବଂ ପାଣି ଜମିଥିବା ରାସ୍ତା ଠାରୁ ଦୂରେଇ ରୁହନ୍ତୁ। ଉପକୂଳରେ ମତ୍ସ୍ୟଜୀବୀମାନେ ନିକଟବର୍ତ୍ତୀ ସମୁଦ୍ରକୁ ଯାଇପାରିବେ। ${winterSpeech}`,
+          phoneticSpeech: `Panipaga suchana. Batya Akvan Gopalpur nikkatare landfall sampurna kari durbula hoi uttar Odisha o Jharkhand seemare laghuchapare parinata hoichhi. Upakulare jhada pabana thami jaichhi o red alert pratyahara karajaichhi. Kendra ${distanceKm} kilometer durare achhi. Chhinda bidyut tara o gachhadala tharu durei ruhantu. ${winterPhonetic}`,
+          actionSteps: [
+            'ଛିଣ୍ଡା ବିଦ୍ୟୁତ ତାର ଓ ଗଛ ଠାରୁ ଦୂରେଇ ରୁହନ୍ତୁ',
+            'ଜଳମଗ୍ନ ରାସ୍ତା ଅତିକ୍ରମ କରନ୍ତୁ ନାହିଁ',
+            winterAction,
+            'ଉପକୂଳରେ ଜୀବନଯାପନ ସ୍ୱାଭାବିକ'
+          ]
+        };
+      }
 
       return {
         headline: `ତୁଫାନ ସାଥୀ ସତର୍କ ସୂଚନା: ${isRed ? 'ଲାଲ୍ ଚେତାବନୀ (ରେଡ୍ ଆଲର୍ଟ)' : isOrange ? 'କମଳା ସତର୍କତା (ଅରେଞ୍ଜ ଆଲର୍ଟ)' : 'ହଳଦିଆ ସତର୍କତା'} - ${districtName}`,
@@ -388,6 +455,20 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
         ? `হালকা জ্যাকেট সাথে রাখুন (${minTemp}°C)`
         : 'আবহাওয়া অনুযায়ী সতর্ক থাকুন';
 
+      if (isPostLandfall) {
+        return {
+          headline: `তুফান সাথী বার্তা: ঘূর্ণিঝড় পরবর্তী পরিস্থিতি - ${districtName}`,
+          speech: `আবহাওয়া বার্তা। তীব্র ঘূর্ণিঝড় আকভান গোপালপুরের কাছে ল্যান্ডফল সম্পন্ন করে দুর্বল হয়ে এখন উত্তর ওড়িশা ও ঝাড়খণ্ড সীমান্তে সুস্পষ্ট নিম্নচাপে পরিণত হয়েছে। উপকূলীয় অঞ্চলের ধ্বংসাত্মক ঝোড়ো হাওয়া থেমে গেছে এবং রেড অ্যালার্ট প্রত্যাহার করা হয়েছে। এই মুহূর্তে অবশিষ্ট নিম্নচাপটি আপনার থেকে প্রায় ${distanceKm} কিমি দূরে রয়েছে। হালকা থেকে মাঝারি বৃষ্টি হতে পারে। ছেঁড়া বিদ্যুতের তার, বিপজ্জনক গাছের ডাল এবং জমা জল থেকে দূরে থাকুন। উপকূলবর্তী স্বাভাবিক কাজকর্ম শুরু করা যেতে পারে। ${winterSpeech}`,
+          phoneticSpeech: `Abahawa barta. Ghurnijhor Akvan Gopalpurer kache landfall sesh kore durbool hoye Uttar Odisha o Jharkhand shimante nimnochape porinoto hoyeche. Upokuliyo elakay jhoro batash theme geche. Kendra ${distanceKm} kilometer dure ache. ${winterPhonetic}`,
+          actionSteps: [
+            'ছেঁড়া বিদ্যুতের তার ও গাছ থেকে দূরে থাকুন',
+            'জলমগ্ন রাস্তায় সাবধানে চলুন',
+            winterAction,
+            'উপকূলবর্তী পরিস্থিতি স্বাভাবিক'
+          ]
+        };
+      }
+
       return {
         headline: `তুফান সাথী জরুরি সতর্কতা: ${isRed ? 'লাল সতর্কতা (রেড অ্যালার্ট)' : isOrange ? 'কমলা সতর্কতা' : 'হলুদ সতর্কতা'} - ${districtName}`,
         speech: `জরুরি আবহাওয়া বার্তা। ${districtName} জেলায় ঘূর্ণিঝড় ও গভীর নিম্নচাপের বিপজ্জনক প্রভাব শুরু হয়েছে। ঝড়ের কেন্দ্রস্থল আপনার অবস্থান থেকে প্রায় ${distanceKm} কিলোমিটার দূরে রয়েছে। বর্তমানে বাতাসের গতিবেগ ঘণ্টায় ${windSpeed} কিলোমিটার এবং দমকা বাতাসের গতি ${gustSpeed} কিলোমিটার পর্যন্ত পৌঁছাতে পারে। ${
@@ -433,6 +514,20 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
         : isMildWinter
         ? `हल्की जैकेट साथ रखें (${minTemp}°C)`
         : 'मौसम अनुसार सतर्क रहें';
+
+      if (isPostLandfall) {
+        return {
+          headline: `तूफान साथी बुलेटिन: चक्रवात उपरांत स्थिति व बहाली - ${districtName}`,
+          speech: `मौसम अपडेट। चक्रवाती तूफान अकवान गोपालपुर के पास तट पार करने के बाद अब कमजोर होकर अंतर्देशीय उत्तर ओडिशा और झारखंड सीमा पर स्पष्ट निम्न दबाव में तब्दील हो चुका है। तटीय क्षेत्रों में विनाशकारी तूफानी हवाएं पूरी तरह शांत हो चुकी हैं और रेड अलर्ट वापस ले लिया गया है। इस समय तूफान का कमजोर अवशेष केंद्र आपसे लगभग ${distanceKm} किलोमीटर दूर है। हवा की गति सामान्य ${windSpeed} से ${gustSpeed} किलोमीटर प्रति घंटा रह गई है। कुछ स्थानों पर बारिश जारी रह सकती है। टूटे बिजली के तारों, जलजमाव वाले रास्तों और कमजोर पेड़ों से सावधान रहें। सामान्य जनजीवन और तटीय गतिविधियां सामान्य हो रही हैं। ${winterSpeech}`,
+          phoneticSpeech: `Mausam update. Toofan Akvan Gopalpur ke paas tat paar karne ke baad ab kamzor hokar North Odisha aur Jharkhand border par low pressure mein badal gaya hai. Tatiya kshetro mein toofani hawayen shant ho chuki hain aur red alert hata liya gaya hai. Toofan ka kendra ${distanceKm} kilometer door hai. Toote taaron se savdhan rahein. ${winterPhonetic}`,
+          actionSteps: [
+            'टूटे बिजली तारों व गिरे पेड़ों से दूर रहें',
+            'जलभराव वाले रास्तों से बचें',
+            winterAction,
+            'तटीय क्षेत्रों में जनजीवन सामान्य'
+          ]
+        };
+      }
 
       return {
         headline: `तूफान साथी चेतावनी: ${isRed ? 'रेड अलर्ट (अत्यधिक खतरा)' : isOrange ? 'ऑरेंज अलर्ट (सावधान)' : 'येलो अलर्ट (निगरानी)'} - ${districtName}`,
@@ -480,6 +575,20 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
         ? `હળવું જેકેટ સાથે રાખો (${minTemp}°C)`
         : 'હવામાન મુજબ સાવચેત રહો';
 
+      if (isPostLandfall) {
+        return {
+          headline: `તૂફાન સાથી બુલેટિન: વાવાઝોડા પછીની પરિસ્થિતિ - ${districtName}`,
+          speech: `હવામાન માહિતી. વાવાઝોડું અકવાન ગોપાલપુર પાસે લેન્ડફોલ પૂર્ણ કરી નબળું પડી ગયું છે. હાલ ઉત્તર ઓડિશા અને ઝારખંડ સરહદ પર નીચા દબાણના ક્ષેત્ર તરીકે સક્રિય છે. દરિયાકાંઠે તોફાની પવન શાંત થયો છે અને રેડ એલર્ટ પાછું ખેંચાયું છે. તૂટેલા વીજ વાયર અને પાણી ભરાયેલા રસ્તાઓથી સાવચેત રહો. દરિયાકાંઠે પરિસ્થિતિ સામાન્ય થઈ રહી છે. ${winterSpeech}`,
+          phoneticSpeech: `Mausam mahiti. Vavazodu Akvan landfall puru kari nablu padine low pressure banyu che. Dariyakanthe pavan shant thayo che. Kendra ${distanceKm} kilometer door che. ${winterPhonetic}`,
+          actionSteps: [
+            'તૂટેલા વીજળીના વાયરથી દૂર રહો',
+            'પાણી ભરાયેલા રસ્તાઓથી બચો',
+            winterAction,
+            'દરિયાકાંઠે પરિસ્થિતિ સામાન્ય'
+          ]
+        };
+      }
+
       return {
         headline: `તૂફાન સાથી ચેતવણી: ${isRed ? 'રેડ એલર્ટ (ભારે ખતરો)' : isOrange ? 'ઓરેન્જ એલર્ટ (સાવધાન)' : 'યલો એલર્ટ'} - ${districtName}`,
         speech: `કટોકટી હવામાન ચેતવણી. ${districtName} વિસ્તારમાં વાવાઝોડા અને ઊંડા દબાણની ગંભીર અસર છે. વાવાઝોડાનું કેન્દ્ર તમારાથી આશરે ${distanceKm} કિલોમીટર દૂર છે. પવનની ઝડપ ${windSpeed} કિમી/કલાક અને ઝાપટાં ${gustSpeed} કિમી/કલાક સુધી પહોંચી શકે છે. ${
@@ -525,6 +634,20 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
         : isMildWinter
         ? `తేలికపాటి జాకెట్ ఉంచుకోండి (${minTemp}°C)`
         : 'వాతావరణం ప్రకారం జాగ్రత్త వహించండి';
+
+      if (isPostLandfall) {
+        return {
+          headline: `తూఫాన్ సాథీ బులిటెన్: తుఫాను తర్వాతి పరిస్థితి - ${districtName}`,
+          speech: `వాతావరణ సమాచారం. తీవ్ర తుఫాను అక్వాన్ గోపాల్పూర్ సమీపంలో తీరం దాటి బలహీనపడింది. ప్రస్తుతం ఉత్తర ఒడిశా, జార్ఖండ్ సరిహద్దులో అల్పపీడనంగా మారింది. తీరప్రాంతాల్లో తుఫాను గాలులు శాంతించాయి, రెడ్ అలర్ట్ ఉపసంహరించబడింది. ప్రస్తుతం ఈ వ్యవస్థ మీకు ${distanceKm} కి.మీ దూరంలో ఉంది. తెగిపడిన విద్యుత్ తీగలు, విరిగిన చెట్ల కొమ్మల పట్ల జాగ్రత్త వహించండి. తీర ప్రాంతాలలో మత్స్యకారులు సాధారణ కార్యకలాపాలు ప్రారంభించవచ్చు. ${winterSpeech}`,
+          phoneticSpeech: `Vatavarana suchana. Akvan toofanu Gopalpur daggara theeram daati balheenapadindi. Teerapranthallo gaalulu shantinchayi. Kendra ${distanceKm} kilometerla dooramlo undi. ${winterPhonetic}`,
+          actionSteps: [
+            'తెగిన విద్యుత్ తీగలకు దూరంగా ఉండండి',
+            'ముంపునకు గురైన రోడ్ల పట్ల జాగ్రత్త',
+            winterAction,
+            'తీర ప్రాంతం సాధారణ స్థితికి చేరుకుంది'
+          ]
+        };
+      }
 
       return {
         headline: `తూఫాన్ సాథీ హెచ్చరిక: ${isRed ? 'రెడ్ అలర్ట్ (తీవ్ర ప్రమాదం)' : isOrange ? 'ఆరెంజ్ అలర్ట్ (అప్రమత్తం)' : 'ఎల్లో అలర్ట్'} - ${districtName}`,
@@ -572,6 +695,20 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
         ? `லேசான ஜாக்கெட் உடன் வைக்கவும் (${minTemp}°C)`
         : 'வானிலைக்கு ஏற்ப பாதுகாப்பாக இருங்கள்';
 
+      if (isPostLandfall) {
+        return {
+          headline: `தூபான் சாதி அறிக்கை: புயலுக்கு பிந்தைய நிலைமை - ${districtName}`,
+          speech: `வானிலை தகவல். புயல் அக்வான் கோபால்பூர் அருகே கரையை கடந்து தீவிர காற்றழுத்த தாழ்வு மண்டலமாக பலவீனமடைந்தது. கடற்கரையோரங்களில் சூறாவளி காற்று நின்றுவிட்டது, ரெட் அலர்ட் திரும்பப் பெறப்பட்டது. அறுந்து விழுந்த மின்கம்பிகள் மற்றும் வெள்ளம் சூழ்ந்த சாலைகளில் எச்சரிக்கையாக இருங்கள். கடலோரப் பகுதிகளில் இயல்பு வாழ்க்கை திரும்புகிறது. ${winterSpeech}`,
+          phoneticSpeech: `Vaanilai thagaval. Puyal Akvan karaiyai kadanthu balaveenamadainthathu. Kadarkaraiyil kaatru nindru vittathu. Maiyam ${distanceKm} kilometer tholaivil ullathu. ${winterPhonetic}`,
+          actionSteps: [
+            'அறுந்த மின்கம்பிகளிலிருந்து விலகி இருங்கள்',
+            'வெள்ளம் சூழ்ந்த சாலைகளில் செல்லாதீர்கள்',
+            winterAction,
+            'கடலோரப் பகுதிகளில் இயல்பு நிலை'
+          ]
+        };
+      }
+
       return {
         headline: `தூபான் சாதி அவசர எச்சரிக்கை: ${isRed ? 'சிவப்பு எச்சரிக்கை (ரெட் அலர்ட்)' : isOrange ? 'ஆரஞ்சு எச்சரிக்கை' : 'மஞ்சள் எச்சரிக்கை'} - ${districtName}`,
         speech: `அவசர வானிலை எச்சரிக்கை. ${districtName} பகுதியில் புயல் மற்றும் தீவிர காற்றழுத்த தாழ்வு மண்டலத்தின் தாக்கம் தொடங்கியுள்ளது. புயலின் மையம் உங்களிலிருந்து சுமார் ${distanceKm} கி.மீ தொலைவில் உள்ளது. காற்றின் வேகம் மணிக்கு ${windSpeed} கி.மீ மற்றும் பலத்த காற்று ${gustSpeed} கி.மீ வரை வீசக்கூடும். ${
@@ -617,6 +754,20 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
         : isMildWinter
         ? `നേർത്ത ജാക്കറ്റ് കരുതുക (${minTemp}°C)`
         : 'കാലാവസ്ഥയ്ക്കനുസരിച്ച് ജാഗ്രത പാലിക്കുക';
+
+      if (isPostLandfall) {
+        return {
+          headline: `തൂഫാൻ സാഥി ബുള്ളറ്റിൻ: ചുഴലിക്കാറ്റിന് ശേഷമുള്ള സ്ഥിതി - ${districtName}`,
+          speech: `കാലാവസ്ഥാ വിവരം. അക്വാൻ ചുഴലിക്കാറ്റ് ഗോപാൽപൂരിന് സമീപം തീരം തൊട്ട് തീവ്ര ന്യൂനമർദ്ദമായി ദുർബലപ്പെട്ടു. തീരദേശത്ത് കൊടുങ്കാറ്റ് ശമിച്ചു, റെഡ് അലർട്ട് പിൻവലിച്ചു. പൊട്ടിവീണ വൈദ്യുത ലൈനുകൾ, വെള്ളക്കെട്ടുകൾ എന്നിവ ശ്രദ്ധിക്കുക. സാധാരണ ജീവിതം പുനഃസ്ഥാപിക്കപ്പെടുന്നു. ${winterSpeech}`,
+          phoneticSpeech: `Kalavastha vivaram. Akvan chuzhalikaatu theeram thottu dhoorbalappettu. Theeradeshathu kaattu shamichu. Kendram ${distanceKm} kilometer akale aanu. ${winterPhonetic}`,
+          actionSteps: [
+            'പൊട്ടിവീണ വൈദ്യുത ലൈനുകളിൽ നിന്ന് അകന്നുനിൽക്കുക',
+            'വെള്ളക്കെട്ടുള്ള റോഡുകൾ ഒഴിവാക്കുക',
+            winterAction,
+            'തീരദേശത്ത് സാധാരണ ജീവിതം'
+          ]
+        };
+      }
 
       return {
         headline: `തൂഫാൻ സാഥി അടിയന്തര മുന്നറിയിപ്പ്: ${isRed ? 'റെഡ് അലർട്ട് (അതീവ ജാഗ്രത)' : isOrange ? 'ഓറഞ്ച് അലർട്ട്' : 'മഞ്ഞ അലർട്ട്'} - ${districtName}`,
@@ -664,6 +815,20 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
         ? `ತೆಳುವಾದ ಜಾಕೆಟ್ ಜೊತೆಯಲ್ಲಿಡಿ (${minTemp}°C)`
         : 'ಹವಾಮಾನಕ್ಕೆ ತಕ್ಕಂತೆ ಜಾಗರೂಕರಾಗಿರಿ';
 
+      if (isPostLandfall) {
+        return {
+          headline: `ತೂಫಾನ್ ಸಾಥಿ ಮಾಹಿತಿ: ಚಂಡಮಾರುತದ ನಂತರದ ಪರಿಸ್ಥಿತಿ - ${districtName}`,
+          speech: `ಹವಾಮಾನ ಮಾಹಿತಿ. ಚಂಡಮಾರುತ ಅಕ್ವಾನ್ ಗೋಪಾಲಪುರ ಬಳಿ ಭೂಸ್ಪರ್ಶ ಮುಗಿಸಿ ದುರ್ಬಲಗೊಂಡಿದೆ. ಪ್ರಸ್ತುತ ಉತ್ತರ ಒಡಿಶಾ ಮತ್ತು ಜಾರ್ಖಂಡ್ ಗಡಿಯಲ್ಲಿ ವಾಯುಭಾರ ಕುಸಿತವಾಗಿ ಉಳಿದಿದೆ. ಕರಾವಳಿ ಪ್ರದೇಶದಲ್ಲಿ ಬಿರುಗಾಳಿ ನಿಂತಿದೆ, ರೆಡ್ ಅಲರ್ಟ್ ಹಿಂಪಡೆಯಲಾಗಿದೆ. ತುಂಡಾದ ವಿದ್ಯುತ್ ತಂತಿಗಳು ಮತ್ತು ನೀರಿನಿಂದ ಆವೃತವಾದ ರಸ್ತೆಗಳಿಂದ ಎಚ್ಚರವಾಗಿರಿ. ಕರಾವಳಿಯಲ್ಲಿ ಜನಜೀವನ ಸಹಜ ಸ್ಥಿತಿಗೆ ಮರಳುತ್ತಿದೆ. ${winterSpeech}`,
+          phoneticSpeech: `Havamana mahiti. Toofan Akvan Gopalpura bali bhoosparsha mugisi dhoorbalagondide. Karavaliyalli gaali nintide. Kendra ${distanceKm} kilometer dooradallide. ${winterPhonetic}`,
+          actionSteps: [
+            'ತುಂಡಾದ ವಿದ್ಯುತ್ ತಂತಿಗಳಿಂದ ದೂರವಿರಿ',
+            'ನೀರು ನಿಂತ ರಸ್ತೆಗಳನ್ನು ತಪ್ಪಿಸಿ',
+            winterAction,
+            'ಕರಾವಳಿಯಲ್ಲಿ ಸಹಜ ಸ್ಥಿತಿ'
+          ]
+        };
+      }
+
       return {
         headline: `ತೂಫಾನ್ ಸಾಥಿ ತುರ್ತು ಎಚ್ಚರಿಕೆ: ${isRed ? 'ಕೆಂಪು ಎಚ್ಚರಿಕೆ (ರೆಡ್ ಅಲರ್ಟ್)' : isOrange ? 'ಕಿತ್ತಳೆ ಎಚ್ಚರಿಕೆ' : 'ಹಳದಿ ಎಚ್ಚರಿಕೆ'} - ${districtName}`,
         speech: `ತುರ್ತು ಹವಾಮಾನ ಎಚ್ಚರಿಕೆ. ${districtName} ಪ್ರದೇಶದಲ್ಲಿ ಚಂಡಮಾರುತ ಮತ್ತು ತೀವ್ರ ವಾಯುಭಾರ ಕುಸಿತದ ಪರಿಣಾಮ ಆರಂಭವಾಗಿದೆ. ಚಂಡಮಾರುತದ ಕೇಂದ್ರವು ನಿಮ್ಮಿಂದ ಸುಮಾರು ${distanceKm} ಕಿ.ಮೀ ದೂರದಲ್ಲಿದೆ. ಗಾಳಿಯ ವೇಗ ಗಂಟೆಗೆ ${windSpeed} ಕಿ.ಮೀ ಮತ್ತು ಬಿರುಗಾಳಿ ${gustSpeed} ಕಿ.ಮೀ ವರೆಗೆ ತಲುಪಬಹುದು. ${
@@ -704,6 +869,20 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
         : isMildWinter
         ? `Carry light jacket or windcheater (${minTemp}°C)`
         : 'Dress appropriately for current weather';
+
+      if (isPostLandfall) {
+        return {
+          headline: `ToofanSathi Advisory: Post-Landfall Recovery & Remnant Watch - ${districtName}`,
+          speech: `Weather Update. Severe Cyclone Akvan has completed landfall near Gopalpur and weakened into a Well-Marked Low Pressure Area inland. Severe gale winds along the coast have ceased, and coastal Red Alerts are withdrawn. The remnant center is currently approximately ${distanceKm} kilometers from your area with moderate winds of ${windSpeed} to ${gustSpeed} kilometers per hour. Localized rain intervals may continue. Please exercise caution around fallen power cables, tree branches, and waterlogged roads. Nearshore fishing and routine activities can safely resume with standard caution. ${winterSpeech}`,
+          phoneticSpeech: null,
+          actionSteps: [
+            'Stay clear of fallen wires & broken branches',
+            'Avoid crossing flooded roads or causeways',
+            winterAction,
+            'Coast safe for nearshore activity'
+          ]
+        };
+      }
 
       return {
         headline: `ToofanSathi Emergency Alert: ${threat.level} Level for ${districtName}`,

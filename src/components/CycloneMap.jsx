@@ -31,58 +31,100 @@ import { calculateDistanceKm } from '../services/cycloneEngine';
 // Dynamic Real-Time Storm Progression Engine based on Current Clock Time
 export function getLiveAkvanState() {
   const now = new Date();
+  const date = now.getDate();
   const hours = now.getHours() + now.getMinutes() / 60;
   const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 
-  // Determine current active timeline step based on time of day:
-  // < 7.0 AM: Step 0 (05:30 AM)
-  // 7.0 - 11.0 AM: Step 1 (08:00 AM)
-  // 11.0 AM - 2:30 PM (Current time ~13:00+ IST): Step 2 (Landfall Crossing Window)
-  // 2:30 PM - 5:30 PM: Step 3 (03:00 PM Eye Moving Inland)
-  // 5:30 PM - 9:30 PM: Step 4 (06:00 PM Cyclonic Storm)
-  // 9:30 PM - 3:30 AM: Step 5 (12:00 AM Deep Depression)
-  // >= 3:30 AM: Step 6 (06:00 AM Low)
-  let liveIndex = 2; // Default to current Landfall Crossing window (11:00 AM – 02:30 PM)
-  if (hours < 7.0) liveIndex = 0;
-  else if (hours < 11.0) liveIndex = 1;
-  else if (hours < 14.5) liveIndex = 2;
-  else if (hours < 17.5) liveIndex = 3;
-  else if (hours < 21.5) liveIndex = 4;
-  else if (hours < 27.5) liveIndex = 5;
-  else liveIndex = 6;
+  // On Nov 21, 2026 or later, Cyclone Akvan has completed landfall and weakened inland
+  const isPostLandfallDay = date >= 21 || now.getMonth() > 10 || now.getFullYear() > 2026;
 
-  let landfallPhase = 'in_progress';
-  let landfallTitle = '🚨 Landfall In Progress (Eyewall Crossing Coast)';
-  let landfallBadge = 'LANDFALL ONGOING';
-  let landfallStatus = 'Eyewall Crossing Now (Gopalpur / Padmapur)';
-  let landfallWindow = 'Active Landfall Window: Ongoing (12:00 PM – 03:00 PM IST)';
-  let landfallDetail = `Live Situation (${timeStr} IST): Forward eyewall of Severe Cyclone Akvan is traversing South Odisha coastline right now. Maximum destructive winds (95–115 km/h, gusts 125 km/h) & 1.0–1.5m peak storm surge inundation occurring along Ganjam & Srikakulam coastal belt.`;
-  let landfallAction = 'PEAK DANGER: Stay strictly indoors in pucca shelters. Do not venture out even during temporary lull if the eye passes overhead!';
+  let liveIndex = 6;
+  let landfallPhase = 'weakened_inland';
+  let landfallTitle = '🟢 Cyclone Weakened into Well-Marked Low (Landfall Completed)';
+  let landfallBadge = 'WEAKENED LOW';
+  let landfallStatus = '✅ Landfall Completed Yesterday (20 Nov 13:00 IST)';
+  let landfallWindow = 'Landfall Completed: 20 Nov 12:30–13:30 IST';
+  let landfallDetail = `Live Situation (${timeStr} IST): Severe Cyclone Akvan made landfall near Gopalpur yesterday and rapidly weakened. It is now a Well-Marked Low Pressure Area centered inland at 22.50°N, 84.80°E over North Odisha / Jharkhand border. Destructive gale winds have ceased.`;
+  let landfallAction = 'Coastal Red Alerts withdrawn. Port warning signals lowered to LC-III. Watch for localized waterlogging and fallen branches in northern interior.';
 
-  if (hours < 11.0) {
-    landfallPhase = 'approaching';
-    landfallTitle = '⚠️ Severe Cyclone Akvan Approaching Coast';
-    landfallBadge = 'APPROACHING COAST';
-    landfallStatus = 'Landfall Expected: 12:00 PM – 03:00 PM';
-    landfallWindow = 'Expected Landfall Window: Today 12:00 PM – 03:00 PM IST';
-    landfallDetail = `Observed center ~40 km offshore. Advancing NNW towards Gopalpur / Padmapur sector at 16 km/h.`;
-    landfallAction = 'Ensure evacuation to designated cyclone shelters is completed immediately.';
-  } else if (hours >= 14.5 && hours <= 18.0) {
-    landfallPhase = 'inland';
-    landfallTitle = '⚠️ Landfall Completed • Eye Moving Inland';
-    landfallBadge = 'EYE MOVING INLAND';
-    landfallStatus = 'Landfall Completed (~01:30 PM) • Eye Inland';
-    landfallWindow = 'Landfall Crossing Completed';
-    landfallDetail = `Live Situation (${timeStr} IST): Cyclone Akvan crossed coast near Gopalpur between 12:00 PM & 01:30 PM. Center is now advancing inland across Ganjam & Gajapati districts heading NNW at 16 km/h.`;
-    landfallAction = 'Heavy inland squalls, flash floods, and uprooted trees alert across Rayagada, Gajapati & Ganjam interior.';
-  } else if (hours > 18.0) {
-    landfallPhase = 'weakening';
-    landfallTitle = '🟠 Weakening into Cyclonic Storm / Depression';
-    landfallBadge = 'WEAKENING INLAND';
-    landfallStatus = 'Weakening System Inland';
-    landfallWindow = 'Post-Landfall Stage';
-    landfallDetail = `Live Situation (${timeStr} IST): System weakened over central Odisha interior. Torrential rains persisting across Boudh, Kandhamal & Sambalpur.`;
-    landfallAction = 'Avoid waterlogged areas, fallen power lines, and swollen riverbanks.';
+  if (!isPostLandfallDay) {
+    // 20 Nov Progression
+    if (hours < 7.0) {
+      liveIndex = 0;
+      landfallPhase = 'approaching';
+      landfallTitle = '⚠️ Severe Cyclone Akvan Approaching Coast';
+      landfallBadge = 'APPROACHING COAST';
+      landfallStatus = 'Landfall Expected: 12:00 PM – 03:00 PM';
+      landfallWindow = 'Expected Landfall Window: Today 12:00 PM – 03:00 PM IST';
+      landfallDetail = `Observed center ~40 km offshore. Advancing NNW towards Gopalpur / Padmapur sector at 16 km/h.`;
+      landfallAction = 'Ensure evacuation to designated cyclone shelters is completed immediately.';
+    } else if (hours < 11.0) {
+      liveIndex = 1;
+      landfallPhase = 'approaching';
+      landfallTitle = '⚠️ Severe Cyclone Akvan Approaching Coast';
+      landfallBadge = 'APPROACHING COAST';
+      landfallStatus = 'Landfall Expected: 12:00 PM – 03:00 PM';
+      landfallWindow = 'Expected Landfall Window: Today 12:00 PM – 03:00 PM IST';
+      landfallDetail = `Observed center ~40 km offshore. Advancing NNW towards Gopalpur / Padmapur sector at 16 km/h.`;
+      landfallAction = 'Ensure evacuation to designated cyclone shelters is completed immediately.';
+    } else if (hours < 14.5) {
+      liveIndex = 2;
+      landfallPhase = 'in_progress';
+      landfallTitle = '🚨 Landfall In Progress (Eyewall Crossing Coast)';
+      landfallBadge = 'LANDFALL ONGOING';
+      landfallStatus = 'Eyewall Crossing Now (Gopalpur / Padmapur)';
+      landfallWindow = 'Active Landfall Window: Ongoing (12:00 PM – 03:00 PM IST)';
+      landfallDetail = `Live Situation (${timeStr} IST): Forward eyewall of Severe Cyclone Akvan is traversing South Odisha coastline right now. Maximum destructive winds (95–115 km/h, gusts 125 km/h) & 1.0–1.5m peak storm surge inundation occurring along Ganjam & Srikakulam coastal belt.`;
+      landfallAction = 'PEAK DANGER: Stay strictly indoors in pucca shelters. Do not venture out even during temporary lull if the eye passes overhead!';
+    } else if (hours < 17.5) {
+      liveIndex = 3;
+      landfallPhase = 'inland';
+      landfallTitle = '⚠️ Landfall Completed • Eye Moving Inland';
+      landfallBadge = 'EYE MOVING INLAND';
+      landfallStatus = 'Landfall Completed (~01:30 PM) • Eye Inland';
+      landfallWindow = 'Landfall Crossing Completed';
+      landfallDetail = `Live Situation (${timeStr} IST): Cyclone Akvan crossed coast near Gopalpur between 12:00 PM & 01:30 PM. Center is now advancing inland across Ganjam & Gajapati districts heading NNW at 16 km/h.`;
+      landfallAction = 'Heavy inland squalls, flash floods, and uprooted trees alert across Rayagada, Gajapati & Ganjam interior.';
+    } else if (hours < 21.5) {
+      liveIndex = 4;
+      landfallPhase = 'weakening';
+      landfallTitle = '🟠 Weakening into Cyclonic Storm / Depression';
+      landfallBadge = 'WEAKENING INLAND';
+      landfallStatus = 'Weakening System Inland';
+      landfallWindow = 'Post-Landfall Stage';
+      landfallDetail = `Live Situation (${timeStr} IST): System weakened over central Odisha interior. Torrential rains persisting across Boudh, Kandhamal & Sambalpur.`;
+      landfallAction = 'Avoid waterlogged areas, fallen power lines, and swollen riverbanks.';
+    } else {
+      liveIndex = 5;
+      landfallPhase = 'weakening';
+      landfallTitle = '🟠 Inland Deep Depression';
+      landfallBadge = 'DEEP DEPRESSION';
+      landfallStatus = 'Depression over Central Odisha';
+      landfallWindow = 'Weakening Rapidly';
+      landfallDetail = `Live Situation (${timeStr} IST): System center over Boudh/Sambalpur area.`;
+      landfallAction = 'Avoid waterlogged areas and swollen riverbanks.';
+    }
+  } else {
+    // Nov 21 or later
+    if (hours < 5.0) {
+      liveIndex = 5;
+      landfallPhase = 'weakening';
+      landfallTitle = '🟠 Inland Deep Depression';
+      landfallBadge = 'DEEP DEPRESSION';
+      landfallStatus = 'Deep Depression over Central Odisha';
+      landfallWindow = 'Post-Landfall Night Track';
+      landfallDetail = `Live Situation (${timeStr} IST): Cyclone remnant tracked across Sambalpur and Angul as a Deep Depression.`;
+      landfallAction = 'Stay clear of waterlogged roads and low bridges.';
+    } else {
+      liveIndex = 6;
+      landfallPhase = 'weakened_inland';
+      landfallTitle = '🟢 Cyclone Weakened into Well-Marked Low (Landfall Completed)';
+      landfallBadge = 'WEAKENED LOW';
+      landfallStatus = '✅ Landfall Completed Yesterday (20 Nov 13:00 IST)';
+      landfallWindow = 'Landfall Completed: 20 Nov 12:30–13:30 IST';
+      landfallDetail = `Live Situation (${timeStr} IST): Severe Cyclone Akvan made landfall near Gopalpur yesterday and rapidly weakened. It is now a Well-Marked Low Pressure Area centered inland at 22.50°N, 84.80°E over North Odisha / Jharkhand border. Destructive gale winds have ceased.`;
+      landfallAction = 'Coastal Red Alerts withdrawn. Port warning signals lowered to LC-III. Watch for localized waterlogging and fallen branches in northern interior.';
+    }
   }
 
   return {
@@ -102,11 +144,11 @@ export function getLiveAkvanState() {
 export const AKVAN_TIMELINE_STEPS = [
   { id: 'step-0', time: '05:30 AM', date: '20 Nov', lat: 17.40, lon: 83.80, stage: 'Deep Depression', status: 'Advancing off Visakhapatnam Coast', wind: '75–85 km/h', gusts: '100 km/h', pressure: '992 hPa' },
   { id: 'step-1', time: '08:00 AM', date: '20 Nov', lat: 18.10, lon: 83.40, stage: 'Severe Cyclone Akvan (Morning Eye)', status: 'Observed Center ~40 km off Padmapur / Gopalpur Coast', wind: '95 km/h', gusts: '115 km/h', pressure: '988 hPa' },
-  { id: 'step-2', time: '12:00 PM', date: '20 Nov', lat: 18.90, lon: 83.60, stage: 'Landfall In Progress', status: 'Eyewall Crossing Coast (Gopalpur / Padmapur Sector)', wind: '95–115 km/h', gusts: '125 km/h', pressure: '988 hPa', isLandfall: true, isLive: true },
+  { id: 'step-2', time: '12:00 PM', date: '20 Nov', lat: 18.90, lon: 83.60, stage: 'Landfall Completed (Yesterday)', status: 'Eyewall Crossed Coast (Gopalpur / Padmapur Sector)', wind: '95–115 km/h', gusts: '125 km/h', pressure: '988 hPa', isLandfall: true },
   { id: 'step-3', time: '03:00 PM', date: '20 Nov', lat: 19.35, lon: 83.75, stage: 'Eye Moving Inland', status: 'Ganjam, Gajapati & Eastern Ghats Interior', wind: '80–90 km/h', gusts: '105 km/h', pressure: '992 hPa' },
   { id: 'step-4', time: '06:00 PM', date: '20 Nov', lat: 19.80, lon: 83.90, stage: 'Cyclonic Storm', status: 'Inland Crossing Rayagada / Kandhamal border', wind: '70–80 km/h', gusts: '90 km/h', pressure: '996 hPa' },
   { id: 'step-5', time: '12:00 AM', date: '21 Nov', lat: 21.10, lon: 84.30, stage: 'Inland Deep Depression', status: 'Central Odisha (Boudh / Angul / Sambalpur)', wind: '50–60 km/h', gusts: '70 km/h', pressure: '1000 hPa' },
-  { id: 'step-6', time: '06:00 AM', date: '21 Nov', lat: 22.50, lon: 84.80, stage: 'Well-Marked Low', status: 'Jharkhand Border / Sundargarh Belt', wind: '35–45 km/h', gusts: '55 km/h', pressure: '1004 hPa' }
+  { id: 'step-6', time: '06:00 AM', date: '21 Nov', lat: 22.50, lon: 84.80, stage: 'Well-Marked Low (Live Remnant)', status: 'North Odisha & Jharkhand Border (Sundargarh Belt)', wind: '35–45 km/h', gusts: '55 km/h', pressure: '1004 hPa', isLive: true }
 ];
 
 // Clean Minimalist Map Dot Icons - Clutter-Free with Hover/Tap Details
@@ -352,6 +394,83 @@ export default function CycloneMap({
     const lon = storm.center.lon;
 
     if (storm.basin === 'Bay of Bengal') {
+      const isWeakenedLow = liveState.landfallPhase === 'weakened_inland' || lat >= 21.0;
+
+      if (isWeakenedLow) {
+        return {
+          pastCoords: [
+            [12.40, 86.20], // Southwest Bay origin
+            [14.50, 84.80], // Deep depression stage
+            [16.20, 84.20], // Upgraded to Cyclonic Storm Akvan off AP coast
+            [17.40, 83.80], // Severe Cyclone off Visakhapatnam
+            [18.10, 83.40], // 20 Nov 08:00 AM offshore
+            [18.90, 83.60], // 20 Nov 12:30 PM Landfall near Gopalpur
+            [19.80, 83.90], // 20 Nov 06:00 PM Inland Rayagada/Kandhamal
+            [21.10, 84.30], // 21 Nov 12:00 AM Midnight Sambalpur/Central Odisha
+            [lat, lon]      // 21 Nov 06:00/08:00 AM Live Remnant Center [22.50, 84.80]
+          ],
+          forecastCoords: [
+            [lat, lon],
+            [23.40, 85.50], // 21 Nov 02:00 PM Inland Jharkhand (Ranchi sector)
+            [24.10, 86.40]  // 21 Nov 08:00 PM Dissipating Low towards Gangetic West Bengal
+          ],
+          coneCoords: [
+            [lat, lon],
+            [22.80, 84.10], // West Jharkhand boundary
+            [23.70, 84.70], // Northwest boundary
+            [24.60, 85.70], // Northern forward boundary
+            [24.40, 87.20], // Northeast boundary (WB border)
+            [23.50, 86.80], // Southeast boundary (Jamshedpur/Purulia)
+            [22.60, 85.50], // Southern boundary
+            [lat, lon]
+          ],
+          checkpoints: [
+            { 
+              label: 'Offshore Track (20 Nov 08:00 AM)', 
+              lat: 18.10, 
+              lon: 83.40, 
+              time: '20 Nov 08:00 AM',
+              statusDesc: 'Observed center ~40 km offshore before landfall traversal'
+            },
+            { 
+              label: 'Landfall: Gopalpur / Padmapur Sector', 
+              lat: 18.90, 
+              lon: 83.60, 
+              time: '20 Nov 12:30–13:30 IST', 
+              isLandfall: true,
+              isPast: true,
+              phase: liveState.landfallPhase,
+              badge: liveState.landfallBadge,
+              title: liveState.landfallTitle,
+              detail: liveState.landfallDetail,
+              action: liveState.landfallAction,
+              statusDesc: '✅ Landfall Completed Yesterday (Eye crossed near Gopalpur at 100–110 km/h)'
+            },
+            { 
+              label: 'Inland Crossing (Rayagada/Ganjam)', 
+              lat: 19.80, 
+              lon: 83.90, 
+              time: '20 Nov 06:00 PM',
+              statusDesc: 'Passed inland with heavy squally rain'
+            },
+            { 
+              label: 'Central Odisha (Sambalpur)', 
+              lat: 21.10, 
+              lon: 84.30, 
+              time: '21 Nov 12:00 AM',
+              statusDesc: 'Weakened to Deep Depression midnight'
+            },
+            { 
+              label: 'Current Live Remnant (Sundargarh / Jharkhand)', 
+              lat: 22.50, 
+              lon: 84.80, 
+              time: '21 Nov 06:00–08:00 AM (LIVE)',
+              statusDesc: '🔴 Current Live Remnant: Well-Marked Low (35–45 km/h)'
+            }
+          ]
+        };
+      }
+
       return {
         pastCoords: [
           [12.40, 86.20], // Southwest Bay origin
@@ -617,18 +736,20 @@ export default function CycloneMap({
               <div className="flex items-center justify-between gap-1.5 border-b border-slate-800/60 pb-1">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span className="flex h-2.5 w-2.5 relative flex-shrink-0">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
+                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${liveState.landfallPhase === 'weakened_inland' ? 'bg-emerald-400' : 'bg-red-400'}`}></span>
+                    <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${liveState.landfallPhase === 'weakened_inland' ? 'bg-emerald-500' : 'bg-red-600'}`}></span>
                   </span>
                   <span className="font-extrabold text-white text-[11px] sm:text-sm truncate">
-                    Current Status: Severe Cyclone Akvan ({liveState.timeStr} IST)
+                    Current Status: {liveState.landfallPhase === 'weakened_inland' ? 'Well-Marked Low (Weakened Remnant of Cyclone Akvan)' : 'Severe Cyclone Akvan'} ({liveState.timeStr} IST)
                   </span>
-                  <span className="text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded bg-red-600 text-white border border-red-400 whitespace-nowrap flex-shrink-0 animate-pulse">
+                  <span className={`text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 ${
+                    liveState.landfallPhase === 'weakened_inland' ? 'bg-emerald-700 text-white border border-emerald-500' : 'bg-red-600 text-white border border-red-400 animate-pulse'
+                  }`}>
                     {liveState.landfallBadge}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0 text-[10px] text-cyan-300 font-mono">
-                  <span>{AKVAN_TIMELINE_STEPS[timeStepIndex]?.isLive ? '🔴 LIVE' : `⏱️ ${AKVAN_TIMELINE_STEPS[timeStepIndex]?.time}`}</span>
+                  <span>{timeStepIndex === liveState.liveIndex ? '🔴 LIVE' : `⏱️ ${AKVAN_TIMELINE_STEPS[timeStepIndex]?.time}`}</span>
                   <span className="sm:hidden text-[9px] text-sky-400 font-sans font-medium">Swipe cards 👉</span>
                 </div>
               </div>
@@ -647,7 +768,7 @@ export default function CycloneMap({
                       📍 ~{bobDist || 352} km to you ({userLocation.name})
                     </span>
                     <span className="text-[9px] text-emerald-400 block font-semibold">
-                      {liveState.landfallPhase === 'in_progress' ? '🚨 Eyewall Crossing Coastline Right Now' : '🌊 ~40 km to Padmapur / Gopalpur Coast'}
+                      {AKVAN_TIMELINE_STEPS[timeStepIndex]?.status || (liveState.landfallPhase === 'weakened_inland' ? 'Inland over North Odisha & Jharkhand border' : '🌊 ~40 km to Padmapur Coast')}
                     </span>
                   </div>
                 </div>
@@ -658,13 +779,13 @@ export default function CycloneMap({
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">2. Wind & Pressure</span>
                     <strong className="text-amber-300 text-xs block">
-                      {AKVAN_TIMELINE_STEPS[timeStepIndex]?.wind || '95–115 km/h'} (Gusts: 125)
+                      {AKVAN_TIMELINE_STEPS[timeStepIndex]?.wind || '35–45 km/h'} (Gusts: {AKVAN_TIMELINE_STEPS[timeStepIndex]?.gusts || '55 km/h'})
                     </strong>
                     <span className="text-[10px] text-slate-300 block">
-                      Pressure: <strong className="font-mono text-cyan-300">{AKVAN_TIMELINE_STEPS[timeStepIndex]?.pressure || '988 hPa'}</strong>
+                      Pressure: <strong className="font-mono text-cyan-300">{AKVAN_TIMELINE_STEPS[timeStepIndex]?.pressure || '1004 hPa'}</strong>
                     </span>
                     <span className="text-[9px] text-slate-400 block">
-                      Stage: {AKVAN_TIMELINE_STEPS[timeStepIndex]?.stage || 'Severe Cyclone'}
+                      Stage: {AKVAN_TIMELINE_STEPS[timeStepIndex]?.stage || 'Well-Marked Low'}
                     </span>
                   </div>
                 </div>
@@ -675,7 +796,7 @@ export default function CycloneMap({
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">3. Landfall Situation ({liveState.timeStr})</span>
                     <strong className="text-emerald-300 text-xs block">
-                      Padmapur / Gopalpur Sector
+                      {liveState.landfallPhase === 'weakened_inland' ? 'Padmapur / Gopalpur (Crossed)' : 'Padmapur / Gopalpur Sector'}
                     </strong>
                     <span className="text-[10px] text-amber-300 font-bold block">
                       {liveState.landfallStatus}
@@ -688,17 +809,21 @@ export default function CycloneMap({
 
                 {/* Point 4: Govt Alerts */}
                 <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
-                  <ShieldAlert className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                  <ShieldAlert className={`w-4 h-4 flex-shrink-0 mt-0.5 ${liveState.landfallPhase === 'weakened_inland' ? 'text-emerald-400' : 'text-red-400'}`} />
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">4. Official Threat Level</span>
-                    <strong className="text-red-400 text-xs block">
-                      Severe Coastal Gale & Surge
+                    <strong className={`text-xs block ${liveState.landfallPhase === 'weakened_inland' ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {liveState.landfallPhase === 'weakened_inland' ? 'De-escalated: Coastal Red Alert Withdrawn' : 'Severe Coastal Gale & Surge'}
                     </strong>
                     <span className="text-[10px] text-slate-300 block">
-                      INCOIS: <strong className="text-cyan-300">1.0–1.5m storm surge</strong>
+                      {liveState.landfallPhase === 'weakened_inland' ? (
+                        <>INCOIS: <strong className="text-emerald-300">Surge Nil • Waves 1.5–2.2m</strong></>
+                      ) : (
+                        <>INCOIS: <strong className="text-cyan-300">1.0–1.5m storm surge</strong></>
+                      )}
                     </span>
                     <span className="text-[9px] text-amber-300 block">
-                      High waves: 3.5–5.5m (Ganjam/AP)
+                      {liveState.landfallPhase === 'weakened_inland' ? 'IMD: Ports LC-III • Inshore fishing safe • Inland rain watch' : 'High waves: 3.5–5.5m (Ganjam/AP)'}
                     </span>
                   </div>
                 </div>
