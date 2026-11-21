@@ -151,7 +151,10 @@ export default function App() {
           const nearest = findNearestDistrict(lat, lon);
 
           setGpsAccuracy(accuracy);
-          setGpsTimestamp(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+          const nowGps = new Date();
+          const dateStr = nowGps.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+          const timeStr = nowGps.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          setGpsTimestamp(`${dateStr}, ${timeStr}`);
 
           const newLoc = {
             id: 'gps_device',
@@ -213,7 +216,10 @@ export default function App() {
           const nearest = findNearestDistrict(lat, lon);
 
           setGpsAccuracy(accuracy);
-          setGpsTimestamp(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+          const nowGps = new Date();
+          const dateStr = nowGps.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+          const timeStr = nowGps.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          setGpsTimestamp(`${dateStr}, ${timeStr}`);
 
           setCustomGpsLocation({
             id: 'gps_device',
@@ -462,15 +468,18 @@ export default function App() {
         {/* Live GPS Status Indicator Bar (When GPS is active) */}
         {customGpsLocation && (
           <div className="bg-sky-950/40 border border-sky-800/60 rounded-xl px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-sky-200">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping flex-shrink-0"></span>
               <span>
                 <strong>Live Coordinates:</strong> {activeLocation.lat.toFixed(4)}°N, {activeLocation.lon.toFixed(4)}°E
                 {gpsAccuracy && ` (Accuracy: ±${Math.round(gpsAccuracy)}m)`}
               </span>
+              <span className="px-1.5 py-0.5 rounded bg-sky-900/60 border border-sky-700/60 text-[10px] text-sky-300 font-mono font-medium">
+                📅 {new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+              </span>
             </div>
             <div className="flex items-center gap-2 text-[11px] text-slate-400">
-              <span>Updated: {gpsTimestamp || 'Just now'}</span>
+              <span>Updated: <strong className="text-slate-300 font-mono">{gpsTimestamp || `${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}, ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`}</strong></span>
               <button
                 onClick={handleUseGps}
                 className="text-sky-400 hover:text-sky-300 underline font-semibold flex items-center gap-1"

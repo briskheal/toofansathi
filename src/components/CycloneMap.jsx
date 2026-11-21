@@ -989,6 +989,9 @@ export default function CycloneMap({
                   Lat: {userLocation.lat.toFixed(4)}°N, Lon: {userLocation.lon.toFixed(4)}°E
                   {userLocation.accuracy && ` (Accuracy: ±${Math.round(userLocation.accuracy)}m)`}
                 </div>
+                <div className="text-[9px] text-sky-300 font-mono mt-0.5">
+                  📅 {new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                </div>
               </Tooltip>
             </Marker>
 
