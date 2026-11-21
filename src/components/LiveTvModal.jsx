@@ -11,7 +11,10 @@ import {
   RefreshCw,
   Globe,
   Headphones,
-  AlertTriangle
+  AlertTriangle,
+  Play,
+  Flame,
+  RadioTower
 } from 'lucide-react';
 import { LIVE_NEWS_REGIONS, getChannelsForLocation } from '../data/liveNewsChannels';
 
@@ -27,6 +30,7 @@ export default function LiveTvModal({
   const [selectedState, setSelectedState] = useState(initialRegion.state);
   const [activeChannelId, setActiveChannelId] = useState(initialRegion.channels[0].id);
   const [isAudioOnlyMode, setIsAudioOnlyMode] = useState(false);
+  const [iframeKey, setIframeKey] = useState(0);
 
   // Sync state when activeLocation changes or modal opens
   useEffect(() => {
@@ -42,12 +46,17 @@ export default function LiveTvModal({
   const currentRegion = LIVE_NEWS_REGIONS.find((r) => r.state === selectedState) || LIVE_NEWS_REGIONS[0];
   const activeChannel = currentRegion.channels.find((c) => c.id === activeChannelId) || currentRegion.channels[0];
 
+  const handleChannelSelect = (id) => {
+    setActiveChannelId(id);
+    setIframeKey((prev) => prev + 1);
+  };
+
   if (!isOpen && !isFloating) return null;
 
   // Floating PiP (Picture-in-Picture) Mini-Player Mode
   if (isFloating) {
     return (
-      <div className="fixed bottom-20 right-3 z-[1100] w-[280px] sm:w-[320px] bg-slate-950/95 border-2 border-red-500 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-md animate-in slide-in-from-bottom-4 duration-200">
+      <div className="fixed bottom-20 right-3 z-[1100] w-[290px] sm:w-[330px] bg-slate-950/95 border-2 border-red-500 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-md animate-in slide-in-from-bottom-4 duration-200">
         <div className="p-2 bg-slate-900 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-ping flex-shrink-0"></span>
@@ -85,12 +94,13 @@ export default function LiveTvModal({
                 <span className="w-1 h-2 bg-red-500 animate-bounce [animation-delay:0.2s]"></span>
                 <span className="w-1 h-4 bg-red-500 animate-bounce [animation-delay:0.3s]"></span>
               </div>
-              <span className="text-[10px] text-slate-300 font-bold block">{activeChannel.name}</span>
-              <span className="text-[9px] text-emerald-400 font-mono">🎧 Audio-Only Mode</span>
+              <span className="text-[10px] text-slate-300 font-bold block truncate max-w-[200px]">{activeChannel.name}</span>
+              <span className="text-[9px] text-emerald-400 font-mono">🎧 Emergency Audio Mode</span>
             </div>
           ) : (
             <iframe
-              src={activeChannel.embedUrl}
+              key={`mini-${iframeKey}-${activeChannel.videoId}`}
+              src={`https://www.youtube.com/embed/${activeChannel.videoId}?autoplay=1&mute=0&rel=0&modestbranding=1`}
               title={activeChannel.name}
               className="w-full h-full border-0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -102,12 +112,23 @@ export default function LiveTvModal({
         {/* Controls footer */}
         <div className="p-2 bg-slate-900/90 flex items-center justify-between text-[10px]">
           <span className="text-slate-400 font-mono">{activeChannel.lang}</span>
-          <button
-            onClick={() => setIsAudioOnlyMode(!isAudioOnlyMode)}
-            className="text-sky-400 hover:text-sky-300 font-semibold"
-          >
-            {isAudioOnlyMode ? 'Show Video' : 'Audio Mode'}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsAudioOnlyMode(!isAudioOnlyMode)}
+              className="text-amber-400 hover:text-amber-300 font-semibold"
+            >
+              {isAudioOnlyMode ? 'Show Video' : 'Audio Only'}
+            </button>
+            <a
+              href={activeChannel.directLiveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-red-400 hover:text-red-300 font-bold flex items-center gap-0.5"
+            >
+              <span>App</span>
+              <ExternalLink className="w-2.5 h-2.5" />
+            </a>
+          </div>
         </div>
       </div>
     );
@@ -116,13 +137,13 @@ export default function LiveTvModal({
   // Full Screen Modal Mode
   return (
     <div className="fixed inset-0 z-[1200] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl shadow-2xl flex flex-col max-h-[95vh] overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl shadow-2xl flex flex-col max-h-[96vh] overflow-hidden animate-in zoom-in-95 duration-200">
         
         {/* Header */}
         <div className="p-3 sm:p-4 bg-slate-950/90 border-b border-slate-800 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-xl bg-red-600/20 border border-red-500/40 flex items-center justify-center text-red-400 flex-shrink-0">
-              <Tv className="w-4 h-4 text-red-500" />
+              <Tv className="w-4 h-4 text-red-500 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
@@ -130,7 +151,7 @@ export default function LiveTvModal({
                   <span>Live News TV & Emergency Broadcast</span>
                   <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-600 text-white text-[9px] font-black uppercase tracking-wider animate-pulse">
                     <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
-                    Live
+                    Live Feed
                   </span>
                 </h3>
               </div>
@@ -174,7 +195,7 @@ export default function LiveTvModal({
                 key={reg.state}
                 onClick={() => {
                   setSelectedState(reg.state);
-                  setActiveChannelId(reg.channels[0].id);
+                  handleChannelSelect(reg.channels[0].id);
                 }}
                 className={`whitespace-nowrap flex-shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border flex items-center gap-1 ${
                   isSelected
@@ -199,8 +220,8 @@ export default function LiveTvModal({
             return (
               <button
                 key={chan.id}
-                onClick={() => setActiveChannelId(chan.id)}
-                className={`whitespace-nowrap flex-shrink-0 px-3 py-1 rounded-lg text-xs font-bold transition-all border flex items-center gap-1.5 ${
+                onClick={() => handleChannelSelect(chan.id)}
+                className={`whitespace-nowrap flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border flex items-center gap-1.5 ${
                   isActive
                     ? 'bg-sky-600 text-white border-sky-400 shadow-md ring-1 ring-sky-400'
                     : 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
@@ -227,7 +248,7 @@ export default function LiveTvModal({
                   Audio-Only Emergency Radio Mode
                 </h4>
                 <p className="text-xs text-slate-300 max-w-md mb-3">
-                  Broadcasting live audio from <strong>{activeChannel.name}</strong>. Saves 90% mobile battery and cellular data during disaster outages.
+                  Broadcasting live stream audio from <strong>{activeChannel.name}</strong>. Saves 90% mobile battery and cellular data during disaster outages.
                 </p>
                 <div className="flex items-center gap-1.5 h-6">
                   <span className="w-1.5 h-4 bg-red-500 rounded-full animate-bounce"></span>
@@ -239,7 +260,8 @@ export default function LiveTvModal({
               </div>
             ) : (
               <iframe
-                src={activeChannel.embedUrl}
+                key={`main-${iframeKey}-${activeChannel.videoId}`}
+                src={`https://www.youtube.com/embed/${activeChannel.videoId}?autoplay=1&mute=0&rel=0&modestbranding=1`}
                 title={activeChannel.name}
                 className="w-full h-full border-0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -248,7 +270,7 @@ export default function LiveTvModal({
             )}
           </div>
 
-          {/* Player Controls & Low Bandwidth Switch */}
+          {/* Quick Action Bar for Instant Play / Fallback */}
           <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex flex-wrap items-center justify-between gap-2.5 text-xs">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
@@ -259,6 +281,16 @@ export default function LiveTvModal({
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
+              {/* Reload / Refresh stream */}
+              <button
+                onClick={() => setIframeKey((k) => k + 1)}
+                className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold flex items-center gap-1"
+                title="Reload Live Video Stream"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Reload</span>
+              </button>
+
               {/* Audio Mode Toggle */}
               <button
                 onClick={() => setIsAudioOnlyMode(!isAudioOnlyMode)}
@@ -270,21 +302,44 @@ export default function LiveTvModal({
                 title="Conserves 90% mobile data and battery in disaster areas"
               >
                 <Headphones className="w-3.5 h-3.5" />
-                <span>{isAudioOnlyMode ? 'Audio Mode Active' : 'Low-Data Audio Mode'}</span>
+                <span>{isAudioOnlyMode ? 'Audio Mode Active' : 'Low-Data Audio'}</span>
               </button>
 
-              {/* Direct Open in YouTube App */}
+              {/* Official Web TV Stream */}
+              {activeChannel.webTvUrl && (
+                <a
+                  href={activeChannel.webTvUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white border border-sky-400 text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+                  title="Watch on official channel website"
+                >
+                  <Globe className="w-3.5 h-3.5" />
+                  <span>Web Portal</span>
+                </a>
+              )}
+
+              {/* Direct Open in YouTube App / Site */}
               <a
                 href={activeChannel.directLiveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white border border-red-400 text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
-                title="Watch on official YouTube channel or App"
+                className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white border border-red-400 text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+                title="Watch on official YouTube channel or App with zero latency"
               >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>YouTube App</span>
+                <Play className="w-3.5 h-3.5 fill-current" />
+                <span>Open in YouTube App</span>
+                <ExternalLink className="w-3 h-3 ml-0.5 opacity-80" />
               </a>
             </div>
+          </div>
+
+          {/* Fallback Notice for Restrictions */}
+          <div className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-[11px] text-slate-300 flex items-center justify-between gap-2">
+            <span className="flex items-center gap-1.5">
+              <RadioTower className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <span>If any stream shows <em>"unavailable"</em> due to browser restrictions, tap <strong>Open in YouTube App</strong> for direct high-speed live broadcast.</span>
+            </span>
           </div>
 
           {/* Safety & Emergency Broadcast Notice */}
@@ -298,7 +353,10 @@ export default function LiveTvModal({
 
         {/* Footer */}
         <div className="p-3 bg-slate-950 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
-          <span>📡 24x7 Regional & Doordarshan Feeds</span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+            <span>24x7 Regional & Doordarshan Feeds</span>
+          </span>
           <button
             onClick={onClose}
             className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl border border-slate-700"
