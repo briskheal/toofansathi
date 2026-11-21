@@ -12,6 +12,7 @@ import PwaInstallPrompt from './components/PwaInstallPrompt';
 import BottomNav from './components/BottomNav';
 import TravelPlannerModal from './components/TravelPlannerModal';
 import DistrictPickerModal from './components/DistrictPickerModal';
+import LiveTvModal from './components/LiveTvModal';
 
 import { ALL_INDIA_REGIONS, findNearestDistrict } from './data/districts';
 import { fetchLiveWeather } from './services/weatherApi';
@@ -25,7 +26,7 @@ import {
   generateVoiceBriefing
 } from './services/cycloneEngine';
 
-import { MapPin, Locate, RefreshCw, AlertCircle, Navigation, Globe, Calendar, ChevronDown } from 'lucide-react';
+import { MapPin, Locate, RefreshCw, AlertCircle, Navigation, Globe, Calendar, ChevronDown, Tv } from 'lucide-react';
 
 export default function App() {
   const [selectedDistrictId, setSelectedDistrictId] = useState('puri');
@@ -50,6 +51,8 @@ export default function App() {
   const [isEmergencyOpen, setIsEmergencyOpen] = useState(false);
   const [isSafetyOpen, setIsSafetyOpen] = useState(false);
   const [isTravelPlannerOpen, setIsTravelPlannerOpen] = useState(false);
+  const [isLiveTvOpen, setIsLiveTvOpen] = useState(false);
+  const [isLiveTvFloating, setIsLiveTvFloating] = useState(false);
   const [activeSection, setActiveSection] = useState('alert');
 
   const scrollToSection = (sectionId) => {
@@ -343,6 +346,10 @@ export default function App() {
         setSelectedLang={setSelectedLang}
         onOpenEmergency={() => setIsEmergencyOpen(true)}
         onOpenSafety={() => setIsSafetyOpen(true)}
+        onOpenLiveTv={() => {
+          setIsLiveTvFloating(false);
+          setIsLiveTvOpen(true);
+        }}
       />
 
       {/* Main Field Dashboard */}
@@ -411,23 +418,37 @@ export default function App() {
             </button>
           </div>
 
-          {/* 4 Equally Distributed Control Buttons (Plan Visit, GPS Fix, Live Watch, Refresh) */}
-          <div className="grid grid-cols-4 gap-1.5 sm:gap-2 w-full pt-1">
-            {/* 1. Plan Visit Button */}
+          {/* 5 Equally Distributed Control Buttons (Live TV, Plan Visit, GPS Fix, Live Watch, Refresh) */}
+          <div className="grid grid-cols-5 gap-1 sm:gap-2 w-full pt-1">
+            {/* 1. Live TV Button */}
+            <button
+              onClick={() => {
+                setIsLiveTvFloating(false);
+                setIsLiveTvOpen(true);
+              }}
+              className="w-full flex items-center justify-center gap-1 px-1 sm:px-2 py-2 bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 text-white rounded-xl text-[10px] sm:text-xs font-bold transition-all shadow-sm border border-red-500/50 relative overflow-hidden group"
+              title="Watch Live Regional News TV & Emergency Broadcast (Auto-tuned to GPS)"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping flex-shrink-0"></span>
+              <Tv className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="truncate">Live TV</span>
+            </button>
+
+            {/* 2. Plan Visit Button */}
             <button
               onClick={() => setIsTravelPlannerOpen(true)}
-              className="w-full flex items-center justify-center gap-1 px-1 sm:px-2 py-2 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white rounded-xl text-[11px] sm:text-xs font-bold transition-all shadow-sm border border-sky-500/40"
+              className="w-full flex items-center justify-center gap-1 px-1 sm:px-2 py-2 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white rounded-xl text-[10px] sm:text-xs font-bold transition-all shadow-sm border border-sky-500/40"
               title="Plan field visit on future dates (5-7 days outlook)"
             >
               <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="truncate">Plan Visit</span>
             </button>
 
-            {/* 2. Instant GPS Refresh Button */}
+            {/* 3. Instant GPS Refresh Button */}
             <button
               onClick={handleUseGps}
               disabled={isLoading}
-              className={`w-full flex items-center justify-center gap-1 px-1 sm:px-2 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all border ${
+              className={`w-full flex items-center justify-center gap-1 px-1 sm:px-2 py-2 rounded-xl text-[10px] sm:text-xs font-bold transition-all border ${
                 customGpsLocation
                   ? 'bg-sky-600 text-white border-sky-400 shadow-sm'
                   : 'bg-slate-800/90 hover:bg-slate-700 text-sky-400 border-slate-700/80'
@@ -438,10 +459,10 @@ export default function App() {
               <span className="truncate">{customGpsLocation ? 'GPS Fix' : 'Use GPS'}</span>
             </button>
 
-            {/* 3. Continuous Live Watch Toggle */}
+            {/* 4. Continuous Live Watch Toggle */}
             <button
               onClick={toggleLiveTracking}
-              className={`w-full flex items-center justify-center gap-1 px-1 sm:px-2 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all border ${
+              className={`w-full flex items-center justify-center gap-1 px-1 sm:px-2 py-2 rounded-xl text-[10px] sm:text-xs font-bold transition-all border ${
                 isWatchActive
                   ? 'bg-emerald-600 text-white border-emerald-400 shadow-sm ring-1 ring-emerald-400/50'
                   : 'bg-slate-800/90 hover:bg-slate-700 text-slate-300 border-slate-700/80'
@@ -452,11 +473,11 @@ export default function App() {
               <span className="truncate">{isWatchActive ? 'Live ON' : 'Live Watch'}</span>
             </button>
 
-            {/* 4. Reload Weather & Bulletin */}
+            {/* 5. Reload Weather & Bulletin */}
             <button
               onClick={loadWeather}
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-1 px-1 sm:px-2 py-2 bg-slate-800/90 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700/80 text-[11px] sm:text-xs font-bold transition-all shadow-sm"
+              className="w-full flex items-center justify-center gap-1 px-1 sm:px-2 py-2 bg-slate-800/90 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700/80 text-[10px] sm:text-xs font-bold transition-all shadow-sm"
               title="Refresh weather data and IMD status"
             >
               <RefreshCw className={`w-3.5 h-3.5 flex-shrink-0 ${isLoading ? 'animate-spin text-sky-400' : 'text-slate-400'}`} />
@@ -612,6 +633,15 @@ export default function App() {
       <SafetyModal
         isOpen={isSafetyOpen}
         onClose={() => setIsSafetyOpen(false)}
+      />
+
+      {/* Live News TV & Emergency Broadcast Modal / Floating PiP Player */}
+      <LiveTvModal
+        isOpen={isLiveTvOpen}
+        onClose={() => setIsLiveTvOpen(false)}
+        activeLocation={activeLocation}
+        isFloating={isLiveTvFloating}
+        setIsFloating={setIsLiveTvFloating}
       />
     </div>
   );

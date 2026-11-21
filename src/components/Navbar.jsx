@@ -1,5 +1,5 @@
 import React from 'react';
-import { Radio, Wifi, WifiOff, PhoneCall, Volume2, ShieldAlert } from 'lucide-react';
+import { Radio, Wifi, WifiOff, PhoneCall, Volume2, ShieldAlert, Tv } from 'lucide-react';
 
 export default function Navbar({
   isOffline,
@@ -7,7 +7,8 @@ export default function Navbar({
   selectedLang,
   setSelectedLang,
   onOpenEmergency,
-  onOpenSafety
+  onOpenSafety,
+  onOpenLiveTv
 }) {
   return (
     <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-3 py-2.5">
@@ -57,6 +58,19 @@ export default function Navbar({
             <option value="malayalam">മലയാളം (Malayalam)</option>
             <option value="kannada">ಕನ್ನಡ (Kannada)</option>
           </select>
+
+          {/* Live TV News Button */}
+          {onOpenLiveTv && (
+            <button
+              onClick={onOpenLiveTv}
+              className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 bg-rose-600/90 hover:bg-rose-600 text-white rounded-lg text-xs font-bold transition-all border border-rose-500/60 shadow-sm shadow-rose-950/40 relative"
+              title="Watch Live Regional News TV & Emergency Broadcast"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping flex-shrink-0"></span>
+              <Tv className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="hidden sm:inline">Live TV</span>
+            </button>
+          )}
 
           {/* Emergency SOS Button */}
           <button
