@@ -127,6 +127,7 @@ export const CROP_DISEASES = [
         title: 'Angle 3: Collapsed Field Patch View',
         label: 'Field Canopy Collapse Pattern',
         badge: 'Lodging Patch Target',
+        imageUrl: '/assets/diseases/paddy_sheath_angle3.jpg',
         desc: 'Circular patches of lodged, rotten rice stalks flattened across muddy field.',
         targetSymptom: 'Extensive dead lodging patches with rotting stem bases.',
         tissueRisk: 'Panicles fail to emerge, stems break at water line.'
@@ -193,6 +194,7 @@ export const CROP_DISEASES = [
         title: 'Angle 2: Collar Constriction Zone Inspection',
         label: 'Stem Collar Target',
         badge: 'Stem Collar View',
+        imageUrl: '/assets/diseases/pulses_rot_angle2.jpg',
         desc: 'Pencil-like brown pinching at ground level causing seedling to topple.',
         targetSymptom: 'Stem near soil turns blackish-brown and soft/mushy.',
         tissueRisk: 'Loss of vascular transport to upper foliage.'
@@ -201,6 +203,7 @@ export const CROP_DISEASES = [
         title: 'Angle 3: Wilted Patch in Mud Pattern',
         label: 'Field Submersion Plot',
         badge: 'Field Wilt Pattern',
+        imageUrl: '/assets/diseases/pulses_rot_angle3.jpg',
         desc: 'Sudden yellow and brown death patches where rain water stagnated for 36 hours.',
         targetSymptom: 'Leaves droop suddenly without yellowing; whole green plant collapses.',
         tissueRisk: '100% loss in waterlogged hollows within 3 days.'
@@ -331,6 +334,7 @@ export const CROP_DISEASES = [
         title: 'Angle 2: Glass Water Ooze Test Inspection',
         label: 'Diagnostic Ooze Test Target',
         badge: 'Diagnostic Ooze Test',
+        imageUrl: '/assets/diseases/veg_wilt_angle2.jpg',
         desc: 'Stem cut suspended in water releasing cloudy milky streaming threads within 60 seconds.',
         targetSymptom: 'Vascular ring browning visible when stem is sliced horizontally.',
         tissueRisk: 'Vascular xylem clogging leading to total turgor collapse.'
@@ -339,6 +343,7 @@ export const CROP_DISEASES = [
         title: 'Angle 3: Splash-Soaked Vegetable Beds Pattern',
         label: 'Field Raised Bed Overview',
         badge: 'Raised Bed Plot Target',
+        imageUrl: '/assets/diseases/veg_wilt_angle3.jpg',
         desc: 'Mulched raised vegetable beds with mud-splattered drooping tomato and pepper plants.',
         targetSymptom: 'Fruit rot: Mud splashes deposit Phytophthora spores onto green fruits.',
         tissueRisk: '100% loss of affected plants within 48 hours.'
@@ -438,6 +443,79 @@ export const CROP_DISEASES = [
     audioGuide: {
       odia: 'ପାନ ବରଜରୁ ତୁରନ୍ତ ପାଣି ବାହାର କରି ପବନ ଯିବା ଆସିବା ବ୍ୟବସ୍ଥା କରନ୍ତୁ। ଗଛ ମୂଳରେ ୧ ପ୍ରତିଶତ ବୋର୍ଡୋ ମିଶ୍ରଣ କିମ୍ବା ରିଡୋମିଲ୍ ଗୋଲ୍ଡ ଢାଳନ୍ତୁ। ନଡ଼ିଆ ଗଛର ଅଗ ଭାଗ ସଫା କରି ବ୍ଲାଇଟକ୍ସ ଲଗାନ୍ତୁ।',
       hindi: 'पान के बरेजे से पानी निकालकर हवा आने दें। जड़ों में 1% बोर्डो मिश्रण या रिडोमिल गोल्ड डालें। नारियल के मुकुट को साफ कर कॉपर ऑक्सीक्लोराइड का लेप लगाएं।'
+    }
+  },
+
+  // SUGARCANE (RED ROT & STALK LODGING)
+  {
+    id: 'sugarcane-red-rot',
+    cropId: 'sugarcane',
+    name: 'Red Rot & Stalk Lodging (Sett Rot)',
+    vernacular: {
+      odia: 'ଆଖୁ ରକ୍ତରୋଗ ଓ କାଣ୍ଡପଚା (ରେଡ୍ ରଟ୍)',
+      hindi: 'गन्ने का लाल सड़न रोग (रेड रॉट)',
+      bangla: 'আখের লাল পচা রোগ (রেড রট)',
+      telugu: 'చెరకు ఎర్ర కుళ్లు తెగులు (రెడ్ రాట్)'
+    },
+    cycloneTrigger: 'Severe cyclonic gale winds crack mature cane stalks and strip leaf sheaths. Flood water stagnation carries Colletotrichum fungal spores into root eyes and wind fractures within 48-72 hours.',
+    severity: 'Catastrophic (Causes 100% juice deterioration and total clump death)',
+    symptoms: [
+      'Third or fourth leaf from top shows yellowing, drying along margins, and tip withering.',
+      'Longitudinal splitting of cane stalk reveals red pith interspersed with diagnostic white cross-bands.',
+      'Alcoholic sour fermentation odor emitted from split stalk tissue.',
+      'Nodes break easily and hollow out with greyish-white fungal hyphae.'
+    ],
+    angles: [
+      {
+        title: 'Angle 1: Split Stalk Red Pith Macro Inspection',
+        label: 'Internal Vascular Core View',
+        badge: 'Red Pith & White Cross-Bands',
+        desc: 'Split cane stalk showing deep reddish-brown discoloration interrupted by distinct transverse white patches across the pith.',
+        targetSymptom: 'Longitudinal splitting of cane reveals red pith interspersed with diagnostic white cross-bands.',
+        tissueRisk: 'Wind micro-cracks allow rapid mycelial invasion of vascular parenchyma.'
+      },
+      {
+        title: 'Angle 2: Crown Canopy Desiccation & Lodging',
+        label: 'Mid-Canopy Stalk Target',
+        badge: 'Canopy Crown Target',
+        desc: 'Upper foliage drying from margins inwards, midrib showing reddish lesions, and stalks bent or snapped in mud.',
+        targetSymptom: 'Third or fourth leaf from top shows yellowing, drying along margins, and tip withering.',
+        tissueRisk: 'Vascular vessel clogging halts sucrose synthesis and water translocation.'
+      },
+      {
+        title: 'Angle 3: Waterlogged Furrow Plot Pattern',
+        label: 'Field Submersion Overview',
+        badge: 'Field Inundation Target',
+        desc: 'Standing flood water in sugarcane furrows with scattered dead clumps and collapsed cane hills.',
+        targetSymptom: 'Extensive clump collapse in poorly drained depression furrows.',
+        tissueRisk: 'Root zone hypoxia and rapid subterranean sett rot.'
+      }
+    ],
+    remedySteps: [
+      {
+        step: 1,
+        title: 'Deep Furrow Drainage (First 24 Hours)',
+        desc: 'Excavate 45 cm deep drainage trenches between cane rows to drain standing water immediately. Standing water accelerates sett rot exponentially.'
+      },
+      {
+        step: 2,
+        title: 'Prophylactic Fungicide Drench & Spray',
+        desc: 'Spray and drench root stools with Carbendazim 50 WP (Bavistin) @ 1 g/L or Thiophanate Methyl 70 WP (Roko) @ 1.5 g/L dissolved in 200 L water/acre.'
+      },
+      {
+        step: 3,
+        title: 'Clump Uprighting & Trash Removal',
+        desc: 'Carefully prop up lodged cane stalks by tying 4–5 stalks together into tripods. Strip muddy, rotting lower dry leaves (trash) to increase air circulation.'
+      },
+      {
+        step: 4,
+        title: 'Strict Seed Cane Warning',
+        desc: 'NEVER use storm-inundated or cracked stalks as seed cane (setts) for next season; red rot is strictly sett-borne and will wipe out the subsequent crop.'
+      }
+    ],
+    audioGuide: {
+      odia: 'ବାତ୍ୟା ପରେ ଆଖୁ ଜମିରୁ ତୁରନ୍ତ ଗଭୀର ନାଳ କରି ପାଣି ନିଷ୍କାସନ କରନ୍ତୁ। ପ୍ରତି ଲିଟର ପାଣିରେ ୧ ଗ୍ରାମ ବାଭିଷ୍ଟିନ୍ କିମ୍ବା ୧.୫ ଗ୍ରାମ ରୋକୋ ମିଶାଇ ଗଛ ମୂଳରେ ସ୍ପ୍ରେ କରନ୍ତୁ। ଭାଙ୍ଗି ପଡ଼ିଥିବା ଆଖୁକୁ ବାନ୍ଧି ଛିଡ଼ା କରନ୍ତୁ।',
+      hindi: 'गन्ने के खेत से तुरंत नाली बनाकर जल निकासी करें। 1 ग्राम बाविस्टिन या 1.5 ग्राम रोको प्रति लीटर पानी में मिलाकर जड़ों पर छिड़कें। गिरे हुए गन्नों को सहारा देकर बांधें।'
     }
   }
 ];

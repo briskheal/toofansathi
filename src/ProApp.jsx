@@ -1216,20 +1216,20 @@ export default function ProApp() {
             {/* MODE 2: BROWSE 3-ANGLE CROP PATHOLOGY LIBRARY */}
             {clinicMode === 'library' && (
               <div className="space-y-4">
-                {/* Crop Selector Tabs */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                {/* Crop Selector Tabs (Responsive Flex-Wrap: No Half-Cut Buttons) */}
+                <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-950/60 rounded-2xl border border-slate-800/80 shadow-inner">
                   {POST_CYCLONE_CROPS.map((crop) => (
                     <button
                       key={crop.id}
                       onClick={() => handleClinicCropChange(crop.id)}
-                      className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 flex-shrink-0 cursor-pointer ${
+                      className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                         selectedClinicCrop === crop.id
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/60 shadow-md'
-                          : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                          ? 'bg-amber-500/25 text-amber-300 border border-amber-500/80 shadow-md ring-1 ring-amber-500/40'
+                          : 'bg-slate-900/90 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800'
                       }`}
                     >
-                      <span className="text-base">{crop.icon}</span>
-                      <span>{crop[proLang] || crop.name}</span>
+                      <span className="text-base shrink-0">{crop.icon}</span>
+                      <span className="whitespace-nowrap">{crop[proLang] || crop.name}</span>
                     </button>
                   ))}
                 </div>
