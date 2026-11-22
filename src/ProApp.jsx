@@ -738,51 +738,114 @@ export default function ProApp() {
                 </div>
               </div>
 
-              {/* Status Alert Banner */}
-              <div className="my-4 p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/40 flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                <div className="text-xs text-slate-300">
-                  <h4 className="font-bold text-emerald-300 text-sm">
-                    🟢 Prime 36-Hour Harvest Window Open (Action Recommended)
-                  </h4>
-                  <p className="mt-1 leading-relaxed">
-                    Heavy cyclonic precipitation (55–80 mm) is forecast to arrive in 38 hours. Grain moisture is currently at 18%. <strong>Mobilize harvesters and threshers immediately today</strong> to clear mature fields and shift bags to raised concrete godowns.
-                  </p>
-                </div>
-              </div>
+              {/* Status Alert Banner - Dynamically Swapped by Selected Crop */}
+              {(() => {
+                const cropProfiles = {
+                  paddy: {
+                    alertTitle: '🟢 Prime 36-Hour Harvest Window Open (Action Recommended)',
+                    alertDesc: 'Heavy cyclonic precipitation (55–80 mm) is forecast to arrive in 38 hours. Grain moisture is currently at 18%. Mobilize harvesters and threshers immediately today to clear mature fields and shift bags to raised concrete godowns.',
+                    alertBg: 'bg-emerald-950/40 border-emerald-500/40',
+                    alertText: 'text-emerald-300',
+                    iconColor: 'text-emerald-400',
+                    windTitle: 'Moderate (42 km/h)',
+                    windDesc: 'Tall paddy stalks vulnerable to bend after 48 hrs',
+                    sprayTitle: '❌ Spraying Blocked',
+                    sprayDesc: 'High rain probability will wash away chemical coats',
+                    soilTitle: '62% (Good Grip)',
+                    soilDesc: 'Combine harvesters can operate without bogging'
+                  },
+                  mustard: {
+                    alertTitle: '🟡 Pod Shattering High Risk (Advance Harvest Needed)',
+                    alertDesc: 'High gusts exceeding 65 km/h will cause extensive siliqua/pod dehiscence and seed shatter loss. Harvest at 75-80% physiological maturity when pods turn yellow-brown, and bundle under tarpaulins.',
+                    alertBg: 'bg-amber-950/40 border-amber-500/40',
+                    alertText: 'text-amber-300',
+                    iconColor: 'text-amber-400',
+                    windTitle: 'High (Pod Shatter Risk)',
+                    windDesc: 'Brittle dry siliqua pods prone to splitting in squalls',
+                    sprayTitle: '❌ Spraying Blocked',
+                    sprayDesc: 'High wind drift hazard and rainwash risk',
+                    soilTitle: '55% (Firm Soil)',
+                    soilDesc: 'Manual reaper teams can operate rapidly today'
+                  },
+                  groundnut: {
+                    alertTitle: '🟠 Immediate In-Furrow Drainage Required (Aflatoxin Threat)',
+                    alertDesc: 'Standing water submersion exceeding 24 hours triggers pod asphyxiation, peg detachment, and Aspergillus aflatoxin infection. Dig perimeter escape ditches immediately before storm landfall.',
+                    alertBg: 'bg-orange-950/40 border-orange-500/40',
+                    alertText: 'text-orange-300',
+                    iconColor: 'text-orange-400',
+                    windTitle: 'Low (Prostrate Canopy)',
+                    windDesc: 'Dense ground runner foliage resists gale wind lodging',
+                    sprayTitle: '⚠️ Spot Drench Only',
+                    sprayDesc: 'Root collar Trichoderma drench allowed if dry',
+                    soilTitle: '74% (Saturated)',
+                    soilDesc: 'Avoid digging pods while wet to prevent pod breakage'
+                  },
+                  vegetables: {
+                    alertTitle: '🔴 Staking & Trellis Reinforcement Urgent (Tomato / Chilli)',
+                    alertDesc: 'Tomato and chilli vines will snap and lodge under gale force gusts. Reinforce bamboo stakes with coir twine, create furrow drainage, and harvest all breaker-stage fruits immediately today.',
+                    alertBg: 'bg-rose-950/40 border-rose-500/40',
+                    alertText: 'text-rose-300',
+                    iconColor: 'text-rose-400',
+                    windTitle: 'Extreme (Vines Vulnerable)',
+                    windDesc: 'Stakes & trellises prone to structural collapse',
+                    sprayTitle: '❌ Fungicide Spray Blocked',
+                    sprayDesc: 'Washing off within 6 hours due to squall showers',
+                    soilTitle: '68% (Moderate)',
+                    soilDesc: 'Raised ridges prevent collar rot & damping-off'
+                  }
+                };
 
-              {/* 3 Parameter Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="p-3 bg-slate-950/70 border border-slate-800 rounded-xl">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">
-                    Wind Lodging Threat
-                  </span>
-                  <span className="text-lg font-black text-amber-400 block">Moderate (42 km/h)</span>
-                  <span className="text-[11px] text-slate-400">
-                    Tall paddy stalks vulnerable to bend after 48 hrs
-                  </span>
-                </div>
+                const currentProfile = cropProfiles[selectedCrop] || cropProfiles.paddy;
 
-                <div className="p-3 bg-slate-950/70 border border-slate-800 rounded-xl">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">
-                    Pesticide Spray Fastness
-                  </span>
-                  <span className="text-lg font-black text-red-400 block">❌ Spraying Blocked</span>
-                  <span className="text-[11px] text-slate-400">
-                    High rain probability will wash away chemical coats
-                  </span>
-                </div>
+                return (
+                  <>
+                    <div className={`my-4 p-3.5 rounded-xl border flex items-start gap-3 ${currentProfile.alertBg}`}>
+                      <CheckCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${currentProfile.iconColor}`} />
+                      <div className="text-xs text-slate-300">
+                        <h4 className={`font-bold text-sm ${currentProfile.alertText}`}>
+                          {currentProfile.alertTitle}
+                        </h4>
+                        <p className="mt-1 leading-relaxed">
+                          {currentProfile.alertDesc}
+                        </p>
+                      </div>
+                    </div>
 
-                <div className="p-3 bg-slate-950/70 border border-slate-800 rounded-xl">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">
-                    Soil Moisture Saturation
-                  </span>
-                  <span className="text-lg font-black text-sky-400 block">62% (Good Grip)</span>
-                  <span className="text-[11px] text-slate-400">
-                    Combine harvesters can operate without bogging
-                  </span>
-                </div>
-              </div>
+                    {/* 3 Parameter Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="p-3 bg-slate-950/70 border border-slate-800 rounded-xl">
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">
+                          Wind Lodging Threat
+                        </span>
+                        <span className="text-lg font-black text-amber-400 block">{currentProfile.windTitle}</span>
+                        <span className="text-[11px] text-slate-400">
+                          {currentProfile.windDesc}
+                        </span>
+                      </div>
+
+                      <div className="p-3 bg-slate-950/70 border border-slate-800 rounded-xl">
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">
+                          Pesticide Spray Fastness
+                        </span>
+                        <span className="text-lg font-black text-red-400 block">{currentProfile.sprayTitle}</span>
+                        <span className="text-[11px] text-slate-400">
+                          {currentProfile.sprayDesc}
+                        </span>
+                      </div>
+
+                      <div className="p-3 bg-slate-950/70 border border-slate-800 rounded-xl">
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">
+                          Soil Moisture Saturation
+                        </span>
+                        <span className="text-lg font-black text-sky-400 block">{currentProfile.soilTitle}</span>
+                        <span className="text-[11px] text-slate-400">
+                          {currentProfile.soilDesc}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
         )}
@@ -1637,6 +1700,31 @@ export default function ProApp() {
                 <span className="text-[11px] text-slate-400">
                   Keep backup diesel generators ready for aerators
                 </span>
+              </div>
+            </div>
+
+            {/* Post-Rain Pond pH Crash & Liming Countermeasure */}
+            <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2.5">
+              <div className="flex items-center justify-between pb-1 border-b border-slate-800">
+                <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <TestTube2 className="w-4 h-4 text-cyan-400" />
+                  Post-Rain Pond pH Crash & Agricultural Lime Countermeasure
+                </span>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-semibold">
+                  Acid Runoff Threat
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+                  <span className="text-[10px] text-slate-400 block font-semibold">PROJECTED WATER pH CRASH</span>
+                  <span className="text-lg font-black text-rose-400 font-mono">8.2 → 6.6 pH</span>
+                  <span className="text-[10px] text-slate-400 block mt-0.5">Torrential rain runoff from acidic pond dykes causes sudden shell softening and mortality.</span>
+                </div>
+                <div className="bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+                  <span className="text-[10px] text-slate-400 block font-semibold">EMERGENCY LIMING PRESCRIPTION</span>
+                  <span className="text-lg font-black text-amber-300 font-mono">60–75 kg / Acre</span>
+                  <span className="text-[10px] text-slate-400 block mt-0.5">Broadcast Quicklime (CaO) or Dolomite along perimeter dykes immediately to buffer alkalinity.</span>
+                </div>
               </div>
             </div>
           </div>

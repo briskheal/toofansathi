@@ -53,7 +53,8 @@ export const COASTAL_MANDIS = [
     moistureLimit: '17% (Temporary cover sheds open)',
     commodities: [
       { name: 'Paddy (Common)', modalPrice: 2235, minPrice: 2183, maxPrice: 2260, trend: '+₹25', status: 'Procurement Open', alert: 'FCI godowns receiving trucks' },
-      { name: 'Mustard (ସୋରିଷ)', modalPrice: 5650, minPrice: 5450, maxPrice: 5800, trend: '+₹60', status: 'Stable', alert: 'Oil mills operational' }
+      { name: 'Mustard (ସୋରିଷ)', modalPrice: 5650, minPrice: 5450, maxPrice: 5800, trend: '+₹60', status: 'Stable', alert: 'Oil mills operational' },
+      { name: 'Green Gram (Moong)', modalPrice: 8680, minPrice: 8558, maxPrice: 8850, trend: '+₹90', status: 'Brisk Trading', alert: 'Dal mills purchasing before rain' }
     ]
   },
   {
@@ -67,7 +68,8 @@ export const COASTAL_MANDIS = [
     moistureLimit: '17% (Port transit depot)',
     commodities: [
       { name: 'Paddy (Common)', modalPrice: 2250, minPrice: 2183, maxPrice: 2290, trend: '+₹45', status: 'High Demand', alert: 'Andhra transit buyers active' },
-      { name: 'Groundnut', modalPrice: 6600, minPrice: 6400, maxPrice: 6750, trend: '+₹80', status: 'Brisk Trading', alert: 'Export quality lots' }
+      { name: 'Groundnut', modalPrice: 6600, minPrice: 6400, maxPrice: 6750, trend: '+₹80', status: 'Brisk Trading', alert: 'Export quality lots' },
+      { name: 'Sesamum (Til)', modalPrice: 8750, minPrice: 8635, maxPrice: 8900, trend: '+₹115', status: 'High Volume', alert: 'Oil processing crushers active' }
     ]
   },
   {
@@ -81,7 +83,8 @@ export const COASTAL_MANDIS = [
     moistureLimit: '17% (Cyclone relaxation approved)',
     commodities: [
       { name: 'Paddy (Common Aman)', modalPrice: 2260, minPrice: 2185, maxPrice: 2300, trend: '+₹50', status: 'Heavy Inflow', alert: 'Emergency procurement active' },
-      { name: 'Potato (Jyoti)', modalPrice: 1650, minPrice: 1500, maxPrice: 1800, trend: '+₹120', status: 'Spike', alert: 'Cold storage intake high' }
+      { name: 'Potato (Jyoti)', modalPrice: 1650, minPrice: 1500, maxPrice: 1800, trend: '+₹120', status: 'Spike', alert: 'Cold storage intake high' },
+      { name: 'Mustard (Pahar)', modalPrice: 5720, minPrice: 5500, maxPrice: 5900, trend: '+₹80', status: 'Active Trading', alert: 'Local oil mills stocking' }
     ]
   },
   {
@@ -95,7 +98,8 @@ export const COASTAL_MANDIS = [
     moistureLimit: '17% (Moisture meters calibrated)',
     commodities: [
       { name: 'Paddy (Common)', modalPrice: 2270, minPrice: 2183, maxPrice: 2315, trend: '+₹60', status: 'Active', alert: 'Rythu Bharosa Kendra linked' },
-      { name: 'Cashew (Raw Nut)', modalPrice: 11200, minPrice: 10800, maxPrice: 11600, trend: '+₹200', status: 'Normal', alert: 'Processing mills active' }
+      { name: 'Cashew (Raw Nut)', modalPrice: 11200, minPrice: 10800, maxPrice: 11600, trend: '+₹200', status: 'Normal', alert: 'Processing mills active' },
+      { name: 'Black Gram (Urad)', modalPrice: 7150, minPrice: 6950, maxPrice: 7300, trend: '+₹90', status: 'Brisk Trading', alert: 'Tiffin millers stocking' }
     ]
   }
 ];
