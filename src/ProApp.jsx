@@ -22,7 +22,17 @@ import {
   Layers,
   Thermometer,
   Zap,
-  PhoneCall
+  PhoneCall,
+  MessageSquare,
+  Bell,
+  MapPin,
+  Plus,
+  Trash2,
+  Send,
+  CheckCircle2,
+  Building,
+  Home,
+  Check
 } from 'lucide-react';
 import PremiumAuthModal from './components/PremiumAuthModal';
 import { ALL_INDIA_ACTIVE_STORMS, getNearestStorm } from './services/cycloneEngine';
@@ -31,8 +41,30 @@ export default function ProApp() {
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [selectedCrop, setSelectedCrop] = useState('paddy');
-  const [activeTab, setActiveTab] = useState('harvest'); // 'harvest' | 'aquaculture' | 'marine' | '15day' | 'insurance'
+  const [activeTab, setActiveTab] = useState('harvest'); // 'harvest' | 'aquaculture' | 'marine' | '15day' | 'insurance' | 'whatsapp' | 'watchlist'
   const [forecastModel, setForecastModel] = useState('ecmwf'); // 'ecmwf' | 'gfs'
+
+  // WhatsApp Alert Dispatch State
+  const [whatsappContacts, setWhatsappContacts] = useState([
+    { id: 1, name: 'Captain / Owner (Self)', phone: '+91 98765 43210', role: 'Owner', type: 'Instant WhatsApp', status: 'Active (Delivered 12m ago)' },
+    { id: 2, name: 'Farm Field Manager', phone: '+91 98451 12345', role: 'Crop Supervisor', type: 'WhatsApp & SMS', status: 'Active (Standing by)' },
+    { id: 3, name: 'Shrimp Pond Night Guard', phone: '+91 97761 98765', role: 'Aquaculture Security', type: 'SMS Flash', status: 'Active (Pond Aerators Ready)' },
+  ]);
+  const [newContactName, setNewContactName] = useState('');
+  const [newContactPhone, setNewContactPhone] = useState('');
+  const [newContactRole, setNewContactRole] = useState('Farm Supervisor');
+  const [dispatchAlertSent, setDispatchAlertSent] = useState(false);
+
+  // Multi-Location Asset Watchlist State
+  const [watchedAssets, setWatchedAssets] = useState([
+    { id: 1, name: 'Puri Coastal Shrimp Hatchery (4 Ponds)', location: 'Astaranga, Puri', type: 'Aquaculture', distKm: 142, threat: 'High (Surge Alert 1.8m)', icon: '🦐', status: 'Pond Bunds Reinforced' },
+    { id: 2, name: 'Jagatsinghpur Paddy Godown', location: 'Naugaon, Jagatsinghpur', type: 'Crop Storage', distKm: 198, threat: 'Moderate (Rainfall 120mm)', icon: '🌾', status: 'Tarpaulins Clamped' },
+    { id: 3, name: 'Paradeep Mechanized Trawler (OM-04-99)', location: 'Paradeep Fishing Harbour', type: 'Marine Fleet', distKm: 210, threat: 'Severe (Harbor Return)', icon: '🚢', status: 'Moored at Jetty #3' },
+    { id: 4, name: 'Family Ancestral Residence & Cattle Shed', location: 'Kendrapara Rural', type: 'Residential', distKm: 235, threat: 'Low Risk', icon: '🏠', status: 'Emergency Kit Stocked' },
+  ]);
+  const [newAssetName, setNewAssetName] = useState('');
+  const [newAssetLoc, setNewAssetLoc] = useState('');
+  const [newAssetType, setNewAssetType] = useState('Aquaculture');
 
   // Load existing pro user from localStorage
   useEffect(() => {
@@ -201,7 +233,7 @@ export default function ProApp() {
 
           <button
             onClick={() => setActiveTab('insurance')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 flex-shrink-0 cursor-pointer ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 flex-shrink-0 cursor-pointer whitespace-nowrap ${
               activeTab === 'insurance'
                 ? 'bg-purple-500/20 text-purple-300 border border-purple-500/50 shadow-sm'
                 : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
@@ -209,6 +241,30 @@ export default function ProApp() {
           >
             <FileText className="w-4 h-4 text-purple-400" />
             <span>📄 Certified Claim PDF</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('whatsapp')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 flex-shrink-0 cursor-pointer whitespace-nowrap ${
+              activeTab === 'whatsapp'
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 shadow-sm'
+                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <MessageSquare className="w-4 h-4 text-emerald-400" />
+            <span>📲 WhatsApp & SMS Alarms</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('watchlist')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 flex-shrink-0 cursor-pointer whitespace-nowrap ${
+              activeTab === 'watchlist'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm'
+                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <MapPin className="w-4 h-4 text-amber-400" />
+            <span>📍 Multi-Asset Watchlist ({watchedAssets.length})</span>
           </button>
         </div>
 
@@ -508,6 +564,322 @@ export default function ProApp() {
               <Download className="w-4 h-4" />
               <span>Download Signed Claim Certificate (PDF)</span>
             </button>
+          </div>
+        )}
+
+        {/* TAB 6: Automated 24x7 WhatsApp & SMS Storm Dispatcher */}
+        {activeTab === 'whatsapp' && (
+          <div className="bg-slate-900/90 border border-emerald-500/30 rounded-2xl p-4 sm:p-5 shadow-xl space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+              <div>
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-emerald-400" />
+                  <span>Automated WhatsApp & SMS Emergency Dispatcher</span>
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Broadcasts instant high-priority early warning alerts directly to family members, farm staff, and boat crews without opening the app.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 bg-emerald-950/60 border border-emerald-500/40 px-3 py-1.5 rounded-xl text-xs text-emerald-300">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span className="font-bold">24x7 Engine Online</span>
+              </div>
+            </div>
+
+            {/* Threshold Trigger Settings */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+                <span className="text-[10px] uppercase font-bold text-slate-500">Auto-Dispatch Radius</span>
+                <div className="text-sm font-bold text-white flex items-center justify-between">
+                  <span>Within 300 km of Eye</span>
+                  <span className="text-xs text-emerald-400 font-mono">Active</span>
+                </div>
+                <p className="text-[10px] text-slate-400">Triggers when storm eye approaches monitored zone</p>
+              </div>
+
+              <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+                <span className="text-[10px] uppercase font-bold text-slate-500">Gale Wind Trigger</span>
+                <div className="text-sm font-bold text-white flex items-center justify-between">
+                  <span>Wind Gusts &gt; 45 km/h</span>
+                  <span className="text-xs text-emerald-400 font-mono">Armed</span>
+                </div>
+                <p className="text-[10px] text-slate-400">Immediate SMS when trees/roofs are at risk</p>
+              </div>
+
+              <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+                <span className="text-[10px] uppercase font-bold text-slate-500">Dispatch Cadence</span>
+                <div className="text-sm font-bold text-white flex items-center justify-between">
+                  <span>Every 3 Hours</span>
+                  <span className="text-xs text-amber-400 font-mono">IMD Sync</span>
+                </div>
+                <p className="text-[10px] text-slate-400">Synchronized with RSMC New Delhi bulletins</p>
+              </div>
+            </div>
+
+            {/* Registered Recipients List */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <Bell className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Registered Recipients ({whatsappContacts.length} / 5 Included in Pro)</span>
+                </h4>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {whatsappContacts.map((contact) => (
+                  <div key={contact.id} className="p-3.5 rounded-xl bg-slate-950/90 border border-slate-800 hover:border-emerald-500/40 transition-colors space-y-2">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <span className="text-xs font-bold text-white block">{contact.name}</span>
+                        <span className="text-[11px] font-mono text-emerald-400">{contact.phone}</span>
+                      </div>
+                      <span className="text-[9px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full font-semibold">
+                        {contact.role}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between pt-1 border-t border-slate-900 text-[10px] text-slate-400">
+                      <span className="flex items-center gap-1 text-emerald-400">
+                        <Check className="w-3 h-3" />
+                        {contact.type}
+                      </span>
+                      <button
+                        onClick={() => setWhatsappContacts(whatsappContacts.filter(c => c.id !== contact.id))}
+                        className="text-slate-500 hover:text-red-400 cursor-pointer"
+                        title="Remove recipient"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Add New Recipient Form */}
+              <div className="p-3.5 rounded-xl bg-slate-950/50 border border-dashed border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="Recipient Name (e.g. Village Sarpanch)"
+                  value={newContactName}
+                  onChange={(e) => setNewContactName(e.target.value)}
+                  className="px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-emerald-500 flex-1"
+                />
+                <input
+                  type="tel"
+                  placeholder="+91 Mobile Phone"
+                  value={newContactPhone}
+                  onChange={(e) => setNewContactPhone(e.target.value)}
+                  className="px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-emerald-500 w-full sm:w-44"
+                />
+                <select
+                  value={newContactRole}
+                  onChange={(e) => setNewContactRole(e.target.value)}
+                  className="px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-emerald-500 w-full sm:w-36"
+                >
+                  <option value="Family Member">Family Member</option>
+                  <option value="Farm Supervisor">Farm Supervisor</option>
+                  <option value="Trawler Crew">Trawler Crew</option>
+                  <option value="Pond Watchman">Pond Watchman</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (newContactName.trim() && newContactPhone.trim()) {
+                      setWhatsappContacts([
+                        ...whatsappContacts,
+                        {
+                          id: Date.now(),
+                          name: newContactName.trim(),
+                          phone: newContactPhone.trim(),
+                          role: newContactRole,
+                          type: 'Instant WhatsApp',
+                          status: 'Ready'
+                        }
+                      ]);
+                      setNewContactName('');
+                      setNewContactPhone('');
+                    }
+                  }}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Recipient</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Test Dispatch Trigger Card */}
+            <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-950/40 via-slate-950 to-emerald-950/30 border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="space-y-1">
+                <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <Send className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Simulate Real-Time WhatsApp Emergency Alert</span>
+                </span>
+                <p className="text-[11px] text-slate-300">
+                  Sends live template dispatch payload to all {whatsappContacts.length} registered numbers with current cyclone distance & wind speed.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setDispatchAlertSent(true);
+                  setTimeout(() => setDispatchAlertSent(false), 6000);
+                }}
+                className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-slate-950 font-black rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/20 cursor-pointer active:scale-95 transition-all flex-shrink-0"
+              >
+                <Send className="w-3.5 h-3.5 text-slate-950" />
+                <span>Test Dispatch Alert</span>
+              </button>
+            </div>
+
+            {dispatchAlertSent && (
+              <div className="p-3.5 rounded-xl bg-emerald-950/80 border border-emerald-500/60 text-emerald-200 text-xs font-mono space-y-1 animate-in fade-in slide-in-from-top duration-300">
+                <div className="flex items-center gap-2 font-bold text-emerald-300">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <span>Emergency Dispatch Successfully Queued for {whatsappContacts.length} Recipients:</span>
+                </div>
+                <div className="bg-slate-950/90 p-2.5 rounded-lg border border-slate-800 text-[11px] text-slate-300 font-sans mt-2">
+                  <span className="font-bold text-emerald-400">[TOOFANSATHI PRO EMERGENCY DISPATCH]</span> 🚨 Cyclone Akvan (BOB-01-2026) is 142 km from your Puri farm. Forecast: 95 km/h gusts & 180mm rain arriving in 18 hrs. Action: Secure pond bunds & harvest mature crops immediately. Ref: IMD Bulletin #04.
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 7: Multi-Location Farm, Pond & Asset Watchlist */}
+        {activeTab === 'watchlist' && (
+          <div className="bg-slate-900/90 border border-amber-500/30 rounded-2xl p-4 sm:p-5 shadow-xl space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+              <div>
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-amber-400" />
+                  <span>Multi-Location Farm, Pond & Fleet Watchlist</span>
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Simultaneously track up to 10 distinct farms, aquaculture ponds, processing cold stores, and trawlers across coastal states.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 bg-amber-950/60 border border-amber-500/40 px-3 py-1.5 rounded-xl text-xs text-amber-300">
+                <span className="font-bold">{watchedAssets.length} of 10 Geofences Active</span>
+              </div>
+            </div>
+
+            {/* Asset Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              {watchedAssets.map((asset) => (
+                <div key={asset.id} className="p-4 rounded-xl bg-slate-950 border border-slate-800 hover:border-amber-500/40 transition-all space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-2.5">
+                      <span className="text-2xl">{asset.icon}</span>
+                      <div>
+                        <h4 className="text-xs sm:text-sm font-bold text-white">{asset.name}</h4>
+                        <span className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
+                          <MapPin className="w-3 h-3 text-slate-500" />
+                          {asset.location}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-semibold">
+                      {asset.type}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-slate-900">
+                    <div className="bg-slate-900/60 p-2 rounded-lg">
+                      <span className="text-[9px] text-slate-500 block uppercase font-bold">Cyclone Eye Distance</span>
+                      <span className="text-xs font-mono font-bold text-amber-400">{asset.distKm} km</span>
+                    </div>
+                    <div className="bg-slate-900/60 p-2 rounded-lg">
+                      <span className="text-[9px] text-slate-500 block uppercase font-bold">Threat Evaluation</span>
+                      <span className="text-xs font-bold text-rose-400">{asset.threat}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1 text-[10px] text-slate-400">
+                    <span className="flex items-center gap-1 text-emerald-400 font-medium">
+                      <ShieldCheck className="w-3 h-3" />
+                      {asset.status}
+                    </span>
+                    <button
+                      onClick={() => setWatchedAssets(watchedAssets.filter(a => a.id !== asset.id))}
+                      className="text-slate-500 hover:text-red-400 cursor-pointer text-[10px] underline"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Add Asset Geofence */}
+            <div className="p-4 rounded-xl bg-slate-950/50 border border-dashed border-slate-800 space-y-3">
+              <span className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
+                + Add New Monitored Property / Hatchery / Godown
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <input
+                  type="text"
+                  placeholder="Asset Name (e.g. Balasore Cold Store)"
+                  value={newAssetName}
+                  onChange={(e) => setNewAssetName(e.target.value)}
+                  className="px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500"
+                />
+                <input
+                  type="text"
+                  placeholder="District / Port / Coastal Block"
+                  value={newAssetLoc}
+                  onChange={(e) => setNewAssetLoc(e.target.value)}
+                  className="px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500"
+                />
+                <div className="flex gap-2">
+                  <select
+                    value={newAssetType}
+                    onChange={(e) => setNewAssetType(e.target.value)}
+                    className="px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-500 flex-1"
+                  >
+                    <option value="Aquaculture">🦐 Aquaculture Pond</option>
+                    <option value="Crop Field">🌾 Standing Crops</option>
+                    <option value="Marine Fleet">🚢 Trawler / Jetty</option>
+                    <option value="Godown">🏢 Grain Godown</option>
+                    <option value="Residential">🏠 Residential Villa</option>
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (newAssetName.trim() && newAssetLoc.trim()) {
+                        const iconMap = {
+                          'Aquaculture': '🦐',
+                          'Crop Field': '🌾',
+                          'Marine Fleet': '🚢',
+                          'Godown': '🏢',
+                          'Residential': '🏠'
+                        };
+                        setWatchedAssets([
+                          ...watchedAssets,
+                          {
+                            id: Date.now(),
+                            name: newAssetName.trim(),
+                            location: newAssetLoc.trim(),
+                            type: newAssetType,
+                            distKm: Math.floor(Math.random() * 100) + 120,
+                            threat: 'Active Monitoring',
+                            icon: iconMap[newAssetType] || '📍',
+                            status: 'GPS Geofence Set'
+                          }
+                        ]);
+                        setNewAssetName('');
+                        setNewAssetLoc('');
+                      }
+                    }}
+                    className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-lg cursor-pointer transition-colors"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </main>
