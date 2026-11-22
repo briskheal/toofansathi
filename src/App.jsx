@@ -13,6 +13,7 @@ import BottomNav from './components/BottomNav';
 import TravelPlannerModal from './components/TravelPlannerModal';
 import DistrictPickerModal from './components/DistrictPickerModal';
 import LiveTvModal from './components/LiveTvModal';
+import CycloneWelcomeSplash from './components/CycloneWelcomeSplash';
 
 import { ALL_INDIA_REGIONS, findNearestDistrict } from './data/districts';
 import { fetchLiveWeather } from './services/weatherApi';
@@ -47,7 +48,8 @@ export default function App() {
   const [weatherData, setWeatherData] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
 
-  // Modals
+  // Modals & Splash
+  const [showWelcomeSplash, setShowWelcomeSplash] = useState(true);
   const [isEmergencyOpen, setIsEmergencyOpen] = useState(false);
   const [isSafetyOpen, setIsSafetyOpen] = useState(false);
   const [isTravelPlannerOpen, setIsTravelPlannerOpen] = useState(false);
@@ -350,6 +352,7 @@ export default function App() {
           setIsLiveTvFloating(false);
           setIsLiveTvOpen(true);
         }}
+        onOpenWelcome={() => setShowWelcomeSplash(true)}
       />
 
       {/* Main Field Dashboard */}
@@ -643,6 +646,11 @@ export default function App() {
         isFloating={isLiveTvFloating}
         setIsFloating={setIsLiveTvFloating}
       />
+
+      {/* Atmospheric Cyclone Swirling Welcome Splash Screen */}
+      {showWelcomeSplash && (
+        <CycloneWelcomeSplash onEnter={() => setShowWelcomeSplash(false)} />
+      )}
     </div>
   );
 }

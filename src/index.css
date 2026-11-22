@@ -86,6 +86,96 @@ html, body {
   animation: spin-360-y 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
+/* Cyclone Swirling Vortex Animations (Counter-Clockwise Cyclonic Physics) */
+@keyframes cyclone-vortex-ccw {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes cyclone-vortex-cw {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes eyewall-pulse-glow {
+  0%, 100% {
+    transform: scale(0.98);
+    opacity: 0.75;
+    filter: drop-shadow(0 0 15px rgba(14, 165, 233, 0.45));
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+    filter: drop-shadow(0 0 32px rgba(14, 165, 233, 0.85)) drop-shadow(0 0 45px rgba(239, 68, 68, 0.45));
+  }
+}
+
+@keyframes cloud-drift-mist {
+  0% {
+    transform: rotate(0deg) scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: rotate(-180deg) scale(1.08);
+    opacity: 0.65;
+  }
+  100% {
+    transform: rotate(-360deg) scale(1);
+    opacity: 0.4;
+  }
+}
+
+@keyframes isobar-expand {
+  0% {
+    transform: scale(0.75);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}
+
+.animate-cyclone-core {
+  animation: cyclone-vortex-ccw 5s linear infinite;
+  will-change: transform;
+}
+
+.animate-cyclone-fast {
+  animation: cyclone-vortex-ccw 3.2s linear infinite;
+  will-change: transform;
+}
+
+.animate-cyclone-outer-clouds {
+  animation: cyclone-vortex-ccw 14s linear infinite;
+  will-change: transform;
+}
+
+.animate-cyclone-feeder {
+  animation: cyclone-vortex-ccw 8.5s linear infinite;
+  will-change: transform;
+}
+
+.animate-eyewall-glow {
+  animation: eyewall-pulse-glow 3s ease-in-out infinite;
+}
+
+.animate-cloud-mist {
+  animation: cloud-drift-mist 18s ease-in-out infinite;
+}
+
+.animate-isobar-ring {
+  animation: isobar-expand 2.8s cubic-bezier(0.1, 0.7, 0.3, 1) infinite;
+}
+
 /* Custom Leaflet Dark Mode Tooltips */
 .leaflet-tooltip.custom-map-tooltip {
   background: rgba(15, 23, 42, 0.96) !important;
