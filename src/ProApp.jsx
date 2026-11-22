@@ -55,12 +55,21 @@ import {
   Phone,
   MessageCircle,
   QrCode,
-  FileCheck
+  FileCheck,
+  Mic,
+  MicOff,
+  Sprout,
+  TestTube2,
+  Sliders,
+  Play,
+  Square
 } from 'lucide-react';
 import PremiumAuthModal from './components/PremiumAuthModal';
 import { ALL_INDIA_ACTIVE_STORMS, getNearestStorm } from './services/cycloneEngine';
 import { POST_CYCLONE_CROPS, CROP_DISEASES, ICAR_POST_CYCLONE_WORKSHOP_RULES } from './data/cropDiseases';
 import { GOVERNMENT_MSP_2026, COASTAL_MANDIS } from './data/mandiPrices';
+import { SALINE_RECOVERY_DATA } from './data/salineCatchCrops';
+import { KISAN_VOICE_TOPICS } from './data/kisanVoiceFaq';
 
 const PRO_TRANSLATIONS = {
   english: {
@@ -72,6 +81,8 @@ const PRO_TRANSLATIONS = {
       harvest: '🌾 Crop Harvest Advisor',
       clinic: '🩺 Post-Cyclone Crop Doctor',
       mandi: '💰 Mandi Rates & MSP Shield',
+      desalination: '🧪 Seawater Desalination & Catch Crops',
+      kisanVoice: '🎙️ Kisan Sathi Voice Avatar',
       aquaculture: '🦐 Aquaculture Pond Surge',
       marine: '🚢 Marine Fleet Departure',
       fifteenDay: '⏱️ 15-Day Hourly Outlook',
@@ -98,6 +109,8 @@ const PRO_TRANSLATIONS = {
       harvest: '🌾 ଫସଲ ଅମଳ ପରାମର୍ଶ',
       clinic: '🩺 ବାତ୍ୟା ପରବର୍ତ୍ତୀ ଫସଲ ଡାକ୍ତର',
       mandi: '💰 ମଣ୍ଡି ଦର ଓ ଏମ୍.ଏସ୍.ପି ସୁରକ୍ଷା',
+      desalination: '🧪 ଲୁଣା ଜମି ସଂସ୍କାର ଓ ବିକଳ୍ପ ଫସଲ',
+      kisanVoice: '🎙️ କିଷାନ ସାଥୀ କଥାବାର୍ତ୍ତା',
       aquaculture: '🦐 ଚିଙ୍ଗୁଡ଼ି ଘେରି ସୁରକ୍ଷା',
       marine: '🚢 ମାଛଧରା ଡଙ୍ଗା ସୁରକ୍ଷା',
       fifteenDay: '⏱️ ୧୫-ଦିନିଆ ପୂର୍ବାନୁମାନ',
@@ -124,6 +137,8 @@ const PRO_TRANSLATIONS = {
       harvest: '🌾 फसल कटाई सलाहकार',
       clinic: '🩺 चक्रवात बाद फसल डॉक्टर',
       mandi: '💰 मंडी भाव एवं एमएसपी सुरक्षा',
+      desalination: '🧪 लवणीय भूमि सुधार एवं आकस्मिक फसल',
+      kisanVoice: '🎙️ किसान साथी आवाज़',
       aquaculture: '🦐 झींगा तालाब सुरक्षा',
       marine: '🚢 समुद्री नाव रवानगी',
       fifteenDay: '⏱️ 15-दिवसीय पूर्वानुमान',
@@ -150,6 +165,8 @@ const PRO_TRANSLATIONS = {
       harvest: '🌾 ফসল কাটার পরামর্শ',
       clinic: '🩺 ঘূর্ণিঝড় পরবর্তী ফসল ডাক্তার',
       mandi: '💰 মাণ্ডি দর ও এমএসপি সুরক্ষা',
+      desalination: '🧪 লবণাক্ত জমি সংস্কার ও বিকল্প ফসল',
+      kisanVoice: '🎙️ কিষাণ সাথী ভয়েস',
       aquaculture: '🦐 চিংড়ি ঘের সুরক্ষা',
       marine: '🚢 মাছ ধরার নৌকা সুরক্ষা',
       fifteenDay: '⏱️ ১৫-দিনের পূর্বাভাস',
@@ -176,6 +193,8 @@ const PRO_TRANSLATIONS = {
       harvest: '🌾 పంట కోత సలహాదారు',
       clinic: '🩺 తుఫాను అనంతర పంట డాక్టర్',
       mandi: '💰 మార్కెట్ ధరలు & MSP రక్షణ',
+      desalination: '🧪 ఉప్పు నేలల పునరుద్ధరణ & పంటలు',
+      kisanVoice: '🎙️ కిసాన్ వాయిస్ సలహా',
       aquaculture: '🦐 ఆక్వాకల్చర్ చెరువు రక్షణ',
       marine: '🚢 బోట్ బయలుదేరే భద్రత',
       fifteenDay: '⏱️ 15-రోజుల ఔట్‌లుక్',
@@ -273,6 +292,17 @@ export default function ProApp() {
   const [claimIntimated, setClaimIntimated] = useState(false);
   const [claimAckNo, setClaimAckNo] = useState('PMFBY-INT-OD-2026-7842');
 
+  // Seawater Desalination & Catch Crops State
+  const [desalDepth, setDesalDepth] = useState(2.0); // feet
+  const [desalIngressType, setDesalIngressType] = useState('seawater'); // seawater vs brackish
+  const [desalSoil, setDesalSoil] = useState('clay'); // clay, loam, sandy
+  const [desalAcres, setDesalAcres] = useState(2.5);
+  const [desalSubTab, setDesalSubTab] = useState('calc'); // calc | varieties | catchCrops | roadmap
+
+  // Kisan Sathi Colloquial Voice Avatar State
+  const [voiceActiveTopicId, setVoiceActiveTopicId] = useState('seawater-saline');
+  const [isVoiceSpeaking, setIsVoiceSpeaking] = useState(false);
+
   const t = (key) => {
     const dict = PRO_TRANSLATIONS[proLang] || PRO_TRANSLATIONS.english;
     return dict[key] || PRO_TRANSLATIONS.english[key] || key;
@@ -303,6 +333,33 @@ export default function ProApp() {
     utterance.onend = () => setIsPlayingAudio(false);
     utterance.onerror = () => setIsPlayingAudio(false);
     setIsPlayingAudio(true);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const handleSpeakKisanVoice = (text) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      alert('Speech synthesis is not supported on this device.');
+      return;
+    }
+    window.speechSynthesis.cancel();
+    if (isVoiceSpeaking) {
+      setIsVoiceSpeaking(false);
+      return;
+    }
+    const utterance = new SpeechSynthesisUtterance(text);
+    const langMap = {
+      english: 'en-IN',
+      hindi: 'hi-IN',
+      odia: 'or-IN',
+      bangla: 'bn-IN',
+      telugu: 'te-IN'
+    };
+    utterance.lang = langMap[proLang] || 'en-IN';
+    utterance.rate = 0.88;
+    utterance.pitch = 1.05;
+    utterance.onend = () => setIsVoiceSpeaking(false);
+    utterance.onerror = () => setIsVoiceSpeaking(false);
+    setIsVoiceSpeaking(true);
     window.speechSynthesis.speak(utterance);
   };
 
@@ -551,6 +608,30 @@ export default function ProApp() {
           >
             <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
             <span className="font-extrabold">{t('tabs').mandi}</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('desalination')}
+            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'desalination'
+                ? 'bg-teal-500/25 text-teal-300 border border-teal-500/60 shadow-sm shadow-teal-950/40 ring-1 ring-teal-500/40'
+                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <TestTube2 className="w-3.5 h-3.5 text-teal-400" />
+            <span className="font-extrabold">{t('tabs').desalination}</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('kisanVoice')}
+            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'kisanVoice'
+                ? 'bg-amber-500/25 text-amber-300 border border-amber-500/60 shadow-sm shadow-amber-950/40 ring-1 ring-amber-500/40'
+                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <Mic className="w-3.5 h-3.5 text-amber-400 animate-bounce" />
+            <span className="font-extrabold">{t('tabs').kisanVoice}</span>
           </button>
 
           <button
@@ -1957,6 +2038,473 @@ export default function ProApp() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* TAB: Seawater Desalination & Contingency Catch-Crops */}
+        {activeTab === 'desalination' && (
+          <div className="bg-slate-900/90 border border-teal-500/30 rounded-2xl p-4 sm:p-6 shadow-xl space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-teal-500/10 border border-teal-500/30 rounded-full text-teal-400 text-xs font-semibold uppercase tracking-wider mb-2">
+                  <Sprout className="w-3.5 h-3.5" />
+                  ICAR-NRRI Cuttack & CSSRI Saline Soil Protocols
+                </div>
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <TestTube2 className="w-6 h-6 text-teal-400" />
+                  <span>Post-Cyclone Storm Surge Desalination & Catch-Crop Recommender</span>
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Reclaim seawater-inundated agricultural fields, calculate gypsum requirements, and sow certified salt-tolerant catch-crops to prevent season-long financial ruin.
+                </p>
+              </div>
+
+              {/* Sub-nav for Desalination module */}
+              <div className="flex items-center gap-1.5 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
+                <button
+                  onClick={() => setDesalSubTab('calc')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    desalSubTab === 'calc'
+                      ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  🧮 Soil Salinity Calc
+                </button>
+                <button
+                  onClick={() => setDesalSubTab('varieties')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    desalSubTab === 'varieties'
+                      ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  🌾 Salt-Tolerant Paddy
+                </button>
+                <button
+                  onClick={() => setDesalSubTab('catchCrops')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    desalSubTab === 'catchCrops'
+                      ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  ⚡ 60-Day Catch Crops
+                </button>
+                <button
+                  onClick={() => setDesalSubTab('roadmap')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    desalSubTab === 'roadmap'
+                      ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  🗺️ 4-Phase Roadmap
+                </button>
+              </div>
+            </div>
+
+            {/* SubTab 1: Soil Salinity & Gypsum Calculator */}
+            {desalSubTab === 'calc' && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                <div className="lg:col-span-5 p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-4">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                    <Sliders className="w-4 h-4 text-teal-400" />
+                    Field Flood & Soil Condition Parameters
+                  </h4>
+
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-slate-300">Seawater Ingress Depth</span>
+                      <span className="font-bold text-teal-400 font-mono">{desalDepth} Feet</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="5.0"
+                      step="0.5"
+                      value={desalDepth}
+                      onChange={(e) => setDesalDepth(parseFloat(e.target.value))}
+                      className="w-full accent-teal-500 cursor-pointer"
+                    />
+                    <div className="flex justify-between text-[10px] text-slate-500">
+                      <span>0.5 ft (Tidal splash)</span>
+                      <span>5.0 ft (Extreme storm surge)</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-400 block mb-1.5">Flood Salinity Type</label>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <button
+                        onClick={() => setDesalIngressType('seawater')}
+                        className={`p-2 rounded-lg text-left border cursor-pointer ${
+                          desalIngressType === 'seawater'
+                            ? 'bg-teal-500/20 border-teal-500/60 text-teal-300 font-bold'
+                            : 'bg-slate-900 border-slate-800 text-slate-400'
+                        }`}
+                      >
+                        🌊 Direct Seawater Surge
+                        <span className="block text-[10px] font-normal text-slate-500 mt-0.5">High salinity (32-35 ppt)</span>
+                      </button>
+                      <button
+                        onClick={() => setDesalIngressType('brackish')}
+                        className={`p-2 rounded-lg text-left border cursor-pointer ${
+                          desalIngressType === 'brackish'
+                            ? 'bg-teal-500/20 border-teal-500/60 text-teal-300 font-bold'
+                            : 'bg-slate-900 border-slate-800 text-slate-400'
+                        }`}
+                      >
+                        🛶 Tidal Creek / Estuary
+                        <span className="block text-[10px] font-normal text-slate-500 mt-0.5">Brackish mix (15-20 ppt)</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-400 block mb-1.5">Native Soil Texture</label>
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      {[
+                        { id: 'clay', label: 'Heavy Clay', desc: 'Slow leaching' },
+                        { id: 'loam', label: 'Clay Loam', desc: 'Medium' },
+                        { id: 'sandy', label: 'Sandy Loam', desc: 'Fast leaching' }
+                      ].map((soil) => (
+                        <button
+                          key={soil.id}
+                          onClick={() => setDesalSoil(soil.id)}
+                          className={`p-2 rounded-lg text-center border cursor-pointer ${
+                            desalSoil === soil.id
+                              ? 'bg-teal-500/20 border-teal-500/60 text-teal-300 font-bold'
+                              : 'bg-slate-900 border-slate-800 text-slate-400'
+                          }`}
+                        >
+                          <div className="text-xs">{soil.label}</div>
+                          <div className="text-[9px] text-slate-500">{soil.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-slate-300">Cultivated Area</span>
+                      <span className="font-bold text-amber-300 font-mono">{desalAcres} Acres</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="10.0"
+                      step="0.5"
+                      value={desalAcres}
+                      onChange={(e) => setDesalAcres(parseFloat(e.target.value))}
+                      className="w-full accent-amber-500 cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                {/* Calculation Outputs */}
+                <div className="lg:col-span-7 space-y-4">
+                  {(() => {
+                    const estimatedEC = (
+                      (desalIngressType === 'seawater' ? 7.2 : 3.8) *
+                      (desalDepth / 2) *
+                      (desalSoil === 'clay' ? 1.25 : desalSoil === 'loam' ? 1.0 : 0.75)
+                    ).toFixed(1);
+                    const gypsumPerAcre = estimatedEC > 8 ? 380 : estimatedEC > 5 ? 280 : 160;
+                    const totalGypsumKg = Math.round(gypsumPerAcre * desalAcres);
+                    const totalGypsumBags = Math.round(totalGypsumKg / 25);
+                    const flushDepthCm = desalSoil === 'clay' ? 15 : desalSoil === 'loam' ? 10 : 7;
+
+                    return (
+                      <div className="p-4 rounded-xl bg-gradient-to-br from-slate-950 via-slate-900 to-teal-950/30 border border-teal-500/30 space-y-4">
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                          <span className="text-xs font-bold text-white uppercase tracking-wider">
+                            ICAR Field Reclamation Prescription
+                          </span>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            estimatedEC > 7
+                              ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                              : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                          }`}>
+                            {estimatedEC > 7 ? '⚠️ SEVERE SALINITY' : 'MODERATE SALINITY'}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                          <div className="p-3 rounded-lg bg-slate-900 border border-slate-800">
+                            <span className="text-[10px] text-slate-400 block">ESTIMATED SOIL EC</span>
+                            <span className="text-xl font-black text-rose-400 font-mono">{estimatedEC} <span className="text-xs text-slate-400">dS/m</span></span>
+                            <span className="text-[9px] text-slate-500 block mt-0.5">Critical limit: &gt;4.0 dS/m</span>
+                          </div>
+                          <div className="p-3 rounded-lg bg-slate-900 border border-slate-800">
+                            <span className="text-[10px] text-slate-400 block">GYPSUM (CaSO4) NEED</span>
+                            <span className="text-xl font-black text-amber-400 font-mono">{totalGypsumKg} <span className="text-xs text-slate-400">kg</span></span>
+                            <span className="text-[9px] text-slate-400 block mt-0.5">{totalGypsumBags} bags (25kg each)</span>
+                          </div>
+                          <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 col-span-2 sm:col-span-1">
+                            <span className="text-[10px] text-slate-400 block">LEACHING FLUSH DEPTH</span>
+                            <span className="text-xl font-black text-sky-400 font-mono">{flushDepthCm} <span className="text-xs text-slate-400">cm</span></span>
+                            <span className="text-[9px] text-slate-500 block mt-0.5">Canal or Rainwater flush</span>
+                          </div>
+                        </div>
+
+                        <div className="p-3 rounded-lg bg-teal-950/20 border border-teal-500/20 space-y-2 text-xs">
+                          <div className="font-bold text-teal-300 flex items-center gap-1.5">
+                            <CheckCircle2 className="w-4 h-4 text-teal-400" />
+                            Actionable Soil Restoration Sequence for {desalAcres} Acres:
+                          </div>
+                          <ol className="list-decimal pl-4 space-y-1 text-slate-300 text-[11px] leading-relaxed">
+                            <li>Drain stagnant brine immediately through lateral ditches during low tide.</li>
+                            <li>Broadcast <strong className="text-amber-300">{totalGypsumKg} kg ({totalGypsumBags} bags)</strong> of agricultural gypsum uniformly across the {desalAcres} acres.</li>
+                            <li>Incorporate with shallow disc harrow (do not plow deeper than 10 cm).</li>
+                            <li>Pond with <strong className="text-sky-300">{flushDepthCm} cm</strong> fresh water for 48 hours to leach sodium below root zones.</li>
+                            <li>Broadcast <strong className="text-emerald-300">Dhaincha (Sesbania)</strong> green manure seed @ 20 kg/acre to restore porosity.</li>
+                          </ol>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
+
+            {/* SubTab 2: Salt Tolerant Paddy Cultivars */}
+            {desalSubTab === 'varieties' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {SALINE_RECOVERY_DATA.saltTolerantPaddy.map((variety) => (
+                  <div key={variety.id} className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2.5">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h4 className="text-sm font-bold text-white">{variety.name}</h4>
+                        <span className="text-[10px] text-teal-400 font-semibold">{variety.institute}</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
+                        {variety.salinityTolerance}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
+                      <div className="bg-slate-900 p-2 rounded border border-slate-800/80">
+                        <span className="text-[9px] text-slate-500 block">MATURITY</span>
+                        <strong className="text-slate-200">{variety.duration}</strong>
+                      </div>
+                      <div className="bg-slate-900 p-2 rounded border border-slate-800/80">
+                        <span className="text-[9px] text-slate-500 block">EXPECTED YIELD</span>
+                        <strong className="text-amber-300">{variety.yield}</strong>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      🌾 <strong className="text-slate-200">Submergence Survival:</strong> {variety.submergenceSurvival}
+                    </p>
+                    <p className="text-[10px] text-slate-400">
+                      📍 <strong className="text-slate-300">Recommended Coastal Belt:</strong> {variety.idealDistricts}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* SubTab 3: 60-Day Recovery Catch Crops */}
+            {desalSubTab === 'catchCrops' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {SALINE_RECOVERY_DATA.catchCrops.map((crop) => (
+                  <div key={crop.id} className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h4 className="text-sm font-bold text-white">{crop.crop}</h4>
+                        <span className="text-xs text-amber-400 font-semibold">{crop.variety}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs font-black text-emerald-400 font-mono">{crop.mspRate}</span>
+                        <span className="block text-[9px] text-slate-500">Matures in {crop.maturityDays}</span>
+                      </div>
+                    </div>
+
+                    <div className="p-2.5 rounded-lg bg-emerald-950/20 border border-emerald-500/20 text-xs">
+                      <div className="text-slate-300 text-[11px]">
+                        💰 <strong className="text-emerald-300">Estimated Income:</strong> {crop.estimatedRevenue}
+                      </div>
+                      <div className="text-slate-400 text-[10px] mt-1">
+                        🌱 <strong className="text-slate-300">Seed Rate:</strong> {crop.seedRate}
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      💡 {crop.benefit}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* SubTab 4: 4-Phase Roadmap */}
+            {desalSubTab === 'roadmap' && (
+              <div className="space-y-3">
+                {SALINE_RECOVERY_DATA.desalinationProtocols.map((p, idx) => (
+                  <div key={idx} className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+                    <div className="flex items-center justify-between pb-1 border-b border-slate-800">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-teal-500/20 text-teal-300 flex items-center justify-center text-xs font-bold">
+                          {idx + 1}
+                        </span>
+                        <h4 className="text-xs font-bold text-white uppercase tracking-wider">{p.stage}</h4>
+                      </div>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 font-semibold">
+                        {p.importance}
+                      </span>
+                    </div>
+
+                    <div className="text-xs font-bold text-amber-300">{p.action}</div>
+                    <ul className="list-disc pl-5 space-y-1 text-xs text-slate-300 leading-relaxed">
+                      {p.guidelines.map((g, gIdx) => (
+                        <li key={gIdx}>{g}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB: Kisan Sathi Colloquial Talking Voice Avatar */}
+        {activeTab === 'kisanVoice' && (
+          <div className="bg-slate-900/90 border border-amber-500/30 rounded-2xl p-4 sm:p-6 shadow-xl space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full text-amber-400 text-xs font-semibold uppercase tracking-wider mb-2">
+                  <Mic className="w-3.5 h-3.5" />
+                  Vernacular Audio Companion
+                </div>
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <span>🎙️ "Kisan Sathi" Vernacular Colloquial Talking Voice Avatar</span>
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Ask out-loud questions and listen to natural rural colloquial advice in your mother tongue for critical cyclone emergencies.
+                </p>
+              </div>
+
+              {/* Speaking indicator */}
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800">
+                <div className={`w-3 h-3 rounded-full ${isVoiceSpeaking ? 'bg-emerald-400 animate-ping' : 'bg-slate-600'}`} />
+                <span className="text-xs font-bold text-slate-300">
+                  {isVoiceSpeaking ? 'Speaking in Native Dialect...' : 'Avatar Ready'}
+                </span>
+              </div>
+            </div>
+
+            {/* Voice Avatar Question Selector Chips */}
+            <div className="space-y-2">
+              <span className="text-xs font-semibold text-slate-400 block">
+                Select a Cyclone Crisis Topic to Ask Kisan Sathi:
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {KISAN_VOICE_TOPICS.map((topic) => {
+                  const qText = topic.question[proLang] || topic.question.english;
+                  const isSelected = topic.id === voiceActiveTopicId;
+                  return (
+                    <button
+                      key={topic.id}
+                      onClick={() => {
+                        setVoiceActiveTopicId(topic.id);
+                        if (isVoiceSpeaking) {
+                          window.speechSynthesis.cancel();
+                          setIsVoiceSpeaking(false);
+                        }
+                      }}
+                      className={`p-3 rounded-xl text-left transition-all border text-xs cursor-pointer ${
+                        isSelected
+                          ? 'bg-amber-500/20 border-amber-500/60 text-amber-200 font-bold shadow-md shadow-amber-950/30'
+                          : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-start gap-2">
+                        <span className="text-base shrink-0">🌾</span>
+                        <span className="line-clamp-2">{qText}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Active Avatar Response Stage */}
+            {(() => {
+              const activeTopic = KISAN_VOICE_TOPICS.find((t) => t.id === voiceActiveTopicId) || KISAN_VOICE_TOPICS[0];
+              const qText = activeTopic.question[proLang] || activeTopic.question.english;
+              const aText = activeTopic.answerAudio[proLang] || activeTopic.answerAudio.english;
+
+              return (
+                <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-amber-950/30 border border-amber-500/40 space-y-4">
+                  {/* Avatar Banner with animated soundwaves */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-14 h-14 rounded-2xl bg-amber-500/20 border-2 ${isVoiceSpeaking ? 'border-amber-400 shadow-lg shadow-amber-500/50' : 'border-amber-500/30'} flex items-center justify-center text-2xl relative overflow-hidden shrink-0`}>
+                        👨‍🌾
+                        {isVoiceSpeaking && (
+                          <div className="absolute inset-0 bg-amber-400/10 animate-pulse pointer-events-none" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-amber-400 uppercase tracking-wider">
+                          Kisan Sathi Field Voice Assistant
+                        </div>
+                        <h4 className="text-base font-bold text-white mt-0.5">{qText}</h4>
+                      </div>
+                    </div>
+
+                    {/* Audio Playback Trigger Button */}
+                    <button
+                      onClick={() => handleSpeakKisanVoice(aText)}
+                      className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg cursor-pointer transition-all shrink-0 ${
+                        isVoiceSpeaking
+                          ? 'bg-rose-600 hover:bg-rose-500 text-white'
+                          : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black'
+                      }`}
+                    >
+                      {isVoiceSpeaking ? (
+                        <>
+                          <Square className="w-4 h-4 fill-white" />
+                          <span>Stop Speaking</span>
+                        </>
+                      ) : (
+                        <>
+                          <Volume2 className="w-4 h-4" />
+                          <span>Listen Voice in Mother Tongue</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Vernacular Dialect Response Card */}
+                  <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+                    <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
+                      Spoken Transcript ({proLang.toUpperCase()}):
+                    </span>
+                    <p className="text-sm font-medium text-slate-200 leading-relaxed font-sans">
+                      "{aText}"
+                    </p>
+                  </div>
+
+                  {/* Actionable Key Takeaways Checklist */}
+                  <div className="space-y-2 pt-1">
+                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      Key Field Action Checklist:
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                      {activeTopic.keyPoints.map((pt, pIdx) => (
+                        <div key={pIdx} className="p-2.5 rounded-lg bg-slate-900 border border-slate-800/80 flex items-center gap-2 text-slate-300">
+                          <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                          <span>{pt}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 
