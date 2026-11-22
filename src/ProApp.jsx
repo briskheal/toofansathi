@@ -1294,30 +1294,70 @@ export default function ProApp() {
                         </div>
                       </div>
 
-                      {/* Official Cyclone Damage Suspected Pathology Advisory Notice */}
-                      <div className="p-3.5 bg-gradient-to-r from-amber-950/60 via-slate-950 to-rose-950/50 border-b border-amber-500/30 space-y-1.5">
-                        <div className="flex items-center gap-2 text-xs font-bold text-amber-300">
-                          <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
-                          <span>
-                            {proLang === 'odia' ? 'ବାତ୍ୟା କ୍ଷୟକ୍ଷତି ଆଶଙ୍କା ଓ କ୍ଷେତ୍ର ନିରୀକ୍ଷଣ ସୂଚନା (ICAR / KVK)' :
-                             proLang === 'hindi' ? 'चक्रवात उपरांत संदिग्ध रोग व खेत निरीक्षण चेतावनी (ICAR / KVK)' :
-                             proLang === 'bangla' ? 'ঘূর্ণিঝড় পরবর্তী সম্ভাব্য রোগ ও মাঠ পরিদর্শন বিজ্ঞপ্তি' :
-                             proLang === 'telugu' ? 'తుఫాను అనంతర అనుమానిత తెగులు & క్షేత్ర పరిశీలన హెచ్చరిక' :
-                             'Post-Cyclone Field Pathology Alert: Suspected Disease Ingress & Inspection Protocol'}
-                          </span>
+                      {/* Multi-Angle Pathology Photograph Viewer (Verified Local ICAR Assets) */}
+                      {currentDisease.angles[activePhotoAngle]?.imageUrl ? (
+                        <div className="relative group overflow-hidden bg-slate-950 border-b border-slate-800">
+                          <img
+                            src={currentDisease.angles[activePhotoAngle].imageUrl}
+                            alt={currentDisease.angles[activePhotoAngle].title}
+                            className="w-full h-72 sm:h-80 object-cover transition-transform duration-500 group-hover:scale-105"
+                            loading="lazy"
+                          />
+                          {/* Gradient Overlay for legibility */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/60 pointer-events-none" />
+
+                          {/* Top Badges */}
+                          <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-900/90 text-amber-300 border border-amber-500/40 backdrop-blur-md shadow-md flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                              ICAR Verified Angle {activePhotoAngle + 1} of 3
+                            </span>
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/90 text-white shadow-md">
+                              {currentDisease.angles[activePhotoAngle]?.badge}
+                            </span>
+                          </div>
+
+                          {/* Bottom Caption Overlay */}
+                          <div className="absolute bottom-3 left-3 right-3 p-3 rounded-xl bg-slate-950/85 backdrop-blur-md border border-slate-800/80">
+                            <div className="flex items-center justify-between gap-2">
+                              <h4 className="text-xs font-bold text-white line-clamp-1">
+                                {currentDisease.angles[activePhotoAngle]?.title}
+                              </h4>
+                              <span className="text-[10px] text-slate-400 shrink-0">
+                                {currentDisease.angles[activePhotoAngle]?.label}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-amber-200 font-medium mt-1 line-clamp-2">
+                              🎯 <strong>Target:</strong> {currentDisease.angles[activePhotoAngle]?.targetSymptom}
+                            </p>
+                          </div>
                         </div>
-                        <p className="text-[11px] text-slate-300 leading-relaxed">
-                          {proLang === 'odia' ?
-                            'ପ୍ରବଳ ବାତ୍ୟା ପବନ ଏବଂ କ୍ଷେତ୍ରରେ ପାଣି ଜମି ରହିବା ଯୋଗୁଁ ଫସଲରେ ଗଛ କ୍ଷତବିକ୍ଷତ ହୋଇ ଏହି ରୋଗ ହେବାର ପ୍ରବଳ ଆଶଙ୍କା ରହିଛି। ଜିଲ୍ଲା କୃଷି ବିଜ୍ଞାନ କେନ୍ଦ୍ର (KVK) ପକ୍ଷରୁ ସମ୍ପୂର୍ଣ୍ଣ ପ୍ରତ୍ୟକ୍ଷ ଫଟୋ ସଂଗ୍ରହ ଚାଲିଥିବା ବେଳେ, ତୁଫାନସାଥୀ ପକ୍ଷରୁ ସମ୍ଭାବ୍ୟ ରୋଗ ଲକ୍ଷଣ ଚେକଲିଷ୍ଟ ଏବଂ ତୁରନ୍ତ ଔଷଧ ସ୍ପ୍ରେ ପରାମର୍ଶ ତଳେ ପ୍ରଦାନ କରାଯାଉଛି।' :
-                           proLang === 'hindi' ?
-                            'प्रबल चक्रवाती हवाओं और जलभराव के कारण फसल के ऊतकों में घाव तथा जीवाणु/कवक संक्रमण का गंभीर अंदेशा है। जिला कृषि विज्ञान केंद्र (KVK) द्वारा प्रत्यक्ष तस्वीरें संकलित की जा रही हैं। तूफानसाथी द्वारा संभावित लक्षण व त्वरित आईसीएआर उपचार नीचे प्रस्तुत है।' :
-                           proLang === 'bangla' ?
-                            'ঘূর্ণিঝড়ের তীব্র বাতাস ও জলমগ্নতার কারণে ফসলে ব্যাকটেরিয়া ও ছত্রাক সংক্রমণের প্রবল আশঙ্কা রয়েছে। জেলা কেভিকে থেকে ছবি সংগ্রহ চলাকালীন তুফানসাথী সম্ভাব্য লক্ষণ ও জরুরি প্রতিকার নিচে প্রদান করছে।' :
-                           proLang === 'telugu' ?
-                            'తీవ్ర తుఫాను గాలులు మరియు వరద నీటి వల్ల పంట దెబ్బతినే ప్రమాదం ఉంది. పూర్తి ఫోటోలు సంకలనం చేయబడుతున్న సమయంలో, తుఫాన్ సాథీ తక్షణ రోగ నిర్ధారణ మరియు చికిత్సను అందిస్తుంది.' :
-                            'Severe cyclonic wind shear and persistent flood inundation suspect high risk of localized tissue lesions and pathogen ingress. As live surveillance photography is being compiled from regional KVKs and ICAR field teams, ToofanSathi provides this suspected diagnostic verification checklist and immediate chemical remedial protocol.'}
-                        </p>
-                      </div>
+                      ) : (
+                        /* Official Cyclone Damage Suspected Pathology Advisory Notice */
+                        <div className="p-3.5 bg-gradient-to-r from-amber-950/60 via-slate-950 to-rose-950/50 border-b border-amber-500/30 space-y-1.5">
+                          <div className="flex items-center gap-2 text-xs font-bold text-amber-300">
+                            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+                            <span>
+                              {proLang === 'odia' ? 'ବାତ୍ୟା କ୍ଷୟକ୍ଷତି ଆଶଙ୍କା ଓ କ୍ଷେତ୍ର ନିରୀକ୍ଷଣ ସୂଚନା (ICAR / KVK)' :
+                               proLang === 'hindi' ? 'चक्रवात उपरांत संदिग्ध रोग व खेत निरीक्षण चेतावनी (ICAR / KVK)' :
+                               proLang === 'bangla' ? 'ঘূর্ণিঝড় পরবর্তী সম্ভাব্য রোগ ও মাঠ পরিদর্শন বিজ্ঞপ্তি' :
+                               proLang === 'telugu' ? 'తుఫాను అనంతర అనుమానిత తెగులు & క్షేత్ర పరిశీలన హెచ్చరిక' :
+                               'Post-Cyclone Field Pathology Alert: Suspected Disease Ingress & Inspection Protocol'}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-300 leading-relaxed">
+                            {proLang === 'odia' ?
+                              'ପ୍ରବଳ ବାତ୍ୟା ପବନ ଏବଂ କ୍ଷେତ୍ରରେ ପାଣି ଜମି ରହିବା ଯୋଗୁଁ ଫସଲରେ ଗଛ କ୍ଷତବିକ୍ଷତ ହୋଇ ଏହି ରୋଗ ହେବାର ପ୍ରବଳ ଆଶଙ୍କା ରହିଛି। ଜିଲ୍ଲା କୃଷି ବିଜ୍ଞାନ କେନ୍ଦ୍ର (KVK) ପକ୍ଷରୁ ସମ୍ପୂର୍ଣ୍ଣ ପ୍ରତ୍ୟକ୍ଷ ଫଟୋ ସଂଗ୍ରହ ଚାଲିଥିବା ବେଳେ, ତୁଫାନସାଥୀ ପକ୍ଷରୁ ସମ୍ଭାବ୍ୟ ରୋଗ ଲକ୍ଷଣ ଚେକଲିଷ୍ଟ ଏବଂ ତୁରନ୍ତ ଔଷଧ ସ୍ପ୍ରେ ପରାମର୍ଶ ତଳେ ପ୍ରଦାନ କରାଯାଉଛି।' :
+                             proLang === 'hindi' ?
+                              'प्रबल चक्रवाती हवाओं और जलभराव के कारण फसल के ऊतकों में घाव तथा जीवाणु/कवक संक्रमण का गंभीर अंदेशा है। जिला कृषि विज्ञान केंद्र (KVK) द्वारा प्रत्यक्ष तस्वीरें संकलित की जा रही हैं। तूफानसाथी द्वारा संभावित लक्षण व त्वरित आईसीएआर उपचार नीचे प्रस्तुत है।' :
+                             proLang === 'bangla' ?
+                              'ঘূর্ণিঝড়ের তীব্র বাতাস ও জলমগ্নতার কারণে ফসলে ব্যাকটেরিয়া ও ছত্রাক সংক্রমণের প্রবল আশঙ্কা রয়েছে। জেলা কেভিকে থেকে ছবি সংগ্রহ চলাকালীন তুফানসাথী সম্ভাব্য লক্ষণ ও জরুরি প্রতিকার নিচে প্রদান করছে।' :
+                             proLang === 'telugu' ?
+                              'తీవ్ర తుఫాను గాలులు మరియు వరద నీటి వల్ల పంట దెబ్బతినే ప్రమాదం ఉంది. పూర్తి ఫోటోలు సంకలనం చేయబడుతున్న సమయంలో, తుఫాన్ సాథీ తక్షణ రోగ నిర్ధారణ మరియు చికిత్సను అందిస్తుంది.' :
+                              'Severe cyclonic wind shear and persistent flood inundation suspect high risk of localized tissue lesions and pathogen ingress. As live surveillance photography is being compiled from regional KVKs and ICAR field teams, ToofanSathi provides this suspected diagnostic verification checklist and immediate chemical remedial protocol.'}
+                          </p>
+                        </div>
+                      )}
 
                       {/* 3-Angle Scientific Pathology Inspection Blueprint Card (No misleading stock photos) */}
                       <div className="p-4 sm:p-5 bg-gradient-to-b from-slate-950 to-slate-900 border-b border-slate-800 space-y-4">

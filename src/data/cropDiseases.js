@@ -35,6 +35,7 @@ export const CROP_DISEASES = [
         title: 'Angle 1: Macro Leaf Lesion Inspection',
         label: 'Close-Up Microscopic Inspection',
         badge: 'Leaf Blade Close-Up Target',
+        imageUrl: '/assets/diseases/paddy_blb_angle1.jpg',
         desc: 'Translucent water-soaked streaks near leaf margins; look for milky/amber bacterial ooze beads early in morning.',
         targetSymptom: 'Wavy yellow margin with amber bacterial ooze beads on veins.',
         tissueRisk: 'Wind micro-tears allow Xanthomonas bacteria colonization within 24-48 hours.'
@@ -43,6 +44,7 @@ export const CROP_DISEASES = [
         title: 'Angle 2: Full Canopy & Stalk Lodging',
         label: 'Mid-Plant Canopy Angle',
         badge: 'Plant Height & Canopy Target',
+        imageUrl: '/assets/diseases/paddy_blb_angle2.jpg',
         desc: 'Extensive straw-colored leaf drying across the top crop canopy with bent/lodged tillers in wet mud.',
         targetSymptom: 'Straw-colored bleached canopy & weakened lodging stems.',
         tissueRisk: 'Submergence and high humidity (>90%) cause rapid xylem blockage.'
@@ -51,6 +53,7 @@ export const CROP_DISEASES = [
         title: 'Angle 3: Waterlogged Field Panoramic',
         label: 'Field-Wide Inundation Pattern',
         badge: 'Field Damage Extent Target',
+        imageUrl: '/assets/diseases/paddy_blb_angle3.jpg',
         desc: 'Broad field view showing circular patches of wilting/submerged crops in standing receding storm runoff.',
         targetSymptom: 'Irregular yellowed patches concentrated in drainage depressions.',
         tissueRisk: 'Anaerobic root zone hypoxia accelerating vascular collapse.'
@@ -106,6 +109,7 @@ export const CROP_DISEASES = [
         title: 'Angle 1: Waterline Sheath Lesion Inspection',
         label: 'Stem Base Macro Target',
         badge: 'Waterline Sheath View',
+        imageUrl: '/assets/diseases/paddy_sheath_angle1.jpg',
         desc: 'Characteristic serpent-skin lesions with dark reddish margins near root collar.',
         targetSymptom: 'Oval greenish-grey water-soaked spots on leaf sheaths near waterline.',
         tissueRisk: 'Prolonged relative humidity (>95%) combined with waterlogged plant bases triggers fungal spread.'
@@ -114,6 +118,7 @@ export const CROP_DISEASES = [
         title: 'Angle 2: Tiller Lodging & Sclerotia Inspection',
         label: 'Mid-Stem Cross Section',
         badge: 'Fungal Sclerotia Target',
+        imageUrl: '/assets/diseases/paddy_sheath_angle2.jpg',
         desc: 'Mustard-seed brown fungal sclerotia grains visible upon pulling sheath back.',
         targetSymptom: 'Brown mustard-seed-like sclerotia inside infected leaf sheaths.',
         tissueRisk: 'Tillers rot, causing mature plants to lodge flat into wet mud.'
@@ -179,6 +184,7 @@ export const CROP_DISEASES = [
         title: 'Angle 1: Decayed Taproot Macro Inspection',
         label: 'Uprooted Taproot Target',
         badge: 'Root Disintegration View',
+        imageUrl: '/assets/diseases/pulses_rot_angle1.jpg',
         desc: 'Complete disintegration of feeder root hairs; blackened waterlogged taproot.',
         targetSymptom: 'Taproot rots completely with bark sloughing off when pulled gently.',
         tissueRisk: 'Anaerobic mud triggers immediate Pythium & Rhizoctonia root rot within 24 hours.'
@@ -247,6 +253,7 @@ export const CROP_DISEASES = [
         title: 'Angle 1: Yellow Halo Spots Close-Up Inspection',
         label: 'Leaf Surface Macro Target',
         badge: 'Halo Lesion Target',
+        imageUrl: '/assets/diseases/groundnut_tikka_angle1.jpg',
         desc: 'Circular necrotic spots surrounded by luminous yellow chlorotic halos on foliage.',
         targetSymptom: 'Circular reddish-brown spots with prominent bright yellow halos on upper leaf surfaces.',
         tissueRisk: 'Coastal high humidity and rain splashes disperse Cercospora spores across the entire canopy.'
@@ -315,6 +322,7 @@ export const CROP_DISEASES = [
         title: 'Angle 1: Green Droop Macro Inspection',
         label: 'Whole Plant Green Droop Target',
         badge: 'Bacterial Droop View',
+        imageUrl: '/assets/diseases/veg_wilt_angle1.jpg',
         desc: 'Total foliage wilting while leaves remain lush green, characteristic of bacterial attack.',
         targetSymptom: 'Rapid wilting of entire green plant during hot sunny hours without leaf yellowing.',
         tissueRisk: 'High soil temperatures right after stormy rains cause rapid multiplication of soil-borne Ralstonia.'
@@ -388,6 +396,7 @@ export const CROP_DISEASES = [
         title: 'Angle 1: Betel Vine Collar Lesion Inspection',
         label: 'Vine Stem Macro Target',
         badge: 'Vine Foot Rot Collar View',
+        imageUrl: '/assets/diseases/betel_paan_angle1.jpg',
         desc: 'Dark blackened waterlogged foot rot lesion where vine emerges from muddy soil.',
         targetSymptom: 'Betel vine: Brown water-soaked lesions at soil level; leaves turn dull yellow.',
         tissueRisk: 'Severe cyclone winds break paan baroj bamboo structures, causing rainwater ponding.'
