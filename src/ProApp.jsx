@@ -32,17 +32,207 @@ import {
   CheckCircle2,
   Building,
   Home,
-  Check
+  Check,
+  Stethoscope,
+  Activity,
+  Eye,
+  Volume2,
+  Globe,
+  Calculator,
+  AlertCircle,
+  Info
 } from 'lucide-react';
 import PremiumAuthModal from './components/PremiumAuthModal';
 import { ALL_INDIA_ACTIVE_STORMS, getNearestStorm } from './services/cycloneEngine';
+import { POST_CYCLONE_CROPS, CROP_DISEASES, ICAR_POST_CYCLONE_WORKSHOP_RULES } from './data/cropDiseases';
+
+const PRO_TRANSLATIONS = {
+  english: {
+    backToLive: '← Live Public Portal',
+    portalTitle: 'TOOFANSATHI PRO • TESTING SANDBOX (/pro)',
+    badgeTitle: 'COMMERCIAL & AGRI-ENTERPRISE SUITE',
+    heroDesc: '15-Day Ultra-Granular Hourly Forecasts, Automated WhatsApp Storm Alarms, Shrimp Pond Surge Defense, and Post-Cyclone Crop Doctor.',
+    tabs: {
+      harvest: '🌾 Crop Harvest Advisor',
+      clinic: '🩺 Post-Cyclone Crop Doctor',
+      aquaculture: '🦐 Aquaculture Pond Surge',
+      marine: '🚢 Marine Fleet Departure',
+      fifteenDay: '⏱️ 15-Day Hourly Outlook',
+      insurance: '📄 Certified Claim PDF',
+      whatsapp: '📲 WhatsApp Alarms',
+      watchlist: '📍 Asset Watchlist'
+    },
+    clinicTitle: 'Immediately After Cyclone Crop Disease Doctor & Remedial Clinic',
+    clinicSubtitle: 'Field pathology and multi-angle photo diagnostic clinic for storm-damaged and waterlogged crops.',
+    angleSelect: 'Inspect Multi-Angle Symptom Photos (Match with field condition):',
+    immediateRemedy: 'Immediate Post-Cyclone ICAR Treatment Protocol',
+    dosageCalc: 'Emergency Chemical / Bio Dosage Calculator for Your Land',
+    warningTitle: 'Strict Post-Cyclone Warning',
+    listenDoctor: 'Listen Audio Prescription',
+    stopAudio: 'Stop Audio',
+    workshopTitle: 'Post-Cyclone Emergency Field Workshop (Hour 0 to Day 7 Action Plan)'
+  },
+  odia: {
+    backToLive: '← ସାଧାରଣ ପୋର୍ଟାଲ୍',
+    portalTitle: 'ତୁଫାନସାଥୀ ପ୍ରୋ • ପରୀକ୍ଷାମୂଳକ ପୋର୍ଟାଲ୍ (/pro)',
+    badgeTitle: 'ବାଣିଜ୍ୟିକ ଓ କୃଷି ଏଣ୍ଟରପ୍ରାଇଜ୍ ସୁଇଟ୍',
+    heroDesc: '୧୫-ଦିନିଆ ଘଣ୍ଟା ଅନୁଯାୟୀ ପାଣିପାଗ, ହ୍ୱାଟ୍ସଆପ୍ ସତର୍କତା, ଚିଙ୍ଗୁଡ଼ି ଘେରି ସୁରକ୍ଷା ଓ ବାତ୍ୟା ପରବର୍ତ୍ତୀ ଫସଲ ରୋଗ ଡାକ୍ତର।',
+    tabs: {
+      harvest: '🌾 ଫସଲ ଅମଳ ପରାମର୍ଶ',
+      clinic: '🩺 ବାତ୍ୟା ପରବର୍ତ୍ତୀ ଫସଲ ଡାକ୍ତର',
+      aquaculture: '🦐 ଚିଙ୍ଗୁଡ଼ି ଘେରି ସୁରକ୍ଷା',
+      marine: '🚢 ମାଛଧରା ଡଙ୍ଗା ସୁରକ୍ଷା',
+      fifteenDay: '⏱️ ୧୫-ଦିନିଆ ପୂର୍ବାନୁମାନ',
+      insurance: '📄 ବୀମା କ୍ଷତିପୂରଣ ପ୍ରମାଣପତ୍ର',
+      whatsapp: '📲 ହ୍ୱାଟ୍ସଆପ୍ ଆଲାର୍ମ',
+      watchlist: '📍 ଜମି ଓ ସମ୍ପତ୍ତି ନଜର'
+    },
+    clinicTitle: 'ବାତ୍ୟା ପରବର୍ତ୍ତୀ ଫସଲ ରୋଗ ନିରାକରଣ କ୍ଲିନିକ୍ ଓ କର୍ମଶାଳା',
+    clinicSubtitle: 'ବିଭିନ୍ନ କୋଣରୁ ଫଟୋ ଦେଖି ରୋଗ ଚିହ୍ନଟ କରନ୍ତୁ ଏବଂ ତୁରନ୍ତ ଔଷଧ ସ୍ପ୍ରେ ପରାମର୍ଶ ପାଆନ୍ତୁ।',
+    angleSelect: 'ଫସଲ ରୋଗର ୩ଟି ଭିନ୍ନ କୋଣର ଫଟୋ ନିରୀକ୍ଷଣ କରନ୍ତୁ:',
+    immediateRemedy: 'ବାତ୍ୟା ପରେ ତୁରନ୍ତ କରିବାକୁ ଥିବା କାର୍ଯ୍ୟ (ICAR ନିୟମାବଳୀ)',
+    dosageCalc: 'ଆପଣଙ୍କ ଜମି ପାଇଁ ଔଷଧ ପରିମାଣ ହିସାବ କରନ୍ତୁ',
+    warningTitle: 'ବାତ୍ୟା ପରେ ଜରୁରୀ ସତର୍କତା',
+    listenDoctor: 'ଡାକ୍ତରୀ ପରାମର୍ଶ ଶୁଣନ୍ତୁ',
+    stopAudio: 'ଅଡିଓ ବନ୍ଦ କରନ୍ତୁ',
+    workshopTitle: 'ବାତ୍ୟା ପରେ ୭-ଦିନିଆ ଜରୁରୀ କ୍ଷେତ୍ର କାର୍ଯ୍ୟ ଯୋଜନା'
+  },
+  hindi: {
+    backToLive: '← मुख्य पोर्टल',
+    portalTitle: 'तूफानसाथी प्रो • परीक्षण पोर्टल (/pro)',
+    badgeTitle: 'व्यावसायिक एवं कृषि एंटरप्राइज सूट',
+    heroDesc: '15-दिवसीय प्रति घंटा मौसम, व्हाट्सएप अलर्ट, झींगा तालाब सुरक्षा एवं चक्रवात बाद फसल रोग निदान।',
+    tabs: {
+      harvest: '🌾 फसल कटाई सलाहकार',
+      clinic: '🩺 चक्रवात बाद फसल डॉक्टर',
+      aquaculture: '🦐 झींगा तालाब सुरक्षा',
+      marine: '🚢 समुद्री नाव रवानगी',
+      fifteenDay: '⏱️ 15-दिवसीय पूर्वानुमान',
+      insurance: '📄 बीमा दावा प्रमाण पत्र',
+      whatsapp: '📲 व्हाट्सएप अलार्म',
+      watchlist: '📍 बहु-स्थान संपत्ति निगरानी'
+    },
+    clinicTitle: 'चक्रवात उपरांत फसल रोग निदान क्लीनिक व कार्यशाला',
+    clinicSubtitle: 'विभिन्न कोणों से ली गई तस्वीरों से रोग की पहचान करें और त्वरित उपचार पाएं।',
+    angleSelect: 'रोग के 3 अलग-अलग कोणों की तस्वीरें देखें:',
+    immediateRemedy: 'चक्रवात बाद त्वरित आईसीएआर उपचार प्रोटोकॉल',
+    dosageCalc: 'अपनी जमीन के अनुसार दवा की मात्रा की गणना करें',
+    warningTitle: 'चक्रवात उपरांत सख्त चेतावनी',
+    listenDoctor: 'डॉक्टर की सलाह सुनें',
+    stopAudio: 'ऑडियो बंद करें',
+    workshopTitle: 'चक्रवात बाद 7-दिवसीय आपातकालीन खेत कार्ययोजना'
+  },
+  bangla: {
+    backToLive: '← প্রধান পোর্টাল',
+    portalTitle: 'তুফানসাথী প্রো • টেস্টিং পোর্টাল (/pro)',
+    badgeTitle: 'বাণিজ্যিক ও কৃষি এন্টারপ্রাইজ স্যুট',
+    heroDesc: '১৫-দিনের প্রতি ঘণ্টার পূর্বাভাস, হোয়াটসঅ্যাপ সতর্কতা এবং ঘূর্ণিঝড় পরবর্তী ফসল ডাক্তার।',
+    tabs: {
+      harvest: '🌾 ফসল কাটার পরামর্শ',
+      clinic: '🩺 ঘূর্ণিঝড় পরবর্তী ফসল ডাক্তার',
+      aquaculture: '🦐 চিংড়ি ঘের সুরক্ষা',
+      marine: '🚢 মাছ ধরার নৌকা সুরক্ষা',
+      fifteenDay: '⏱️ ১৫-দিনের পূর্বাভাস',
+      insurance: '📄 বীমা দাবি সার্টিফিকেট',
+      whatsapp: '📲 হোয়াটসঅ্যাপ অ্যালার্ম',
+      watchlist: '📍 খামার নজরদারি'
+    },
+    clinicTitle: 'ঘূর্ণিঝড় পরবর্তী ফসল রোগ নির্ণয় ক্লিনিক ও কর্মশালা',
+    clinicSubtitle: 'বিভিন্ন কোণ থেকে ছবি দেখে রোগ নির্ণয় করুন এবং দ্রুত প্রতিকার পান।',
+    angleSelect: 'রোগের ৩টি ভিন্ন কোণের ছবি দেখুন:',
+    immediateRemedy: 'ঘূর্ণিঝড় পরবর্তী জরুরি আইসিএআর প্রতিকার',
+    dosageCalc: 'আপনার জমির জন্য ওষুধের মাত্রা গণনা করুন',
+    warningTitle: 'ঘূর্ণিঝড় পরবর্তী সতর্কবার্তা',
+    listenDoctor: 'ডাক্তারের পরামর্শ শুনুন',
+    stopAudio: 'অডিও বন্ধ করুন',
+    workshopTitle: 'ঘূর্ণিঝড় পরবর্তী ৭-দিনের জরুরি ক্ষেত্র পরিকল্পনা'
+  },
+  telugu: {
+    backToLive: '← లైవ్ పబ్లిక్ పోర్టల్',
+    portalTitle: 'తూఫాన్ సాథీ ప్రో • టెస్టింగ్ శాండ్‌బాక్స్ (/pro)',
+    badgeTitle: 'వాణిజ్య & వ్యవసాయ ఎంటర్‌ప్రైజ్ సూట్',
+    heroDesc: '15-రోజుల గంటల సూచన, వాట్సాప్ అలారాలు, రొయ్యల చెరువు రక్షణ & తుఫాను అనంతర పంట డాక్టర్.',
+    tabs: {
+      harvest: '🌾 పంట కోత సలహాదారు',
+      clinic: '🩺 తుఫాను అనంతర పంట డాక్టర్',
+      aquaculture: '🦐 ఆక్వాకల్చర్ చెరువు రక్షణ',
+      marine: '🚢 బోట్ బయలుదేరే భద్రత',
+      fifteenDay: '⏱️ 15-రోజుల ఔట్‌లుక్',
+      insurance: '📄 సర్టిఫైడ్ క్లెయిమ్ PDF',
+      whatsapp: '📲 వాట్సాప్ అలారాలు',
+      watchlist: '📍 ఆస్తి వాచ్‌లిస్ట్'
+    },
+    clinicTitle: 'తుఫాను అనంతర పంట వ్యాధి డాక్టర్ & క్లినిక్',
+    clinicSubtitle: 'వివిధ కోణాల నుండి ఫోటోల ద్వారా తెగుళ్ళను గుర్తించి సరైన మందులను వాడండి.',
+    angleSelect: 'తెగులు యొక్క 3 వేర్వేరు కోణాల ఫోటోలను పరిశీలించండి:',
+    immediateRemedy: 'తుఫాను తర్వాత తక్షణ ICAR చికిత్సా పద్ధతి',
+    dosageCalc: 'మీ భూమి విస్తీర్ణానికి మందుల పరిమాణాన్ని లెక్కించండి',
+    warningTitle: 'తుఫాను అనంతర హెచ్చరిక',
+    listenDoctor: 'డాక్టర్ సలహాను వినండి',
+    stopAudio: 'ఆడియో ఆపు',
+    workshopTitle: 'తుఫాను అనంతర 7-రోజుల అత్యవసర ప్రణాళిక'
+  }
+};
 
 export default function ProApp() {
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [selectedCrop, setSelectedCrop] = useState('paddy');
-  const [activeTab, setActiveTab] = useState('harvest'); // 'harvest' | 'aquaculture' | 'marine' | '15day' | 'insurance' | 'whatsapp' | 'watchlist'
+  const [activeTab, setActiveTab] = useState('harvest'); // 'harvest' | 'clinic' | 'aquaculture' | 'marine' | '15day' | 'insurance' | 'whatsapp' | 'watchlist'
   const [forecastModel, setForecastModel] = useState('ecmwf'); // 'ecmwf' | 'gfs'
+
+  // Pro Vernacular Language State
+  const [proLang, setProLang] = useState('odia'); // Default to Odia for coastal farmer relevance
+  const [selectedClinicCrop, setSelectedClinicCrop] = useState('paddy');
+  const [selectedDiseaseId, setSelectedDiseaseId] = useState('paddy-blb');
+  const [activePhotoAngle, setActivePhotoAngle] = useState(0); // 0, 1, 2
+  const [farmAcreage, setFarmAcreage] = useState(1.0);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+
+  const t = (key) => {
+    const dict = PRO_TRANSLATIONS[proLang] || PRO_TRANSLATIONS.english;
+    return dict[key] || PRO_TRANSLATIONS.english[key] || key;
+  };
+
+  const handleSpeakRemedy = (text) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      alert('Speech synthesis is not supported on this device.');
+      return;
+    }
+    window.speechSynthesis.cancel();
+    if (isPlayingAudio) {
+      setIsPlayingAudio(false);
+      return;
+    }
+    const utterance = new SpeechSynthesisUtterance(text);
+    const langMap = {
+      english: 'en-IN',
+      hindi: 'hi-IN',
+      odia: 'or-IN',
+      bangla: 'bn-IN',
+      telugu: 'te-IN',
+      tamil: 'ta-IN',
+      gujarati: 'gu-IN'
+    };
+    utterance.lang = langMap[proLang] || 'en-IN';
+    utterance.rate = 0.9;
+    utterance.onend = () => setIsPlayingAudio(false);
+    utterance.onerror = () => setIsPlayingAudio(false);
+    setIsPlayingAudio(true);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const handleClinicCropChange = (cropId) => {
+    setSelectedClinicCrop(cropId);
+    const firstMatch = CROP_DISEASES.find(d => d.cropId === cropId);
+    if (firstMatch) {
+      setSelectedDiseaseId(firstMatch.id);
+      setActivePhotoAngle(0);
+    }
+  };
+
+  const currentDisease = CROP_DISEASES.find(d => d.id === selectedDiseaseId) || CROP_DISEASES[0];
+  const matchingDiseases = CROP_DISEASES.filter(d => d.cropId === selectedClinicCrop);
 
   // WhatsApp Alert Dispatch State
   const [whatsappContacts, setWhatsappContacts] = useState([
@@ -106,16 +296,34 @@ export default function ProApp() {
             className="flex items-center gap-1 text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-700 px-2.5 py-1 rounded-lg transition-colors font-semibold"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>← Live Public Portal</span>
+            <span>{t('backToLive')}</span>
           </a>
           <span className="text-amber-500 font-mono font-bold flex items-center gap-1.5 pl-2 border-l border-slate-700">
             <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400 animate-pulse" />
-            <span>TOOFANSATHI PRO • TESTING SANDBOX (/pro)</span>
+            <span className="hidden sm:inline">{t('portalTitle')}</span>
+            <span className="sm:hidden font-mono">PRO SUITE</span>
           </span>
         </div>
 
-        {/* User Auth Status Pill */}
-        <div className="flex items-center gap-2">
+        {/* Vernacular Language Switcher & User Auth Status Pill */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Vernacular Language Selector */}
+          <div className="flex items-center gap-1 bg-slate-900 border border-amber-500/40 rounded-lg px-2 py-1 shadow-inner">
+            <Globe className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+            <select
+              value={proLang}
+              onChange={(e) => setProLang(e.target.value)}
+              className="bg-transparent text-[11px] font-bold text-amber-200 focus:outline-none cursor-pointer"
+              title="Select Language / ଭାଷା ବାଛନ୍ତୁ / भाषा चुनें"
+            >
+              <option value="odia" className="bg-slate-900 text-white">ଓଡ଼ିଆ (Odia)</option>
+              <option value="english" className="bg-slate-900 text-white">English</option>
+              <option value="hindi" className="bg-slate-900 text-white">हिन्दी (Hindi)</option>
+              <option value="bangla" className="bg-slate-900 text-white">বাংলা (Bengali)</option>
+              <option value="telugu" className="bg-slate-900 text-white">తెలుగు (Telugu)</option>
+            </select>
+          </div>
+
           {currentUser ? (
             <div className="flex items-center gap-2 bg-slate-900/90 border border-amber-500/50 px-2.5 py-1 rounded-lg">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
@@ -148,7 +356,7 @@ export default function ProApp() {
             <div className="flex items-center gap-2 mb-1">
               <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono text-[10px] font-bold flex items-center gap-1">
                 <Sparkles className="w-3 h-3" />
-                COMMERCIAL & AGRI-ENTERPRISE SUITE
+                {t('badgeTitle')}
               </span>
               <span className="px-2 py-0.5 rounded-full bg-sky-950 text-sky-400 border border-sky-800 text-[10px] font-mono font-bold">
                 ECMWF 9km High-Res
@@ -159,7 +367,7 @@ export default function ProApp() {
               <span className="text-amber-400 font-serif italic text-base">Elite</span>
             </h1>
             <p className="text-xs text-slate-400 max-w-xl">
-              15-Day Ultra-Granular Hourly Forecasts, Automated WhatsApp Storm Alarms, Shrimp Pond Surge Defense, and Crop Harvest Advisors.
+              {t('heroDesc')}
             </p>
           </div>
 
@@ -192,7 +400,19 @@ export default function ProApp() {
             }`}
           >
             <Wheat className="w-3.5 h-3.5 text-amber-400" />
-            <span>🌾 Crop Harvest Advisor</span>
+            <span>{t('tabs').harvest}</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('clinic')}
+            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'clinic'
+                ? 'bg-rose-500/25 text-rose-300 border border-rose-500/60 shadow-sm shadow-rose-950/40 ring-1 ring-rose-500/40'
+                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <Stethoscope className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
+            <span className="font-extrabold">{t('tabs').clinic}</span>
           </button>
 
           <button
@@ -204,7 +424,7 @@ export default function ProApp() {
             }`}
           >
             <Waves className="w-3.5 h-3.5 text-cyan-400" />
-            <span>🦐 Aquaculture Pond Surge</span>
+            <span>{t('tabs').aquaculture}</span>
           </button>
 
           <button
@@ -216,7 +436,7 @@ export default function ProApp() {
             }`}
           >
             <Ship className="w-3.5 h-3.5 text-blue-400" />
-            <span>🚢 Marine Fleet Departure</span>
+            <span>{t('tabs').marine}</span>
           </button>
 
           <button
@@ -228,7 +448,7 @@ export default function ProApp() {
             }`}
           >
             <Calendar className="w-3.5 h-3.5 text-emerald-400" />
-            <span>⏱️ 15-Day Hourly Outlook</span>
+            <span>{t('tabs').fifteenDay}</span>
           </button>
 
           <button
@@ -240,7 +460,7 @@ export default function ProApp() {
             }`}
           >
             <FileText className="w-3.5 h-3.5 text-purple-400" />
-            <span>📄 Certified Claim PDF</span>
+            <span>{t('tabs').insurance}</span>
           </button>
 
           <button
@@ -252,7 +472,7 @@ export default function ProApp() {
             }`}
           >
             <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
-            <span>📲 WhatsApp Alarms</span>
+            <span>{t('tabs').whatsapp}</span>
           </button>
 
           <button
@@ -264,7 +484,7 @@ export default function ProApp() {
             }`}
           >
             <MapPin className="w-3.5 h-3.5 text-amber-400" />
-            <span>📍 Asset Watchlist ({watchedAssets.length})</span>
+            <span>{t('tabs').watchlist} ({watchedAssets.length})</span>
           </button>
         </div>
 
@@ -342,6 +562,298 @@ export default function ProApp() {
                   <span className="text-[11px] text-slate-400">
                     Combine harvesters can operate without bogging
                   </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: Immediately After Cyclone Crop Disease Doctor & Remedial Clinic */}
+        {activeTab === 'clinic' && (
+          <div className="space-y-5">
+            {/* Header & Audio Prescription Bar */}
+            <div className="bg-gradient-to-r from-rose-950/40 via-slate-900 to-amber-950/30 border border-rose-500/40 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                      <Stethoscope className="w-3 h-3 text-rose-400" />
+                      ICAR / OUAT Post-Disaster Protocol
+                    </span>
+                    <span className="text-[11px] font-bold text-amber-300">
+                      {proLang === 'odia' ? 'ବାତ୍ୟା ପରବର୍ତ୍ତୀ ଫସଲ ଚିକିତ୍ସାଳୟ' : proLang === 'hindi' ? 'चक्रवात उपरांत फसल निदान' : 'Emergency Agricultural Clinic'}
+                    </span>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-black text-white">
+                    {t('clinicTitle')}
+                  </h3>
+                  <p className="text-xs text-slate-300 max-w-2xl">
+                    {t('clinicSubtitle')}
+                  </p>
+                </div>
+
+                {/* Voice Prescription Player */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const textToSpeak = currentDisease.audioGuide[proLang] || currentDisease.remedySteps.map(s => `${s.title}: ${s.desc}`).join('. ');
+                    handleSpeakRemedy(textToSpeak);
+                  }}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer flex-shrink-0 ${
+                    isPlayingAudio
+                      ? 'bg-rose-600 text-white animate-pulse'
+                      : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 shadow-amber-500/20'
+                  }`}
+                  title="Listen Vernacular Audio Doctor Prescription"
+                >
+                  <Volume2 className="w-4 h-4" />
+                  <span>{isPlayingAudio ? t('stopAudio') : t('listenDoctor')}</span>
+                </button>
+              </div>
+
+              {/* ICAR 4-Stage Post-Cyclone Field Workshop Roadmap */}
+              <div className="mt-4 pt-3 border-t border-slate-800/80">
+                <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider block mb-2">
+                  🗓️ {t('workshopTitle')}
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                  {ICAR_POST_CYCLONE_WORKSHOP_RULES.map((rule, idx) => (
+                    <div key={idx} className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="font-mono font-black text-rose-400 bg-rose-950/50 px-1.5 py-0.2 rounded">
+                          {rule.step}
+                        </span>
+                        <span className="text-slate-500">Stage {idx + 1}</span>
+                      </div>
+                      <h4 className="text-xs font-bold text-white truncate">{rule.title}</h4>
+                      <p className="text-[10px] text-slate-400 leading-tight line-clamp-2">{rule.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Crop Selector Tabs */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {POST_CYCLONE_CROPS.map((crop) => (
+                <button
+                  key={crop.id}
+                  onClick={() => handleClinicCropChange(crop.id)}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 flex-shrink-0 cursor-pointer ${
+                    selectedClinicCrop === crop.id
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/60 shadow-md'
+                      : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                  }`}
+                >
+                  <span className="text-base">{crop.icon}</span>
+                  <span>{crop[proLang] || crop.name}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Disease Selector & Main Diagnostic Workspace */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+              {/* Left Column: Multi-Angle Visual Inspection Gallery & Disease Info (7 cols) */}
+              <div className="lg:col-span-7 space-y-4">
+                {/* Disease Selector Pills */}
+                <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-bold uppercase text-slate-400">
+                      Identified Post-Cyclone Pathologies ({matchingDiseases.length})
+                    </span>
+                    <span className="text-[10px] font-bold text-rose-400">
+                      {currentDisease.severity}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {matchingDiseases.map((d) => (
+                      <button
+                        key={d.id}
+                        onClick={() => {
+                          setSelectedDiseaseId(d.id);
+                          setActivePhotoAngle(0);
+                        }}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          selectedDiseaseId === d.id
+                            ? 'bg-rose-600 text-white shadow-sm'
+                            : 'bg-slate-950 text-slate-300 hover:text-white border border-slate-800'
+                        }`}
+                      >
+                        {d.vernacular[proLang] || d.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 3-Angle Visual Photo Gallery Card */}
+                <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                  {/* Angle Switcher Tabs */}
+                  <div className="bg-slate-950/80 p-3 border-b border-slate-800 flex items-center justify-between gap-2 flex-wrap">
+                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <Eye className="w-3.5 h-3.5 text-amber-400" />
+                      <span>{t('angleSelect')}</span>
+                    </span>
+
+                    <div className="flex items-center gap-1">
+                      {currentDisease.angles.map((ang, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setActivePhotoAngle(idx)}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                            activePhotoAngle === idx
+                              ? 'bg-amber-500 text-slate-950 shadow-sm'
+                              : 'bg-slate-800 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          Angle {idx + 1}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Active Photo Display */}
+                  <div className="relative h-64 sm:h-72 w-full bg-slate-950 overflow-hidden">
+                    <img
+                      src={currentDisease.angles[activePhotoAngle]?.imageUrl}
+                      alt={currentDisease.angles[activePhotoAngle]?.title}
+                      className="w-full h-full object-cover transition-all duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-black/30 pointer-events-none"></div>
+
+                    {/* Floating Diagnostic Angle Badge */}
+                    <div className="absolute top-3 left-3 bg-slate-900/90 backdrop-blur border border-amber-500/50 px-2.5 py-1 rounded-lg text-[10px] font-bold text-amber-300 shadow-md">
+                      📸 {currentDisease.angles[activePhotoAngle]?.badge}
+                    </div>
+
+                    <div className="absolute top-3 right-3 bg-rose-950/80 backdrop-blur border border-rose-500/50 px-2 py-0.5 rounded-md text-[10px] font-mono text-rose-300">
+                      Photo {activePhotoAngle + 1} of 3 Angles
+                    </div>
+
+                    {/* Caption Banner */}
+                    <div className="absolute bottom-3 left-3 right-3 bg-slate-950/90 backdrop-blur border border-slate-800 p-3 rounded-xl">
+                      <h4 className="text-xs font-bold text-white flex items-center gap-2">
+                        <span>{currentDisease.angles[activePhotoAngle]?.title}</span>
+                        <span className="text-[10px] text-amber-400 font-mono">({currentDisease.angles[activePhotoAngle]?.label})</span>
+                      </h4>
+                      <p className="text-[11px] text-slate-300 mt-0.5">
+                        {currentDisease.angles[activePhotoAngle]?.desc}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Cyclone Meteorological Trigger Box */}
+                  <div className="p-4 bg-slate-950 border-t border-slate-800 space-y-1.5">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
+                      <Wind className="w-3.5 h-3.5" />
+                      <span>Why Cyclone Triggered This:</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed">
+                      {currentDisease.cycloneTrigger}
+                    </p>
+                    <div className="pt-2 border-t border-slate-900">
+                      <span className="text-[10px] uppercase font-bold text-slate-500 block mb-1">Visual Symptoms Checklist:</span>
+                      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-[11px] text-slate-300">
+                        {currentDisease.symptoms.map((sym, sIdx) => (
+                          <li key={sIdx} className="flex items-start gap-1.5">
+                            <span className="text-rose-400 font-bold">•</span>
+                            <span>{sym}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: ICAR Remedial Workshop & Chemical/Bio Dosage Calculator (5 cols) */}
+              <div className="lg:col-span-5 space-y-4">
+                {/* Immediate ICAR Treatment Protocol */}
+                <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3.5">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                      <span>{t('immediateRemedy')}</span>
+                    </h4>
+                  </div>
+
+                  <div className="space-y-3">
+                    {currentDisease.remedySteps.map((step) => (
+                      <div key={step.step} className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold text-[10px] flex items-center justify-center">
+                            {step.step}
+                          </span>
+                          <h5 className="text-xs font-bold text-white">{step.title}</h5>
+                        </div>
+                        <p className="text-[11px] text-slate-300 pl-7 leading-relaxed">{step.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Strict Warning Alert */}
+                  <div className="p-3 rounded-xl bg-red-950/40 border border-red-500/40 flex items-start gap-2.5">
+                    <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h5 className="text-[11px] font-bold text-red-300 uppercase">{t('warningTitle')}</h5>
+                      <p className="text-[10px] text-red-200/90 leading-tight mt-0.5">
+                        Never apply high Urea/Nitrogen fertilizer immediately after cyclone water recedes; excessive nitrogen feeds succulent bacterial and fungal tissue collapse.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Emergency Chemical / Bio Land Dosage Calculator */}
+                <div className="bg-gradient-to-br from-slate-900 via-slate-950 to-amber-950/40 border border-amber-500/40 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <div className="flex items-center gap-1.5">
+                      <Calculator className="w-4 h-4 text-amber-400" />
+                      <h4 className="text-xs font-bold text-white">{t('dosageCalc')}</h4>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-300 font-semibold">Your Land Area:</span>
+                    <div className="flex items-center gap-1 bg-slate-900 border border-amber-500/50 rounded-lg px-2.5 py-1">
+                      <input
+                        type="number"
+                        min="0.25"
+                        max="100"
+                        step="0.25"
+                        value={farmAcreage}
+                        onChange={(e) => setFarmAcreage(parseFloat(e.target.value) || 1.0)}
+                        className="w-16 bg-transparent text-sm font-mono font-bold text-amber-300 text-center focus:outline-none"
+                      />
+                      <span className="text-xs text-slate-400 font-bold">Acres</span>
+                    </div>
+                  </div>
+
+                  {/* Calculated Required Formulations */}
+                  <div className="space-y-1.5 pt-1 text-xs">
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800">
+                      <span className="text-slate-400">Fresh Water for Spray:</span>
+                      <span className="font-mono font-bold text-sky-400">{(farmAcreage * 200).toFixed(0)} Litres</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800">
+                      <span className="text-slate-400">Streptocycline Bactericide:</span>
+                      <span className="font-mono font-bold text-emerald-400">{(farmAcreage * 30).toFixed(1)} Grams</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800">
+                      <span className="text-slate-400">Blitox (Copper Oxychloride 50 WP):</span>
+                      <span className="font-mono font-bold text-amber-300">{(farmAcreage * 0.5).toFixed(2)} kg (500g/ac)</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800">
+                      <span className="text-slate-400">Potassium Nitrate (13-0-45 Booster):</span>
+                      <span className="font-mono font-bold text-indigo-300">{(farmAcreage * 2.0).toFixed(1)} kg</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800">
+                      <span className="text-slate-400">Agri Gypsum (for Saline Flood Land):</span>
+                      <span className="font-mono font-bold text-yellow-400">{(farmAcreage * 150).toFixed(0)} kg</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
