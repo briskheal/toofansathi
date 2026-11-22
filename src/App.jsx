@@ -27,7 +27,7 @@ import {
   generateVoiceBriefing
 } from './services/cycloneEngine';
 
-import { MapPin, Locate, RefreshCw, AlertCircle, Navigation, Globe, Calendar, ChevronDown, Tv } from 'lucide-react';
+import { MapPin, Locate, RefreshCw, AlertCircle, Navigation, Globe, Calendar, ChevronDown, Tv, Crown, ArrowRight } from 'lucide-react';
 
 export default function App() {
   const [selectedDistrictId, setSelectedDistrictId] = useState('puri');
@@ -578,6 +578,56 @@ export default function App() {
 
         {/* 7. Install PWA Prompt for Mobile Home Screen */}
         <PwaInstallPrompt />
+
+        {/* 8. ToofanSathi Pro • Commercial & Enterprise Advisory Card */}
+        <section className="bg-gradient-to-r from-amber-950/40 via-slate-900 to-amber-950/30 border border-amber-500/40 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden">
+          <div className="absolute -top-12 -right-12 w-36 h-36 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative z-10">
+            <div className="space-y-1.5 max-w-2xl">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-black text-[10px] uppercase tracking-wider shadow-sm">
+                  <Crown className="w-3 h-3 fill-slate-950" />
+                  ToofanSathi Pro
+                </span>
+                <span className="text-[11px] font-bold text-amber-400">
+                  Commercial & Enterprise Edition
+                </span>
+              </div>
+              <h3 className="text-sm sm:text-base font-extrabold text-white tracking-tight">
+                Need High-Precision Commercial Weather & Insurance Protection?
+              </h3>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Advised for <strong>Aquaculture Ponds, Commercial Trawlers, Agronomists & Field Insurers</strong>. Access 1-Hour ECMWF/GFS forecasts, 48h crop harvest windows, shrimp pond surge defense & certified PMFBY weather insurance claim certificates.
+              </p>
+              <div className="flex items-center gap-2 pt-1 text-[11px] text-amber-300/90 flex-wrap">
+                <span className="flex items-center gap-1">✓ Mandatory KYC Verified Login</span>
+                <span className="text-slate-600">•</span>
+                <span className="flex items-center gap-1">✓ Email OTP Security</span>
+                <span className="text-slate-600">•</span>
+                <span className="flex items-center gap-1">✓ 15-Day Extended Horizon</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row md:flex-col items-stretch sm:items-center md:items-end gap-2 w-full md:w-auto flex-shrink-0">
+              <a
+                href="/pro"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.hash = '#/pro';
+                  window.history.pushState({}, '', '/pro');
+                  window.dispatchEvent(new PopStateEvent('popstate'));
+                }}
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 active:scale-95 transition-all cursor-pointer group"
+              >
+                <span>Explore ToofanSathi Pro</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </a>
+              <span className="text-[10px] text-slate-400 text-center md:text-right font-medium">
+                Direct Staging Route: <code className="text-amber-400 font-mono">/pro</code>
+              </span>
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* Footer */}
