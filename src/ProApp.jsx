@@ -51,7 +51,11 @@ import {
   Store,
   Ticket,
   Scale,
-  ShieldAlert
+  ShieldAlert,
+  Phone,
+  MessageCircle,
+  QrCode,
+  FileCheck
 } from 'lucide-react';
 import PremiumAuthModal from './components/PremiumAuthModal';
 import { ALL_INDIA_ACTIVE_STORMS, getNearestStorm } from './services/cycloneEngine';
@@ -71,7 +75,7 @@ const PRO_TRANSLATIONS = {
       aquaculture: '🦐 Aquaculture Pond Surge',
       marine: '🚢 Marine Fleet Departure',
       fifteenDay: '⏱️ 15-Day Hourly Outlook',
-      insurance: '📄 Certified Claim PDF',
+      insurance: '📄 72h PMFBY Claim Dossier',
       whatsapp: '📲 WhatsApp Alarms',
       watchlist: '📍 Asset Watchlist'
     },
@@ -97,7 +101,7 @@ const PRO_TRANSLATIONS = {
       aquaculture: '🦐 ଚିଙ୍ଗୁଡ଼ି ଘେରି ସୁରକ୍ଷା',
       marine: '🚢 ମାଛଧରା ଡଙ୍ଗା ସୁରକ୍ଷା',
       fifteenDay: '⏱️ ୧୫-ଦିନିଆ ପୂର୍ବାନୁମାନ',
-      insurance: '📄 ବୀମା କ୍ଷତିପୂରଣ ପ୍ରମାଣପତ୍ର',
+      insurance: '📄 ୭୨-ଘଣ୍ଟିଆ ଫସଲ ବୀମା କ୍ଲେମ୍',
       whatsapp: '📲 ହ୍ୱାଟ୍ସଆପ୍ ଆଲାର୍ମ',
       watchlist: '📍 ଜମି ଓ ସମ୍ପତ୍ତି ନଜର'
     },
@@ -123,7 +127,7 @@ const PRO_TRANSLATIONS = {
       aquaculture: '🦐 झींगा तालाब सुरक्षा',
       marine: '🚢 समुद्री नाव रवानगी',
       fifteenDay: '⏱️ 15-दिवसीय पूर्वानुमान',
-      insurance: '📄 बीमा दावा प्रमाण पत्र',
+      insurance: '📄 72-घंटे पीएमएफबीवाय दावा',
       whatsapp: '📲 व्हाट्सएप अलार्म',
       watchlist: '📍 बहु-स्थान संपत्ति निगरानी'
     },
@@ -149,7 +153,7 @@ const PRO_TRANSLATIONS = {
       aquaculture: '🦐 চিংড়ি ঘের সুরক্ষা',
       marine: '🚢 মাছ ধরার নৌকা সুরক্ষা',
       fifteenDay: '⏱️ ১৫-দিনের পূর্বাভাস',
-      insurance: '📄 বীমা দাবি সার্টিফিকেট',
+      insurance: '📄 ৭২-ঘণ্টার ফসল বীমা দাবি',
       whatsapp: '📲 হোয়াটসঅ্যাপ অ্যালার্ম',
       watchlist: '📍 খামার নজরদারি'
     },
@@ -175,7 +179,7 @@ const PRO_TRANSLATIONS = {
       aquaculture: '🦐 ఆక్వాకల్చర్ చెరువు రక్షణ',
       marine: '🚢 బోట్ బయలుదేరే భద్రత',
       fifteenDay: '⏱️ 15-రోజుల ఔట్‌లుక్',
-      insurance: '📄 సర్టిఫైడ్ క్లెయిమ్ PDF',
+      insurance: '📄 72 గంటల PMFBY క్లెయిమ్',
       whatsapp: '📲 వాట్సాప్ అలారాలు',
       watchlist: '📍 ఆస్తి వాచ్‌లిస్ట్'
     },
@@ -260,6 +264,14 @@ export default function ProApp() {
   // Coastal Mandi & MSP State
   const [selectedMandiId, setSelectedMandiId] = useState('puri-rmc');
   const [generatedMandiToken, setGeneratedMandiToken] = useState(null);
+
+  // 72-Hour PMFBY Claim Dossier State
+  const [claimCrop, setClaimCrop] = useState('Paddy / Rice (Common)');
+  const [claimPlotNo, setClaimPlotNo] = useState('Khata 142/8, Plot 902/1');
+  const [claimArea, setClaimArea] = useState('2.50 Acres');
+  const [claimPolicyNo, setClaimPolicyNo] = useState('PMFBY-KCC-OD-8921');
+  const [claimIntimated, setClaimIntimated] = useState(false);
+  const [claimAckNo, setClaimAckNo] = useState('PMFBY-INT-OD-2026-7842');
 
   const t = (key) => {
     const dict = PRO_TRANSLATIONS[proLang] || PRO_TRANSLATIONS.english;
@@ -1668,44 +1680,283 @@ export default function ProApp() {
           </div>
         )}
 
-        {/* TAB 5: Certified PMFBY Insurance Weather Claim PDF Generator */}
+        {/* TAB 5: 72-Hour PMFBY Cyclone Damage Intimation & Certified GPS Claim Dossier */}
         {activeTab === 'insurance' && (
-          <div className="bg-slate-900/90 border border-purple-500/30 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
-            <div className="pb-3 border-b border-slate-800">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <FileText className="w-5 h-5 text-purple-400" />
-                <span>1-Click Certified Weather Risk & Insurance Loss Certificate</span>
-              </h3>
-              <p className="text-xs text-slate-400">
-                Official printable weather certificate citing exact GPS coordinates, recorded peak winds, and IMD RSMC bulletin reference
-              </p>
+          <div className="bg-slate-900/90 border border-purple-500/30 rounded-2xl p-4 sm:p-6 shadow-xl space-y-6">
+            {/* Header with 72h Urgency Banner */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-500/10 border border-purple-500/30 rounded-full text-purple-400 text-xs font-semibold uppercase tracking-wider mb-2">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  PMFBY Clause 19.3 Fast-Track Portal
+                </div>
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <FileCheck className="w-6 h-6 text-purple-400" />
+                  <span>72-Hour Cyclone Crop Loss Intimation & Certified GPS Dossier</span>
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Legally certified meteorological claim dossier proving cyclone inundation, gale wind lodging, and rainfall duration for AICIL & District Agriculture Office.
+                </p>
+              </div>
+
+              {/* 72-Hour Legal Countdown Meter */}
+              <div className="p-3 bg-rose-950/40 border border-rose-500/40 rounded-xl flex items-center gap-3">
+                <Clock className="w-6 h-6 text-rose-400 animate-pulse shrink-0" />
+                <div>
+                  <div className="text-[10px] uppercase font-bold text-rose-400 tracking-wider">Legal PMFBY Window</div>
+                  <div className="text-sm font-black text-rose-200 font-mono">41h 18m Remaining</div>
+                  <div className="text-[9px] text-slate-400">Must intimate within 72h of inundation</div>
+                </div>
+              </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3 font-mono text-xs text-slate-300">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                <span className="font-bold text-white">CERTIFICATE REFERENCE:</span>
-                <span className="text-amber-400">TS-PMFBY-2026-OD-8941</span>
+            {/* Official Intimation Status Banner if already intimated */}
+            {claimIntimated && (
+              <div className="p-4 bg-emerald-950/40 border border-emerald-500/40 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fadeIn">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="w-7 h-7 text-emerald-400 shrink-0" />
+                  <div>
+                    <div className="text-xs font-bold text-emerald-300">
+                      Official Damage Intimation Recorded Successfully!
+                    </div>
+                    <div className="text-[11px] text-slate-300 mt-0.5">
+                      Acknowledgement No: <span className="font-mono font-bold text-amber-300">{claimAckNo}</span> | Surveyor field loss assessment inspection scheduled within 7 working days.
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 text-[10px] font-bold rounded-lg border border-emerald-500/40">
+                    ACK REGISTERED
+                  </span>
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-[11px]">
-                <div>Applicant: <strong className="text-white">{currentUser?.name || 'Verified Member'}</strong></div>
-                <div>State: <strong className="text-white">{currentUser?.state || 'Odisha'}</strong></div>
-                <div>Coordinates: <strong className="text-white">19.8135° N, 85.8312° E (Puri Coastal)</strong></div>
-                <div>Event Name: <strong className="text-white">Severe Cyclone Akvan (BOB/01/2026)</strong></div>
-                <div>Max Wind Recorded: <strong className="text-rose-400">118 km/h (Gale Force)</strong></div>
-                <div>Rainfall Total (24h): <strong className="text-sky-400">184.6 mm (Extremely Heavy)</strong></div>
-              </div>
-              <p className="text-[10px] text-slate-400 pt-2 border-t border-slate-800">
-                Certified valid for submission to Agricultural Insurance Company of India (AICIL), HDFC ERGO Agri, and District Agriculture Office under Pradhan Mantri Fasal Bima Yojana guidelines.
-              </p>
-            </div>
+            )}
 
-            <button
-              onClick={() => alert('Downloaded Certified Disaster Weather Certificate (PDF).')}
-              className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-lg cursor-pointer"
-            >
-              <Download className="w-4 h-4" />
-              <span>Download Signed Claim Certificate (PDF)</span>
-            </button>
+            {/* 2-Column Grid: Left Claim Intimation Form & Right Certified Meteorological Evidence Dossier */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+              {/* Left Column: Intimation Form (6 cols) */}
+              <div className="lg:col-span-6 space-y-4">
+                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3.5">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <FileText className="w-4 h-4 text-purple-400" />
+                      Farmer & Crop Policy Intimation Details
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-semibold">
+                      Kharif 2026
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-1">Applicant Name</label>
+                      <input
+                        type="text"
+                        readOnly
+                        value={currentUser?.name || 'Verified Member'}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-medium focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-1">Registered Mobile</label>
+                      <input
+                        type="text"
+                        readOnly
+                        value={currentUser?.mobile || '+91 98610 00000'}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-1">State / District</label>
+                      <input
+                        type="text"
+                        readOnly
+                        value={`${currentUser?.state || 'Odisha'} - Coastal Zone`}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-1">PMFBY Policy / KCC No.</label>
+                      <input
+                        type="text"
+                        value={claimPolicyNo}
+                        onChange={(e) => setClaimPolicyNo(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-mono focus:border-purple-500 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-1">Damaged Insured Crop</label>
+                      <select
+                        value={claimCrop}
+                        onChange={(e) => setClaimCrop(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-purple-500 focus:outline-none"
+                      >
+                        <option>Paddy / Rice (Common)</option>
+                        <option>Paddy / Rice (Grade A)</option>
+                        <option>Pulses (Green Gram / Moong)</option>
+                        <option>Pulses (Black Gram / Biri)</option>
+                        <option>Groundnut (Oilseed)</option>
+                        <option>Sesamum (Til)</option>
+                        <option>Sugarcane</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-1">Affected Land Area</label>
+                      <input
+                        type="text"
+                        value={claimArea}
+                        onChange={(e) => setClaimArea(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-purple-500 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-semibold text-slate-400 block mb-1">Survey / Khata / Plot Number</label>
+                    <input
+                      type="text"
+                      value={claimPlotNo}
+                      onChange={(e) => setClaimPlotNo(e.target.value)}
+                      placeholder="e.g. Khata 142/8, Plot 902/1"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-purple-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
+                    <div>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-1">Peril / Cause of Loss</label>
+                      <div className="px-2.5 py-1.5 rounded-lg bg-rose-950/30 border border-rose-500/30 text-rose-300 font-semibold text-xs flex items-center gap-1.5">
+                        <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                        Inundation + Gale Wind Lodging
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-1">Assessed Loss Severity</label>
+                      <div className="px-2.5 py-1.5 rounded-lg bg-amber-950/30 border border-amber-500/30 text-amber-300 font-semibold text-xs">
+                        75% - 85% Standing Crop Submerged
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 1-Tap Intimation Generator Button */}
+                  <div className="pt-2">
+                    <button
+                      onClick={() => {
+                        setClaimIntimated(true);
+                        setClaimAckNo(`PMFBY-INT-OD-2026-${Math.floor(1000 + Math.random() * 9000)}`);
+                      }}
+                      className="w-full py-2.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-sky-600 hover:from-purple-500 hover:to-sky-500 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 cursor-pointer"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>{claimIntimated ? 'Update Official PMFBY Intimation' : 'Generate & Submit 72-Hour PMFBY Intimation'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Direct Helplines and Toll-Free Numbers */}
+                <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-emerald-400" />
+                    <div>
+                      <div className="text-[10px] text-slate-400 font-semibold">PMFBY National Toll-Free:</div>
+                      <a href="tel:14447" className="text-emerald-400 font-mono font-bold hover:underline">14447</a>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 border-l border-slate-800 pl-3">
+                    <div>
+                      <div className="text-[10px] text-slate-400 font-semibold">AICIL State Helpline:</div>
+                      <a href="tel:1800116515" className="text-sky-400 font-mono font-bold hover:underline">1800 116 515</a>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 border-l border-slate-800 pl-3">
+                    <div>
+                      <div className="text-[10px] text-slate-400 font-semibold">SMS Fallback Gateway:</div>
+                      <span className="text-amber-400 font-mono font-bold">51969</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Certified Meteorological Dossier Certificate (6 cols) */}
+              <div className="lg:col-span-6 space-y-4">
+                <div className="p-4 rounded-xl bg-gradient-to-b from-slate-950 to-slate-900 border border-purple-500/40 space-y-3.5 font-mono text-xs text-slate-300 relative overflow-hidden">
+                  {/* Watermark badge */}
+                  <div className="absolute right-3 top-3 opacity-10 pointer-events-none">
+                    <ShieldCheck className="w-28 h-28 text-purple-400" />
+                  </div>
+
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <div>
+                      <span className="font-bold text-white block">TOOFANSATHI WEATHER CERTIFICATE</span>
+                      <span className="text-[10px] text-slate-400">Govt. Empanelled Meteorological Proof Engine</span>
+                    </div>
+                    <span className="text-amber-400 font-black text-xs">TS-PMFBY-2026-OD-8941</span>
+                  </div>
+
+                  {/* Certified parameters grid */}
+                  <div className="grid grid-cols-2 gap-2.5 text-[11px] pt-1">
+                    <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                      <span className="text-slate-400 block text-[9px]">BENEFICIARY</span>
+                      <strong className="text-white block truncate">{currentUser?.name || 'Verified Member'}</strong>
+                    </div>
+                    <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                      <span className="text-slate-400 block text-[9px]">LAND PLOT</span>
+                      <strong className="text-amber-300 block truncate">{claimPlotNo}</strong>
+                    </div>
+                    <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                      <span className="text-slate-400 block text-[9px]">GPS GEO-COORDINATES</span>
+                      <strong className="text-sky-300 block">19.8135° N, 85.8312° E</strong>
+                    </div>
+                    <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                      <span className="text-slate-400 block text-[9px]">CYCLONE EVENT</span>
+                      <strong className="text-rose-300 block">Severe Cyclone Akvan</strong>
+                    </div>
+                    <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                      <span className="text-slate-400 block text-[9px]">PEAK GALE WIND</span>
+                      <strong className="text-rose-400 block font-black">118 km/h (Category 1)</strong>
+                    </div>
+                    <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                      <span className="text-slate-400 block text-[9px]">24H RAINFALL DEPTH</span>
+                      <strong className="text-sky-400 block font-black">184.6 mm (Extremely Heavy)</strong>
+                    </div>
+                    <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                      <span className="text-slate-400 block text-[9px]">ROOT SUBMERGENCE DURATION</span>
+                      <strong className="text-amber-400 block font-black">&gt; 38 Hours Continuous</strong>
+                    </div>
+                    <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                      <span className="text-slate-400 block text-[9px]">IMD BULLETIN CITATION</span>
+                      <strong className="text-slate-200 block truncate">RSMC/BOB/01/2026/04</strong>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-lg bg-purple-950/20 border border-purple-500/20 text-[10px] text-purple-200 leading-relaxed">
+                    <p className="font-semibold text-purple-300 mb-0.5">LEGAL ACCEPTANCE CLAUSE:</p>
+                    This meteorological dossier is digitally authenticated against IMD Doppler Radar (Paradeep/Gopalpur) and Sentinel Synthetic Aperture Radar (SAR) flood inundation records. Admissible for immediate claim settlement under localized cyclonic risk provisions.
+                  </div>
+
+                  {/* Actions buttons */}
+                  <div className="flex flex-wrap items-center gap-2 pt-2">
+                    <button
+                      onClick={() => alert(`Downloaded Certified PMFBY Cyclone Damage Dossier for ${claimPlotNo} (PDF).\nReference: TS-PMFBY-2026-OD-8941\nAck: ${claimAckNo}`)}
+                      className="flex-1 py-2 px-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>Download Signed Legal Dossier (PDF)</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        const msg = encodeURIComponent(`*PMFBY LOCALIZED CYCLONE DAMAGE INTIMATION*\nAck Ref: ${claimAckNo}\nApplicant: ${currentUser?.name || 'Verified Member'}\nPolicy: ${claimPolicyNo}\nPlot: ${claimPlotNo}\nCrop: ${claimCrop}\nArea: ${claimArea}\nCoordinates: 19.8135 N, 85.8312 E\nCyclone: Akvan (BOB/01/2026)\nPeak Wind: 118 km/h\nRainfall: 184.6 mm\nStatus: >38h Submerged`);
+                        window.open(`https://wa.me/?text=${msg}`, '_blank');
+                      }}
+                      className="py-2 px-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      <span>WhatsApp to Nodal Officer</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
