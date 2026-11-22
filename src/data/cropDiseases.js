@@ -32,25 +32,28 @@ export const CROP_DISEASES = [
     ],
     angles: [
       {
-        title: 'Angle 1: Macro Leaf Lesion',
-        label: 'Close-Up Microscopic View',
-        desc: 'Wavy yellow margin with milky bacterial ooze beads on leaf veins.',
-        imageUrl: 'https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?auto=format&fit=crop&w=800&q=80',
-        badge: 'Leaf Blade Close-Up'
+        title: 'Angle 1: Macro Leaf Lesion Inspection',
+        label: 'Close-Up Microscopic Inspection',
+        badge: 'Leaf Blade Close-Up Target',
+        desc: 'Translucent water-soaked streaks near leaf margins; look for milky/amber bacterial ooze beads early in morning.',
+        targetSymptom: 'Wavy yellow margin with amber bacterial ooze beads on veins.',
+        tissueRisk: 'Wind micro-tears allow Xanthomonas bacteria colonization within 24-48 hours.'
       },
       {
-        title: 'Angle 2: Full Canopy & Stalk Wilt',
+        title: 'Angle 2: Full Canopy & Stalk Lodging',
         label: 'Mid-Plant Canopy Angle',
-        desc: 'Extensive straw-colored leaf drying across the top crop canopy.',
-        imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80',
-        badge: 'Plant Height Angle'
+        badge: 'Plant Height & Canopy Target',
+        desc: 'Extensive straw-colored leaf drying across the top crop canopy with bent/lodged tillers in wet mud.',
+        targetSymptom: 'Straw-colored bleached canopy & weakened lodging stems.',
+        tissueRisk: 'Submergence and high humidity (>90%) cause rapid xylem blockage.'
       },
       {
         title: 'Angle 3: Waterlogged Field Panoramic',
-        label: 'Field-Wide Lodged View',
-        desc: 'Patches of yellowing blighted crops submerged in receding flood mud.',
-        imageUrl: 'https://images.unsplash.com/photo-1536657464919-892534f60d6e?auto=format&fit=crop&w=800&q=80',
-        badge: 'Field Damage Extent'
+        label: 'Field-Wide Inundation Pattern',
+        badge: 'Field Damage Extent Target',
+        desc: 'Broad field view showing circular patches of wilting/submerged crops in standing receding storm runoff.',
+        targetSymptom: 'Irregular yellowed patches concentrated in drainage depressions.',
+        tissueRisk: 'Anaerobic root zone hypoxia accelerating vascular collapse.'
       }
     ],
     remedySteps: [
@@ -100,25 +103,28 @@ export const CROP_DISEASES = [
     ],
     angles: [
       {
-        title: 'Angle 1: Waterline Sheath Lesion',
-        label: 'Stem Base Macro View',
+        title: 'Angle 1: Waterline Sheath Lesion Inspection',
+        label: 'Stem Base Macro Target',
+        badge: 'Waterline Sheath View',
         desc: 'Characteristic serpent-skin lesions with dark reddish margins near root collar.',
-        imageUrl: 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=800&q=80',
-        badge: 'Waterline Sheath View'
+        targetSymptom: 'Oval greenish-grey water-soaked spots on leaf sheaths near waterline.',
+        tissueRisk: 'Prolonged relative humidity (>95%) combined with waterlogged plant bases triggers fungal spread.'
       },
       {
-        title: 'Angle 2: Tiller Lodging & Sclerotia',
+        title: 'Angle 2: Tiller Lodging & Sclerotia Inspection',
         label: 'Mid-Stem Cross Section',
+        badge: 'Fungal Sclerotia Target',
         desc: 'Mustard-seed brown fungal sclerotia grains visible upon pulling sheath back.',
-        imageUrl: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=800&q=80',
-        badge: 'Fungal Sclerotia Angle'
+        targetSymptom: 'Brown mustard-seed-like sclerotia inside infected leaf sheaths.',
+        tissueRisk: 'Tillers rot, causing mature plants to lodge flat into wet mud.'
       },
       {
-        title: 'Angle 3: Collapsed Field Patch',
-        label: 'Field Canopy Collapse',
+        title: 'Angle 3: Collapsed Field Patch View',
+        label: 'Field Canopy Collapse Pattern',
+        badge: 'Lodging Patch Target',
         desc: 'Circular patches of lodged, rotten rice stalks flattened across muddy field.',
-        imageUrl: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&w=800&q=80',
-        badge: 'Lodging Patch View'
+        targetSymptom: 'Extensive dead lodging patches with rotting stem bases.',
+        tissueRisk: 'Panicles fail to emerge, stems break at water line.'
       }
     ],
     remedySteps: [
@@ -170,25 +176,28 @@ export const CROP_DISEASES = [
     ],
     angles: [
       {
-        title: 'Angle 1: Decayed Taproot Macro',
-        label: 'Uprooted Taproot Angle',
+        title: 'Angle 1: Decayed Taproot Macro Inspection',
+        label: 'Uprooted Taproot Target',
+        badge: 'Root Disintegration View',
         desc: 'Complete disintegration of feeder root hairs; blackened waterlogged taproot.',
-        imageUrl: 'https://images.unsplash.com/photo-1599818816941-78e794354c00?auto=format&fit=crop&w=800&q=80',
-        badge: 'Root Disintegration'
+        targetSymptom: 'Taproot rots completely with bark sloughing off when pulled gently.',
+        tissueRisk: 'Anaerobic mud triggers immediate Pythium & Rhizoctonia root rot within 24 hours.'
       },
       {
-        title: 'Angle 2: Collar Constriction Zone',
-        label: 'Stem Collar Angle',
+        title: 'Angle 2: Collar Constriction Zone Inspection',
+        label: 'Stem Collar Target',
+        badge: 'Stem Collar View',
         desc: 'Pencil-like brown pinching at ground level causing seedling to topple.',
-        imageUrl: 'https://images.unsplash.com/photo-1592417817098-8f3d6910985c?auto=format&fit=crop&w=800&q=80',
-        badge: 'Stem Collar View'
+        targetSymptom: 'Stem near soil turns blackish-brown and soft/mushy.',
+        tissueRisk: 'Loss of vascular transport to upper foliage.'
       },
       {
-        title: 'Angle 3: Wilted Patch in Mud',
+        title: 'Angle 3: Wilted Patch in Mud Pattern',
         label: 'Field Submersion Plot',
+        badge: 'Field Wilt Pattern',
         desc: 'Sudden yellow and brown death patches where rain water stagnated for 36 hours.',
-        imageUrl: 'https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=800&q=80',
-        badge: 'Field Wilt Pattern'
+        targetSymptom: 'Leaves droop suddenly without yellowing; whole green plant collapses.',
+        tissueRisk: '100% loss in waterlogged hollows within 3 days.'
       }
     ],
     remedySteps: [
@@ -235,25 +244,28 @@ export const CROP_DISEASES = [
     ],
     angles: [
       {
-        title: 'Angle 1: Yellow Halo Spots Close-Up',
-        label: 'Leaf Surface Macro',
-        desc: 'Circular necrotic spots surrounded by luminous yellow chlorotic halos.',
-        imageUrl: 'https://images.unsplash.com/photo-1598512752271-33f913a5af13?auto=format&fit=crop&w=800&q=80',
-        badge: 'Halo Lesion Angle'
+        title: 'Angle 1: Yellow Halo Spots Close-Up Inspection',
+        label: 'Leaf Surface Macro Target',
+        badge: 'Halo Lesion Target',
+        desc: 'Circular necrotic spots surrounded by luminous yellow chlorotic halos on foliage.',
+        targetSymptom: 'Circular reddish-brown spots with prominent bright yellow halos on upper leaf surfaces.',
+        tissueRisk: 'Coastal high humidity and rain splashes disperse Cercospora spores across the entire canopy.'
       },
       {
-        title: 'Angle 2: Defoliated Canopy Stems',
+        title: 'Angle 2: Defoliated Canopy Stems Inspection',
         label: 'Canopy Bareness View',
+        badge: 'Defoliation Extent Target',
         desc: 'Lower leaves dropped completely, leaving only top leaves on bare stalks.',
-        imageUrl: 'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&w=800&q=80',
-        badge: 'Defoliation Extent'
+        targetSymptom: 'Severe defoliation leaving bare stems with stunted pod development.',
+        tissueRisk: 'Premature defoliation prevents pod filling.'
       },
       {
-        title: 'Angle 3: Coastal Sandy Field Bed',
+        title: 'Angle 3: Coastal Sandy Field Bed Pattern',
         label: 'Groundnut Field View',
+        badge: 'Field Overview Target',
         desc: 'Broad field view showing brown patches on sandy coastal groundnut strips.',
-        imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80',
-        badge: 'Field Overview'
+        targetSymptom: 'Stem Rot: White cottony fungal mycelium at soil level with mustard-like sclerotia.',
+        tissueRisk: 'Soil-level collar rot rotting gynophores/pegs.'
       }
     ],
     remedySteps: [
@@ -300,25 +312,28 @@ export const CROP_DISEASES = [
     ],
     angles: [
       {
-        title: 'Angle 1: Green Droop Macro',
-        label: 'Whole Plant Green Droop',
+        title: 'Angle 1: Green Droop Macro Inspection',
+        label: 'Whole Plant Green Droop Target',
+        badge: 'Bacterial Droop View',
         desc: 'Total foliage wilting while leaves remain lush green, characteristic of bacterial attack.',
-        imageUrl: 'https://images.unsplash.com/photo-1592417817098-8f3d6910985c?auto=format&fit=crop&w=800&q=80',
-        badge: 'Bacterial Droop View'
+        targetSymptom: 'Rapid wilting of entire green plant during hot sunny hours without leaf yellowing.',
+        tissueRisk: 'High soil temperatures right after stormy rains cause rapid multiplication of soil-borne Ralstonia.'
       },
       {
-        title: 'Angle 2: Glass Water Ooze Test',
-        label: 'Diagnostic Ooze Test Angle',
+        title: 'Angle 2: Glass Water Ooze Test Inspection',
+        label: 'Diagnostic Ooze Test Target',
+        badge: 'Diagnostic Ooze Test',
         desc: 'Stem cut suspended in water releasing cloudy milky streaming threads within 60 seconds.',
-        imageUrl: 'https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?auto=format&fit=crop&w=800&q=80',
-        badge: 'Diagnostic Ooze Test'
+        targetSymptom: 'Vascular ring browning visible when stem is sliced horizontally.',
+        tissueRisk: 'Vascular xylem clogging leading to total turgor collapse.'
       },
       {
-        title: 'Angle 3: Splash-Soaked Vegetable Beds',
+        title: 'Angle 3: Splash-Soaked Vegetable Beds Pattern',
         label: 'Field Raised Bed Overview',
+        badge: 'Raised Bed Plot Target',
         desc: 'Mulched raised vegetable beds with mud-splattered drooping tomato and pepper plants.',
-        imageUrl: 'https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=800&q=80',
-        badge: 'Raised Bed Plot'
+        targetSymptom: 'Fruit rot: Mud splashes deposit Phytophthora spores onto green fruits.',
+        tissueRisk: '100% loss of affected plants within 48 hours.'
       }
     ],
     remedySteps: [
@@ -370,25 +385,28 @@ export const CROP_DISEASES = [
     ],
     angles: [
       {
-        title: 'Angle 1: Betel Vine Collar Lesion',
-        label: 'Vine Stem Macro View',
+        title: 'Angle 1: Betel Vine Collar Lesion Inspection',
+        label: 'Vine Stem Macro Target',
+        badge: 'Vine Foot Rot Collar View',
         desc: 'Dark blackened waterlogged foot rot lesion where vine emerges from muddy soil.',
-        imageUrl: 'https://images.unsplash.com/photo-1599818816941-78e794354c00?auto=format&fit=crop&w=800&q=80',
-        badge: 'Vine Foot Rot Collar'
+        targetSymptom: 'Betel vine: Brown water-soaked lesions at soil level; leaves turn dull yellow.',
+        tissueRisk: 'Severe cyclone winds break paan baroj bamboo structures, causing rainwater ponding.'
       },
       {
-        title: 'Angle 2: Paan Baroj Thatch Interior',
-        label: 'Mid-Canopy Enclosure View',
+        title: 'Angle 2: Paan Baroj Thatch Interior Inspection',
+        label: 'Mid-Canopy Enclosure Target',
+        badge: 'Baroj Interior Target',
         desc: 'Humid thatched baroj interior with wilting yellow leaves shedding along trellis.',
-        imageUrl: 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=800&q=80',
-        badge: 'Baroj Interior Angle'
+        targetSymptom: 'Rapid rotting of underground rhizome; vine snaps easily near the base.',
+        tissueRisk: 'Phytophthora fungal infestation in humid enclosed vines.'
       },
       {
-        title: 'Angle 3: Coconut Palm Crown Rot',
-        label: 'Palm Crown Aerial Angle',
+        title: 'Angle 3: Coconut Palm Crown Rot Inspection',
+        label: 'Palm Crown Aerial Target',
+        badge: 'Palm Crown Spindle Target',
         desc: 'Damaged coconut palm with yellowed central spindle leaf rotting post-storm.',
-        imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-        badge: 'Palm Crown Spindle'
+        targetSymptom: 'Coconut: Central spear leaf bends, withers, and rots with foul smell; crown detaches.',
+        tissueRisk: 'Coastal storm saline spray burns leaf margins brown, bud rot kills growing tip.'
       }
     ],
     remedySteps: [

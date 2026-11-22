@@ -62,7 +62,9 @@ import {
   TestTube2,
   Sliders,
   Play,
-  Square
+  Square,
+  Microscope,
+  TreePine
 } from 'lucide-react';
 import PremiumAuthModal from './components/PremiumAuthModal';
 import { ALL_INDIA_ACTIVE_STORMS, getNearestStorm } from './services/cycloneEngine';
@@ -222,7 +224,7 @@ const DEMO_LEAF_SAMPLES = [
     diseaseId: 'paddy-blb',
     confidence: 96.8,
     angle: 'Angle 1: Macro Leaf Lesion with Amber Ooze Beads',
-    imageUrl: 'https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?auto=format&fit=crop&w=800&q=80'
+    badge: 'Xanthomonas Blight Sample'
   },
   {
     id: 's2',
@@ -231,7 +233,7 @@ const DEMO_LEAF_SAMPLES = [
     diseaseId: 'paddy-sheath-blight',
     confidence: 95.2,
     angle: 'Angle 1: Waterline Sheath Lesion',
-    imageUrl: 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=800&q=80'
+    badge: 'Rhizoctonia Sheath Rot'
   },
   {
     id: 's3',
@@ -240,7 +242,7 @@ const DEMO_LEAF_SAMPLES = [
     diseaseId: 'groundnut-tikka',
     confidence: 97.4,
     angle: 'Angle 1: Yellow Halo Spots Close-Up',
-    imageUrl: 'https://images.unsplash.com/photo-1598512752271-33f913a5af13?auto=format&fit=crop&w=800&q=80'
+    badge: 'Cercospora Leaf Spot'
   },
   {
     id: 's4',
@@ -249,7 +251,7 @@ const DEMO_LEAF_SAMPLES = [
     diseaseId: 'veg-bacterial-wilt',
     confidence: 94.1,
     angle: 'Angle 1: Green Droop Macro',
-    imageUrl: 'https://images.unsplash.com/photo-1592417817098-8f3d6910985c?auto=format&fit=crop&w=800&q=80'
+    badge: 'Ralstonia Wilt Sample'
   }
 ];
 
@@ -270,7 +272,7 @@ export default function ProApp() {
 
   // AI Leaf Scanner State
   const [clinicMode, setClinicMode] = useState('scanner'); // 'scanner' | 'library'
-  const [uploadedLeafImage, setUploadedLeafImage] = useState('https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?auto=format&fit=crop&w=800&q=80');
+  const [uploadedLeafImage, setUploadedLeafImage] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgressText, setScanProgressText] = useState('');
   const [scannedResult, setScannedResult] = useState({
@@ -398,7 +400,7 @@ export default function ProApp() {
   };
 
   const handleSelectSampleLeaf = (sample) => {
-    setUploadedLeafImage(sample.imageUrl);
+    setUploadedLeafImage(null);
     runScannerAnalysis(sample.diseaseId, sample.confidence, sample.angle);
   };
 
@@ -1038,11 +1040,28 @@ export default function ProApp() {
 
                     {/* Scanning Animation or Scanned Image Display */}
                     <div className="relative h-56 sm:h-64 w-full bg-slate-950 rounded-xl overflow-hidden border border-slate-800">
-                      <img
-                        src={uploadedLeafImage}
-                        alt="Farmer Scanned Leaf"
-                        className="w-full h-full object-cover"
-                      />
+                      {uploadedLeafImage ? (
+                        <img
+                          src={uploadedLeafImage}
+                          alt="Farmer Scanned Leaf"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/30 p-4 relative">
+                          {/* Reticle grid */}
+                          <div className="absolute inset-0 bg-[linear-gradient(to_right,#05966915_1px,transparent_1px),linear-gradient(to_bottom,#05966915_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+                          <div className="w-20 h-20 rounded-full border-2 border-dashed border-emerald-500/40 flex items-center justify-center text-4xl mb-2 relative">
+                            🍃
+                            <div className="absolute inset-0 rounded-full border border-emerald-400/60 animate-ping pointer-events-none" />
+                          </div>
+                          <span className="text-xs font-bold text-emerald-400 font-mono tracking-wider">
+                            AI LEAF PATHOLOGY RETICLE ACTIVE
+                          </span>
+                          <span className="text-[10px] text-slate-400 mt-1">
+                            {scannedResult.matchedAngle}
+                          </span>
+                        </div>
+                      )}
 
                       {/* Laser Scanning Beam when scanning */}
                       {isScanning && (
@@ -1275,33 +1294,81 @@ export default function ProApp() {
                         </div>
                       </div>
 
-                      {/* Active Photo Display */}
-                      <div className="relative h-64 sm:h-72 w-full bg-slate-950 overflow-hidden">
-                        <img
-                          src={currentDisease.angles[activePhotoAngle]?.imageUrl}
-                          alt={currentDisease.angles[activePhotoAngle]?.title}
-                          className="w-full h-full object-cover transition-all duration-300"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-black/30 pointer-events-none"></div>
+                      {/* Official Cyclone Damage Suspected Pathology Advisory Notice */}
+                      <div className="p-3.5 bg-gradient-to-r from-amber-950/60 via-slate-950 to-rose-950/50 border-b border-amber-500/30 space-y-1.5">
+                        <div className="flex items-center gap-2 text-xs font-bold text-amber-300">
+                          <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+                          <span>
+                            {proLang === 'odia' ? 'ବାତ୍ୟା କ୍ଷୟକ୍ଷତି ଆଶଙ୍କା ଓ କ୍ଷେତ୍ର ନିରୀକ୍ଷଣ ସୂଚନା (ICAR / KVK)' :
+                             proLang === 'hindi' ? 'चक्रवात उपरांत संदिग्ध रोग व खेत निरीक्षण चेतावनी (ICAR / KVK)' :
+                             proLang === 'bangla' ? 'ঘূর্ণিঝড় পরবর্তী সম্ভাব্য রোগ ও মাঠ পরিদর্শন বিজ্ঞপ্তি' :
+                             proLang === 'telugu' ? 'తుఫాను అనంతర అనుమానిత తెగులు & క్షేత్ర పరిశీలన హెచ్చరిక' :
+                             'Post-Cyclone Field Pathology Alert: Suspected Disease Ingress & Inspection Protocol'}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-300 leading-relaxed">
+                          {proLang === 'odia' ?
+                            'ପ୍ରବଳ ବାତ୍ୟା ପବନ ଏବଂ କ୍ଷେତ୍ରରେ ପାଣି ଜମି ରହିବା ଯୋଗୁଁ ଫସଲରେ ଗଛ କ୍ଷତବିକ୍ଷତ ହୋଇ ଏହି ରୋଗ ହେବାର ପ୍ରବଳ ଆଶଙ୍କା ରହିଛି। ଜିଲ୍ଲା କୃଷି ବିଜ୍ଞାନ କେନ୍ଦ୍ର (KVK) ପକ୍ଷରୁ ସମ୍ପୂର୍ଣ୍ଣ ପ୍ରତ୍ୟକ୍ଷ ଫଟୋ ସଂଗ୍ରହ ଚାଲିଥିବା ବେଳେ, ତୁଫାନସାଥୀ ପକ୍ଷରୁ ସମ୍ଭାବ୍ୟ ରୋଗ ଲକ୍ଷଣ ଚେକଲିଷ୍ଟ ଏବଂ ତୁରନ୍ତ ଔଷଧ ସ୍ପ୍ରେ ପରାମର୍ଶ ତଳେ ପ୍ରଦାନ କରାଯାଉଛି।' :
+                           proLang === 'hindi' ?
+                            'प्रबल चक्रवाती हवाओं और जलभराव के कारण फसल के ऊतकों में घाव तथा जीवाणु/कवक संक्रमण का गंभीर अंदेशा है। जिला कृषि विज्ञान केंद्र (KVK) द्वारा प्रत्यक्ष तस्वीरें संकलित की जा रही हैं। तूफानसाथी द्वारा संभावित लक्षण व त्वरित आईसीएआर उपचार नीचे प्रस्तुत है।' :
+                           proLang === 'bangla' ?
+                            'ঘূর্ণিঝড়ের তীব্র বাতাস ও জলমগ্নতার কারণে ফসলে ব্যাকটেরিয়া ও ছত্রাক সংক্রমণের প্রবল আশঙ্কা রয়েছে। জেলা কেভিকে থেকে ছবি সংগ্রহ চলাকালীন তুফানসাথী সম্ভাব্য লক্ষণ ও জরুরি প্রতিকার নিচে প্রদান করছে।' :
+                           proLang === 'telugu' ?
+                            'తీవ్ర తుఫాను గాలులు మరియు వరద నీటి వల్ల పంట దెబ్బతినే ప్రమాదం ఉంది. పూర్తి ఫోటోలు సంకలనం చేయబడుతున్న సమయంలో, తుఫాన్ సాథీ తక్షణ రోగ నిర్ధారణ మరియు చికిత్సను అందిస్తుంది.' :
+                            'Severe cyclonic wind shear and persistent flood inundation suspect high risk of localized tissue lesions and pathogen ingress. As live surveillance photography is being compiled from regional KVKs and ICAR field teams, ToofanSathi provides this suspected diagnostic verification checklist and immediate chemical remedial protocol.'}
+                        </p>
+                      </div>
 
-                        {/* Floating Diagnostic Angle Badge */}
-                        <div className="absolute top-3 left-3 bg-slate-900/90 backdrop-blur border border-amber-500/50 px-2.5 py-1 rounded-lg text-[10px] font-bold text-amber-300 shadow-md">
-                          📸 {currentDisease.angles[activePhotoAngle]?.badge}
+                      {/* 3-Angle Scientific Pathology Inspection Blueprint Card (No misleading stock photos) */}
+                      <div className="p-4 sm:p-5 bg-gradient-to-b from-slate-950 to-slate-900 border-b border-slate-800 space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-2.5">
+                            <span className="p-2.5 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300">
+                              {activePhotoAngle === 0 ? <Microscope className="w-5 h-5 text-amber-400" /> : activePhotoAngle === 1 ? <TreePine className="w-5 h-5 text-emerald-400" /> : <Waves className="w-5 h-5 text-sky-400" />}
+                            </span>
+                            <div>
+                              <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider block">
+                                Diagnostic Inspection Angle {activePhotoAngle + 1} of 3
+                              </span>
+                              <h4 className="text-sm font-bold text-white">
+                                {currentDisease.angles[activePhotoAngle]?.title}
+                              </h4>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                              🎯 {currentDisease.angles[activePhotoAngle]?.badge}
+                            </span>
+                          </div>
                         </div>
 
-                        <div className="absolute top-3 right-3 bg-rose-950/80 backdrop-blur border border-rose-500/50 px-2 py-0.5 rounded-md text-[10px] font-mono text-rose-300">
-                          Photo {activePhotoAngle + 1} of 3 Angles
+                        {/* Diagnostic Inspection Targets Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                          <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1">
+                            <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                              🔍 What to Inspect in Your Field:
+                            </span>
+                            <p className="text-slate-200 font-medium leading-relaxed">
+                              {currentDisease.angles[activePhotoAngle]?.desc}
+                            </p>
+                          </div>
+
+                          <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1">
+                            <span className="text-[10px] uppercase font-bold text-amber-400 block">
+                              ⚠️ Specific Pathological Target:
+                            </span>
+                            <p className="text-amber-200 font-medium leading-relaxed">
+                              {currentDisease.angles[activePhotoAngle]?.targetSymptom}
+                            </p>
+                          </div>
                         </div>
 
-                        {/* Caption Banner */}
-                        <div className="absolute bottom-3 left-3 right-3 bg-slate-950/90 backdrop-blur border border-slate-800 p-3 rounded-xl">
-                          <h4 className="text-xs font-bold text-white flex items-center gap-2">
-                            <span>{currentDisease.angles[activePhotoAngle]?.title}</span>
-                            <span className="text-[10px] text-amber-400 font-mono">({currentDisease.angles[activePhotoAngle]?.label})</span>
-                          </h4>
-                          <p className="text-[11px] text-slate-300 mt-0.5">
-                            {currentDisease.angles[activePhotoAngle]?.desc}
-                          </p>
+                        <div className="p-2.5 rounded-lg bg-rose-950/20 border border-rose-500/20 flex items-start gap-2 text-[11px] text-rose-300">
+                          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                          <span>
+                            <strong>Cyclone Vulnerability Mechanism:</strong> {currentDisease.angles[activePhotoAngle]?.tissueRisk}
+                          </span>
                         </div>
                       </div>
 
