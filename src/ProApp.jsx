@@ -181,90 +181,90 @@ export default function ProApp() {
 
       {/* Main Suite Dashboard */}
       <main className="flex-1 max-w-5xl w-full mx-auto p-3 sm:p-6 space-y-5">
-        {/* Pro Navigation Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-800 scrollbar-none">
+        {/* Pro Navigation Tabs - Responsive Grid/Wrap */}
+        <div className="flex flex-wrap items-center gap-2 pb-2 border-b border-slate-800">
           <button
             onClick={() => setActiveTab('harvest')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 flex-shrink-0 cursor-pointer ${
+            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'harvest'
                 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm'
                 : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
             }`}
           >
-            <Wheat className="w-4 h-4 text-amber-400" />
+            <Wheat className="w-3.5 h-3.5 text-amber-400" />
             <span>🌾 Crop Harvest Advisor</span>
           </button>
 
           <button
             onClick={() => setActiveTab('aquaculture')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 flex-shrink-0 cursor-pointer ${
+            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'aquaculture'
                 ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-sm'
                 : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
             }`}
           >
-            <Waves className="w-4 h-4 text-cyan-400" />
+            <Waves className="w-3.5 h-3.5 text-cyan-400" />
             <span>🦐 Aquaculture Pond Surge</span>
           </button>
 
           <button
             onClick={() => setActiveTab('marine')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 flex-shrink-0 cursor-pointer ${
+            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'marine'
                 ? 'bg-blue-500/20 text-blue-300 border border-blue-500/50 shadow-sm'
                 : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
             }`}
           >
-            <Ship className="w-4 h-4 text-blue-400" />
+            <Ship className="w-3.5 h-3.5 text-blue-400" />
             <span>🚢 Marine Fleet Departure</span>
           </button>
 
           <button
             onClick={() => setActiveTab('15day')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 flex-shrink-0 cursor-pointer ${
+            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === '15day'
                 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 shadow-sm'
                 : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
             }`}
           >
-            <Calendar className="w-4 h-4 text-emerald-400" />
+            <Calendar className="w-3.5 h-3.5 text-emerald-400" />
             <span>⏱️ 15-Day Hourly Outlook</span>
           </button>
 
           <button
             onClick={() => setActiveTab('insurance')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 flex-shrink-0 cursor-pointer whitespace-nowrap ${
+            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'insurance'
                 ? 'bg-purple-500/20 text-purple-300 border border-purple-500/50 shadow-sm'
                 : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
             }`}
           >
-            <FileText className="w-4 h-4 text-purple-400" />
+            <FileText className="w-3.5 h-3.5 text-purple-400" />
             <span>📄 Certified Claim PDF</span>
           </button>
 
           <button
             onClick={() => setActiveTab('whatsapp')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 flex-shrink-0 cursor-pointer whitespace-nowrap ${
+            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'whatsapp'
                 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 shadow-sm'
                 : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
             }`}
           >
-            <MessageSquare className="w-4 h-4 text-emerald-400" />
-            <span>📲 WhatsApp & SMS Alarms</span>
+            <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+            <span>📲 WhatsApp Alarms</span>
           </button>
 
           <button
             onClick={() => setActiveTab('watchlist')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 flex-shrink-0 cursor-pointer whitespace-nowrap ${
+            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'watchlist'
                 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm'
                 : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
             }`}
           >
-            <MapPin className="w-4 h-4 text-amber-400" />
-            <span>📍 Multi-Asset Watchlist ({watchedAssets.length})</span>
+            <MapPin className="w-3.5 h-3.5 text-amber-400" />
+            <span>📍 Asset Watchlist ({watchedAssets.length})</span>
           </button>
         </div>
 
