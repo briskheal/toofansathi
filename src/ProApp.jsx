@@ -44,11 +44,19 @@ import {
   Camera,
   Upload,
   BookOpen,
-  Scan
+  Scan,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Store,
+  Ticket,
+  Scale,
+  ShieldAlert
 } from 'lucide-react';
 import PremiumAuthModal from './components/PremiumAuthModal';
 import { ALL_INDIA_ACTIVE_STORMS, getNearestStorm } from './services/cycloneEngine';
 import { POST_CYCLONE_CROPS, CROP_DISEASES, ICAR_POST_CYCLONE_WORKSHOP_RULES } from './data/cropDiseases';
+import { GOVERNMENT_MSP_2026, COASTAL_MANDIS } from './data/mandiPrices';
 
 const PRO_TRANSLATIONS = {
   english: {
@@ -59,6 +67,7 @@ const PRO_TRANSLATIONS = {
     tabs: {
       harvest: '🌾 Crop Harvest Advisor',
       clinic: '🩺 Post-Cyclone Crop Doctor',
+      mandi: '💰 Mandi Rates & MSP Shield',
       aquaculture: '🦐 Aquaculture Pond Surge',
       marine: '🚢 Marine Fleet Departure',
       fifteenDay: '⏱️ 15-Day Hourly Outlook',
@@ -84,6 +93,7 @@ const PRO_TRANSLATIONS = {
     tabs: {
       harvest: '🌾 ଫସଲ ଅମଳ ପରାମର୍ଶ',
       clinic: '🩺 ବାତ୍ୟା ପରବର୍ତ୍ତୀ ଫସଲ ଡାକ୍ତର',
+      mandi: '💰 ମଣ୍ଡି ଦର ଓ ଏମ୍.ଏସ୍.ପି ସୁରକ୍ଷା',
       aquaculture: '🦐 ଚିଙ୍ଗୁଡ଼ି ଘେରି ସୁରକ୍ଷା',
       marine: '🚢 ମାଛଧରା ଡଙ୍ଗା ସୁରକ୍ଷା',
       fifteenDay: '⏱️ ୧୫-ଦିନିଆ ପୂର୍ବାନୁମାନ',
@@ -109,6 +119,7 @@ const PRO_TRANSLATIONS = {
     tabs: {
       harvest: '🌾 फसल कटाई सलाहकार',
       clinic: '🩺 चक्रवात बाद फसल डॉक्टर',
+      mandi: '💰 मंडी भाव एवं एमएसपी सुरक्षा',
       aquaculture: '🦐 झींगा तालाब सुरक्षा',
       marine: '🚢 समुद्री नाव रवानगी',
       fifteenDay: '⏱️ 15-दिवसीय पूर्वानुमान',
@@ -134,6 +145,7 @@ const PRO_TRANSLATIONS = {
     tabs: {
       harvest: '🌾 ফসল কাটার পরামর্শ',
       clinic: '🩺 ঘূর্ণিঝড় পরবর্তী ফসল ডাক্তার',
+      mandi: '💰 মাণ্ডি দর ও এমএসপি সুরক্ষা',
       aquaculture: '🦐 চিংড়ি ঘের সুরক্ষা',
       marine: '🚢 মাছ ধরার নৌকা সুরক্ষা',
       fifteenDay: '⏱️ ১৫-দিনের পূর্বাভাস',
@@ -159,6 +171,7 @@ const PRO_TRANSLATIONS = {
     tabs: {
       harvest: '🌾 పంట కోత సలహాదారు',
       clinic: '🩺 తుఫాను అనంతర పంట డాక్టర్',
+      mandi: '💰 మార్కెట్ ధరలు & MSP రక్షణ',
       aquaculture: '🦐 ఆక్వాకల్చర్ చెరువు రక్షణ',
       marine: '🚢 బోట్ బయలుదేరే భద్రత',
       fifteenDay: '⏱️ 15-రోజుల ఔట్‌లుక్',
@@ -243,6 +256,10 @@ export default function ProApp() {
     matchedAngle: 'Angle 1: Macro Leaf Lesion with Amber Ooze Beads',
     severity: 'High (Causes 40–60% crop yield collapse if untreated)'
   });
+
+  // Coastal Mandi & MSP State
+  const [selectedMandiId, setSelectedMandiId] = useState('puri-rmc');
+  const [generatedMandiToken, setGeneratedMandiToken] = useState(null);
 
   const t = (key) => {
     const dict = PRO_TRANSLATIONS[proLang] || PRO_TRANSLATIONS.english;
@@ -510,6 +527,18 @@ export default function ProApp() {
           >
             <Stethoscope className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
             <span className="font-extrabold">{t('tabs').clinic}</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('mandi')}
+            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'mandi'
+                ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/60 shadow-sm shadow-emerald-950/40 ring-1 ring-emerald-500/40'
+                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="font-extrabold">{t('tabs').mandi}</span>
           </button>
 
           <button
@@ -1238,6 +1267,226 @@ export default function ProApp() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* TAB: Live Coastal Mandi Wholesale Prices & Government MSP Anti-Distress Shield */}
+        {activeTab === 'mandi' && (
+          <div className="space-y-5">
+            {/* 1. Hero Anti-Distress Selling Alert Banner */}
+            <div className="bg-gradient-to-r from-amber-950/50 via-slate-900 to-emerald-950/40 border border-amber-500/50 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="space-y-1.5 max-w-2xl">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                      <ShieldAlert className="w-3 h-3 text-amber-400" />
+                      e-NAM & Civil Supplies Mandi Watchdog
+                    </span>
+                    <span className="text-[11px] font-bold text-emerald-400">
+                      MSP Legal Protection Active
+                    </span>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-black text-white">
+                    ⚠️ Anti-Distress Selling Advisory: DO NOT Sell Paddy Below MSP (₹2,183/Qtl)
+                  </h3>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Prior to cyclone landfall, private millers and brokers often spread rumors to buy standing or wet crops at predatory distress rates (₹1,200–₹1,400/qtl). Government PACS procurement depots are legally open with temporary moisture limit relaxation up to 19%.
+                  </p>
+                </div>
+
+                <div className="p-3 bg-slate-950/90 border border-emerald-500/40 rounded-xl text-center space-y-1 flex-shrink-0">
+                  <span className="text-[10px] font-mono text-slate-400 block uppercase font-bold">Government Paddy MSP</span>
+                  <span className="text-xl font-black text-emerald-400 block font-mono">₹2,183 / Qtl</span>
+                  <span className="text-[9px] text-slate-400 block">Common Grade A: ₹2,203/Qtl</span>
+                </div>
+              </div>
+
+              {/* Moisture Relaxation Callout */}
+              <div className="mt-3.5 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2 flex-wrap text-xs text-slate-300">
+                <div className="flex items-center gap-1.5 text-amber-300">
+                  <Scale className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                  <span><strong>Special Cyclone Moisture Limit:</strong> 17% standard relaxed up to 19% at all coastal RMC depots.</span>
+                </div>
+                <span className="text-[10px] font-mono text-slate-400">Ref: Odisha/AP Civil Supplies Order #2026/CS-88</span>
+              </div>
+            </div>
+
+            {/* 2. Official MSP Quick Reference Grid */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <Scale className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Official Government Minimum Support Prices (MSP 2026 Season)</span>
+                </span>
+                <span className="text-[10px] font-mono text-emerald-400">Guaranteed Floor Price</span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                {GOVERNMENT_MSP_2026.map((item, idx) => (
+                  <div key={idx} className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500/40 transition-colors text-center space-y-1">
+                    <span className="text-lg block">{item.icon}</span>
+                    <span className="text-[11px] font-bold text-white block truncate">{item.commodity.split('/')[0]}</span>
+                    <span className="text-xs font-mono font-black text-emerald-400 block">₹{item.msp.toLocaleString('en-IN')}</span>
+                    <span className="text-[9px] text-slate-500 block">{item.unit}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 3. Coastal Mandi Selector & Depot Navigator */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
+                    <Store className="w-4 h-4 text-amber-400" />
+                    <span>Live Coastal Regulated Mandis & Depot Intake (e-NAM Sync)</span>
+                  </h4>
+                  <p className="text-[11px] text-slate-400">
+                    Select a coastal regulated market committee to check live arrival rates, queue wait times, and book e-tokens.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 px-2.5 py-1 rounded-lg text-xs font-mono text-emerald-400">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                  <span>Live Agmarknet Feed</span>
+                </div>
+              </div>
+
+              {/* Mandi Selector Pills */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                {COASTAL_MANDIS.map((mandi) => (
+                  <button
+                    key={mandi.id}
+                    onClick={() => {
+                      setSelectedMandiId(mandi.id);
+                      setGeneratedMandiToken(null);
+                    }}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 flex-shrink-0 cursor-pointer ${
+                      selectedMandiId === mandi.id
+                        ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/60 shadow-md'
+                        : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                    }`}
+                  >
+                    <Store className="w-3.5 h-3.5" />
+                    <span>{mandi.district} ({mandi.name.split(' ')[0]})</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Selected Mandi Live Dashboard */}
+              {(() => {
+                const currentMandi = COASTAL_MANDIS.find(m => m.id === selectedMandiId) || COASTAL_MANDIS[0];
+                return (
+                  <div className="space-y-4">
+                    {/* Mandi Operations Summary Card */}
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] text-slate-500 font-bold uppercase block">Depot Location</span>
+                        <span className="font-bold text-white block">{currentMandi.name}</span>
+                        <span className="text-[10px] text-emerald-400 font-mono">📍 {currentMandi.distanceKm} km from your farm</span>
+                      </div>
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] text-slate-500 font-bold uppercase block">Daily Intake Capacity</span>
+                        <span className="font-bold text-white block font-mono">{currentMandi.intakeCapacity}</span>
+                        <span className="text-[10px] text-slate-400">Mechanical unloading</span>
+                      </div>
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] text-slate-500 font-bold uppercase block">Gate Queue Time</span>
+                        <span className="font-bold text-amber-300 block">{currentMandi.queueTime}</span>
+                        <span className="text-[10px] text-slate-400">Live token flow</span>
+                      </div>
+                      <div className="space-y-0.5 flex flex-col justify-center">
+                        {!generatedMandiToken ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const tokenNo = `${currentMandi.district.toUpperCase().slice(0, 3)}-${Math.floor(Math.random() * 800) + 100}`;
+                              setGeneratedMandiToken({
+                                tokenNo,
+                                mandiName: currentMandi.name,
+                                entryWindow: 'Today 02:30 PM - 04:00 PM',
+                                gate: 'Gate #2 (Bulk Grain Unloading Bay)'
+                              });
+                            }}
+                            className="px-3 py-2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-slate-950 font-black rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-md cursor-pointer active:scale-95 transition-all"
+                          >
+                            <Ticket className="w-3.5 h-3.5 text-slate-950" />
+                            <span>Book e-Arrival Token</span>
+                          </button>
+                        ) : (
+                          <div className="p-2 rounded-lg bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-center">
+                            <span className="text-[9px] block uppercase font-mono">Your Digital Pass:</span>
+                            <span className="font-mono font-black text-xs text-white">{generatedMandiToken.tokenNo}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* e-Token Confirmation Slip (if generated) */}
+                    {generatedMandiToken && (
+                      <div className="p-3.5 rounded-xl bg-gradient-to-r from-emerald-950/50 via-slate-950 to-emerald-950/40 border border-emerald-500/60 flex items-start justify-between gap-3 animate-in fade-in slide-in-from-top duration-300">
+                        <div className="space-y-1 text-xs">
+                          <div className="flex items-center gap-2 font-bold text-emerald-400">
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>Digital Mandi Priority Token Issued: <span className="font-mono text-white">{generatedMandiToken.tokenNo}</span></span>
+                          </div>
+                          <p className="text-[11px] text-slate-300">
+                            Authorized Entry Window: <strong>{generatedMandiToken.entryWindow}</strong> at <strong>{generatedMandiToken.gate}</strong>. Produce moisture will be tested upon arrival under cyclone relaxation standards.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => alert(`Showing digital pass ${generatedMandiToken.tokenNo} to security gate.`)}
+                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[10px] font-bold flex-shrink-0 cursor-pointer"
+                        >
+                          View Pass Slip
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Commodity Price Cards Table */}
+                    <div className="space-y-2">
+                      <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider block">
+                        Live Commodity Prices at {currentMandi.name}
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {currentMandi.commodities.map((item, cIdx) => (
+                          <div key={cIdx} className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-emerald-500/40 transition-all space-y-2">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h5 className="text-xs font-bold text-white">{item.name}</h5>
+                                <span className="text-[10px] text-slate-400 font-mono">Min: ₹{item.minPrice} | Max: ₹{item.maxPrice}</span>
+                              </div>
+                              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                                {item.status}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-1 border-t border-slate-900">
+                              <div className="flex items-baseline gap-1">
+                                <span className="text-base font-black font-mono text-emerald-400">
+                                  ₹{item.modalPrice.toLocaleString('en-IN')}
+                                </span>
+                                <span className="text-[10px] text-slate-500 font-mono">/ Qtl</span>
+                              </div>
+                              <span className="text-[11px] font-mono font-bold text-emerald-400 flex items-center gap-0.5">
+                                <TrendingUp className="w-3.5 h-3.5" />
+                                <span>{item.trend}</span>
+                              </span>
+                            </div>
+
+                            <div className="p-2 rounded-lg bg-slate-900/60 text-[10px] text-amber-300/90 flex items-center gap-1.5">
+                              <Info className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                              <span className="truncate">{item.alert}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
           </div>
         )}
 
