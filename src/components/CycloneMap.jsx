@@ -880,19 +880,19 @@ export default function CycloneMap({
               {/* 4 Points Horizontal Slider for Peacetime & Active Monsoon */}
               <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 overflow-x-auto sm:overflow-visible gap-2 text-[11px] pb-1 sm:pb-0 no-scrollbar snap-x snap-mandatory">
                 {/* Point 1: Your Area Weather */}
-                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm min-w-0 overflow-hidden">
                   <MapPin className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">1. Local Field Weather</span>
-                    <strong className="text-white text-xs block">
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">1. Local Field Weather</span>
+                    <strong className="text-white text-xs block truncate" title={`${userLocation.name} (${userLocation.state || 'Local'})`}>
                       {userLocation.name} ({userLocation.state || 'Local'})
                     </strong>
-                    <span className={`text-[10px] font-semibold block ${isSouthIndiaOrMonsoon || livePrecip > 0 ? 'text-amber-300' : 'text-sky-300'}`}>
+                    <span className={`text-[10px] font-semibold block truncate ${isSouthIndiaOrMonsoon || livePrecip > 0 ? 'text-amber-300' : 'text-sky-300'}`} title={isSouthIndiaOrMonsoon || livePrecip > 0 ? `🌧️ Showers & Rain (${livePrecip > 0 ? livePrecip + ' mm' : 'Active'}) • ${liveTemp}°C` : `🌤️ Fair Skies • Gentle Breeze • ${liveTemp}°C`}>
                       {isSouthIndiaOrMonsoon || livePrecip > 0
                         ? `🌧️ Showers & Rain (${livePrecip > 0 ? livePrecip + ' mm' : 'Active'}) • ${liveTemp}°C`
                         : `🌤️ Fair Skies • Gentle Breeze • ${liveTemp}°C`}
                     </span>
-                    <span className={`text-[9px] block font-semibold ${isSouthIndiaOrMonsoon || livePrecip > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                    <span className={`text-[9px] block font-semibold truncate ${isSouthIndiaOrMonsoon || livePrecip > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
                       {isSouthIndiaOrMonsoon || livePrecip > 0
                         ? `⚠️ Wind ${liveWind} km/h (Gusts ${liveGusts} km/h) • Easterly Waves`
                         : `✓ Wind ${liveWind} km/h (Gusts ${liveGusts} km/h) • Calm Routine`}
@@ -901,10 +901,10 @@ export default function CycloneMap({
                 </div>
 
                 {/* Point 2: Sea State & Waves */}
-                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm min-w-0 overflow-hidden">
                   <Waves className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">2. INCOIS Ocean State</span>
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">2. INCOIS Ocean State</span>
                     <strong className="text-cyan-300 text-xs block truncate" title={stateAgro.waveHeight}>
                       Waves: {stateAgro.waveHeight}
                     </strong>
@@ -918,32 +918,32 @@ export default function CycloneMap({
                 </div>
 
                 {/* Point 3: 7-Day Cyclogenesis */}
-                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm min-w-0 overflow-hidden">
                   <Compass className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">3. Basin Cyclogenesis Watch</span>
-                    <strong className="text-emerald-300 text-xs block">
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">3. Basin Cyclogenesis Watch</span>
+                    <strong className="text-emerald-300 text-xs block truncate">
                       0% Risk (Next 7 Days)
                     </strong>
-                    <span className="text-[10px] text-slate-300 block">
+                    <span className="text-[10px] text-slate-300 block truncate" title={isSouthIndiaOrMonsoon ? 'SW Bay Easterly Wave Stream' : 'Bay of Bengal & Arabian Sea'}>
                       {isSouthIndiaOrMonsoon ? 'SW Bay Easterly Wave Stream' : 'Bay of Bengal & Arabian Sea'}
                     </span>
-                    <span className="text-[9px] text-emerald-400 block font-semibold">
+                    <span className="text-[9px] text-emerald-400 block font-semibold truncate">
                       ✓ Nil Cyclonic Disturbances
                     </span>
                   </div>
                 </div>
 
                 {/* Point 4: Farming & Field Routine */}
-                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm min-w-0 overflow-hidden">
                   <Sprout className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">4. Farm Harvest Advisory</span>
-                    <strong className="text-amber-300 text-xs block truncate" title={stateAgro.advisory1Title}>
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">4. Farm Harvest Advisory</span>
+                    <strong className="text-amber-300 text-xs block truncate font-bold" title={stateAgro.advisory1Title}>
                       {stateAgro.advisory1Title}
                     </strong>
-                    <span className="text-[10px] text-slate-300 block line-clamp-2">
-                      {stateAgro.advisory1Desc.substring(0, 95)}...
+                    <span className="text-[10px] text-slate-300 block truncate mt-0.5" title={stateAgro.advisory1Desc}>
+                      {stateAgro.advisory1Desc}
                     </span>
                     <span className="text-[9px] text-cyan-300 block font-semibold truncate mt-0.5" title={stateAgro.advisory2Title}>
                       {stateAgro.advisory2Title}
@@ -978,68 +978,68 @@ export default function CycloneMap({
               {/* 4 Points Horizontal Slider (Mobile horizontal slider with snap, Desktop 4-col grid) */}
               <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 overflow-x-auto sm:overflow-visible gap-2 text-[11px] pb-1 sm:pb-0 no-scrollbar snap-x snap-mandatory">
                 {/* Point 1: Location & Distance */}
-                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm min-w-0 overflow-hidden">
                   <MapPin className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">1. Storm Center Position</span>
-                    <strong className="text-white text-xs block">
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">1. Storm Center Position</span>
+                    <strong className="text-white text-xs block truncate">
                       {AKVAN_TIMELINE_STEPS[timeStepIndex]?.lat.toFixed(2)}°N, {AKVAN_TIMELINE_STEPS[timeStepIndex]?.lon.toFixed(2)}°E
                     </strong>
-                    <span className="text-[10px] text-sky-300 font-semibold block">
+                    <span className="text-[10px] text-sky-300 font-semibold block truncate">
                       📍 ~{bobDist || 352} km to you ({userLocation.name})
                     </span>
-                    <span className="text-[9px] text-emerald-400 block font-semibold">
+                    <span className="text-[9px] text-emerald-400 block font-semibold truncate">
                       {AKVAN_TIMELINE_STEPS[timeStepIndex]?.status}
                     </span>
                   </div>
                 </div>
 
                 {/* Point 2: Winds & Intensity */}
-                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm min-w-0 overflow-hidden">
                   <Wind className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">2. Wind & Pressure</span>
-                    <strong className="text-amber-300 text-xs block">
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">2. Wind & Pressure</span>
+                    <strong className="text-amber-300 text-xs block truncate">
                       {AKVAN_TIMELINE_STEPS[timeStepIndex]?.wind} (Gusts: {AKVAN_TIMELINE_STEPS[timeStepIndex]?.gusts})
                     </strong>
-                    <span className="text-[10px] text-slate-300 block">
+                    <span className="text-[10px] text-slate-300 block truncate">
                       Pressure: <strong className="font-mono text-cyan-300">{AKVAN_TIMELINE_STEPS[timeStepIndex]?.pressure}</strong>
                     </span>
-                    <span className="text-[9px] text-slate-400 block">
+                    <span className="text-[9px] text-slate-400 block truncate">
                       Stage: {AKVAN_TIMELINE_STEPS[timeStepIndex]?.stage}
                     </span>
                   </div>
                 </div>
 
                 {/* Point 3: Landfall & Speed */}
-                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm min-w-0 overflow-hidden">
                   <Compass className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">3. Track Progression</span>
-                    <strong className="text-emerald-300 text-xs block">
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">3. Track Progression</span>
+                    <strong className="text-emerald-300 text-xs block truncate">
                       {AKVAN_TIMELINE_STEPS[timeStepIndex]?.isLandfall ? 'Gopalpur Sector (Landfall)' : 'Inland Track'}
                     </strong>
-                    <span className="text-[10px] text-amber-300 font-bold block">
+                    <span className="text-[10px] text-amber-300 font-bold block truncate">
                       {AKVAN_TIMELINE_STEPS[timeStepIndex]?.stage}
                     </span>
-                    <span className="text-[9px] text-slate-300 block">
+                    <span className="text-[9px] text-slate-300 block truncate">
                       {AKVAN_TIMELINE_STEPS[timeStepIndex]?.date} • {AKVAN_TIMELINE_STEPS[timeStepIndex]?.time}
                     </span>
                   </div>
                 </div>
 
                 {/* Point 4: Govt Alerts */}
-                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm min-w-0 overflow-hidden">
                   <ShieldAlert className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-400" />
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">4. Official Warning Mandate</span>
-                    <strong className="text-xs block text-amber-300">
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">4. Official Warning Mandate</span>
+                    <strong className="text-xs block text-amber-300 truncate">
                       {isNormalDay ? 'Historical Archive Record' : liveState.landfallPhase === 'weakened_inland' ? 'De-escalated: Red Alert Withdrawn' : 'Severe Coastal Gale'}
                     </strong>
-                    <span className="text-[10px] text-slate-300 block">
+                    <span className="text-[10px] text-slate-300 block truncate">
                       IMD RSMC Official Trajectory
                     </span>
-                    <span className="text-[9px] text-slate-400 block">
+                    <span className="text-[9px] text-slate-400 block truncate">
                       Landfall crossed 20 Nov 12:30–13:30 IST
                     </span>
                   </div>
@@ -1066,49 +1066,49 @@ export default function CycloneMap({
 
               {/* 4 Points Horizontal Slider for Arabian Sea */}
               <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 overflow-x-auto sm:overflow-visible gap-2 text-[11px] pb-1 sm:pb-0 no-scrollbar snap-x snap-mandatory">
-                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm min-w-0 overflow-hidden">
                   <MapPin className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">1. Location & Distance</span>
-                    <strong className="text-white text-xs block">20.80°N, 67.20°E</strong>
-                    <span className="text-[10px] text-sky-300 font-semibold block">
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">1. Location & Distance</span>
+                    <strong className="text-white text-xs block truncate">20.80°N, 67.20°E</strong>
+                    <span className="text-[10px] text-sky-300 font-semibold block truncate">
                       📍 ~{arbDist || 2043} km to you ({userLocation.name})
                     </span>
-                    <span className="text-[9px] text-slate-400 block">
+                    <span className="text-[9px] text-slate-400 block truncate">
                       ~260 km WSW of Porbandar Coast
                     </span>
                   </div>
                 </div>
 
-                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm min-w-0 overflow-hidden">
                   <Wind className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">2. Wind & Pressure</span>
-                    <strong className="text-amber-300 text-xs block">Sustained 45 km/h (Gusts: 60)</strong>
-                    <span className="text-[10px] text-slate-300 block">
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">2. Wind & Pressure</span>
+                    <strong className="text-amber-300 text-xs block truncate">Sustained 45 km/h (Gusts: 60)</strong>
+                    <span className="text-[10px] text-slate-300 block truncate">
                       Pressure: <strong className="font-mono text-cyan-300">1000 hPa</strong>
                     </span>
-                    <span className="text-[9px] text-slate-400 block">Well-Marked Low / Depression</span>
+                    <span className="text-[9px] text-slate-400 block truncate">Well-Marked Low / Depression</span>
                   </div>
                 </div>
 
-                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm min-w-0 overflow-hidden">
                   <Compass className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">3. Movement & Trajectory</span>
-                    <strong className="text-emerald-300 text-xs block">Moving WNW at 14 km/h</strong>
-                    <span className="text-[10px] text-slate-300 block">Heading into open Arabian Sea</span>
-                    <span className="text-[9px] text-emerald-400 block">Zero Direct Indian Coast Landfall</span>
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">3. Movement & Trajectory</span>
+                    <strong className="text-emerald-300 text-xs block truncate">Moving WNW at 14 km/h</strong>
+                    <span className="text-[10px] text-slate-300 block truncate">Heading into open Arabian Sea</span>
+                    <span className="text-[9px] text-emerald-400 block truncate">Zero Direct Indian Coast Landfall</span>
                   </div>
                 </div>
 
-                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm min-w-0 overflow-hidden">
                   <ShieldAlert className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">4. Official Threat Level</span>
-                    <strong className="text-amber-400 text-xs block">Squally Weather for Fishermen</strong>
-                    <span className="text-[10px] text-slate-300 block">IMD: Fishermen warning in deep sea</span>
-                    <span className="text-[9px] text-slate-400 block">Coastal Gujarat/Maharashtra safe</span>
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">4. Official Threat Level</span>
+                    <strong className="text-amber-400 text-xs block truncate">Squally Weather for Fishermen</strong>
+                    <span className="text-[10px] text-slate-300 block truncate">IMD: Fishermen warning in deep sea</span>
+                    <span className="text-[9px] text-slate-400 block truncate">Coastal Gujarat/Maharashtra safe</span>
                   </div>
                 </div>
               </div>
@@ -1134,39 +1134,39 @@ export default function CycloneMap({
 
               {/* 4 Points Horizontal Slider for My Location */}
               <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 overflow-x-auto sm:overflow-visible gap-2 text-[11px] pb-1 sm:pb-0 no-scrollbar snap-x snap-mandatory">
-                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm min-w-0 overflow-hidden">
                   <MapPin className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">1. Nearest Cyclone</span>
-                    <strong className="text-red-400 text-xs block">Akvan: ~{bobDist || 369} km away</strong>
-                    <span className="text-[10px] text-slate-300 block">Advancing towards South Odisha</span>
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">1. Nearest Cyclone</span>
+                    <strong className="text-red-400 text-xs block truncate">Akvan: ~{bobDist || 369} km away</strong>
+                    <span className="text-[10px] text-slate-300 block truncate">Advancing towards South Odisha</span>
                   </div>
                 </div>
 
-                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm min-w-0 overflow-hidden">
                   <Wind className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">2. Inflow Winds</span>
-                    <strong className="text-amber-300 text-xs block">Gusts 35–45 km/h</strong>
-                    <span className="text-[10px] text-slate-300 block">Outer squall bands active</span>
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">2. Inflow Winds</span>
+                    <strong className="text-amber-300 text-xs block truncate">Gusts 35–45 km/h</strong>
+                    <span className="text-[10px] text-slate-300 block truncate">Outer squall bands active</span>
                   </div>
                 </div>
 
-                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm min-w-0 overflow-hidden">
                   <Compass className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">3. Landfall Impact</span>
-                    <strong className="text-emerald-300 text-xs block">Gopalpur / Padmapur Crossing</strong>
-                    <span className="text-[10px] text-slate-300 block">Inland track through South Odisha</span>
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">3. Landfall Impact</span>
+                    <strong className="text-emerald-300 text-xs block truncate">Gopalpur / Padmapur Crossing</strong>
+                    <span className="text-[10px] text-slate-300 block truncate">Inland track through South Odisha</span>
                   </div>
                 </div>
 
-                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm min-w-0 overflow-hidden">
                   <ShieldAlert className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">4. Emergency Readiness</span>
-                    <strong className="text-sky-300 text-xs block">Keep Helpline & PWA Ready</strong>
-                    <span className="text-[10px] text-slate-300 block">Follow State DEOC instructions</span>
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">4. Emergency Readiness</span>
+                    <strong className="text-sky-300 text-xs block truncate">Keep Helpline & PWA Ready</strong>
+                    <span className="text-[10px] text-slate-300 block truncate">Follow State DEOC instructions</span>
                   </div>
                 </div>
               </div>
