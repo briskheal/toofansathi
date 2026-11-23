@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { calculateDistanceKm } from '../services/cycloneEngine';
 import { getStateAgroIntelligence } from '../data/agroIntelligence';
+import { HISTORICAL_STORM_TRACKS, getHistoricalStorm } from '../data/historicalStormTracks';
 
 // Dynamic Real-Time Storm Progression Engine based on Current Clock Time
 export function getLiveAkvanState() {
@@ -417,18 +418,38 @@ export default function CycloneMap({
   const [isLocating, setIsLocating] = useState(false);
   const [justUpdated, setJustUpdated] = useState(false);
 
+  // Historical Storm Replay State
+  const [replayStormId, setReplayStormId] = useState('akvan-2026');
+  const activeReplayStorm = getHistoricalStorm(replayStormId);
+  const currentTimelineSteps = mapMode === 'history' ? activeReplayStorm.steps : AKVAN_TIMELINE_STEPS;
+
   // Sync external replay launch requests from the Storm Replay Archive Hub
   useEffect(() => {
     if (replayRequest) {
+      const stormKey = replayRequest.stormId || 'akvan-2026';
+      setReplayStormId(stormKey);
+      const targetStorm = getHistoricalStorm(stormKey);
       setMapMode('history');
-      setTimeStepIndex(2); // Landfall step
+      const landfallIdx = targetStorm.steps.findIndex(s => s.isLandfall);
+      setTimeStepIndex(landfallIdx !== -1 ? landfallIdx : Math.floor(targetStorm.steps.length / 2));
       setIsPlayingTime(false);
       setMapViewMode('bay-of-bengal');
-      setFlyTarget([19.26, 84.88]);
-      setFlyZoom(7);
+      setFlyTarget(targetStorm.flyCenter || [targetStorm.steps[0].lat, targetStorm.steps[0].lon]);
+      setFlyZoom(targetStorm.flyZoom || 7.2);
       setFlyTrigger(prev => prev + 1);
     }
   }, [replayRequest]);
+
+  const handleSwitchReplayStorm = (newStormId) => {
+    setReplayStormId(newStormId);
+    const targetStorm = getHistoricalStorm(newStormId);
+    const landfallIdx = targetStorm.steps.findIndex(s => s.isLandfall);
+    setTimeStepIndex(landfallIdx !== -1 ? landfallIdx : Math.floor(targetStorm.steps.length / 2));
+    setIsPlayingTime(false);
+    setFlyTarget(targetStorm.flyCenter || [targetStorm.steps[0].lat, targetStorm.steps[0].lon]);
+    setFlyZoom(targetStorm.flyZoom || 7.2);
+    setFlyTrigger(prev => prev + 1);
+  };
 
   // Zoom Earth-Style Immersive Theater Mode & Temporal Scrubbing
   const [isTheaterMode, setIsTheaterMode] = useState(false);
@@ -470,13 +491,13 @@ export default function CycloneMap({
     let interval = null;
     if (isPlayingTime) {
       interval = setInterval(() => {
-        setTimeStepIndex((prev) => (prev + 1) % AKVAN_TIMELINE_STEPS.length);
+        setTimeStepIndex((prev) => (prev + 1) % currentTimelineSteps.length);
       }, 2200);
     }
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isPlayingTime]);
+  }, [isPlayingTime, currentTimelineSteps.length]);
 
   // Auto-scroll timeline scrubber to keep active time step centered & visible on mobile
   useEffect(() => {
@@ -872,8 +893,12 @@ export default function CycloneMap({
               ) : (
                 <>
                   <span className="w-2 h-2 rounded-full bg-red-400 animate-ping"></span>
-                  <span>🌀 Severe Cyclone Akvan</span>
-                  {bobDist && <span className="text-[10px] opacity-90 font-mono">• {bobDist} km</span>}
+                  <span>🌀 {mapMode === 'history' ? activeReplayStorm.name : 'Severe Cyclone Akvan'}</span>
+                  {mapMode === 'history' ? (
+                    <span className="text-[10px] opacity-90 font-mono">• {activeReplayStorm.dates}</span>
+                  ) : bobDist ? (
+                    <span className="text-[10px] opacity-90 font-mono">• {bobDist} km</span>
+                  ) : null}
                 </>
               )}
             </button>
@@ -1058,7 +1083,7 @@ export default function CycloneMap({
                     <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${liveState.landfallPhase === 'weakened_inland' || isNormalDay ? 'bg-amber-500' : 'bg-red-600'}`}></span>
                   </span>
                   <span className="font-extrabold text-white text-[11px] sm:text-sm truncate">
-                    {isNormalDay ? `Historical Replay: Severe Cyclone Akvan (${AKVAN_TIMELINE_STEPS[timeStepIndex]?.date} • ${AKVAN_TIMELINE_STEPS[timeStepIndex]?.time})` : `Current Status: ${liveState.landfallStatus} (${liveState.timeStr} IST)`}
+                    {isNormalDay ? `Historical Replay: ${mapMode === 'history' ? activeReplayStorm.name : 'Severe Cyclone Akvan'} (${currentTimelineSteps[timeStepIndex]?.date} • ${currentTimelineSteps[timeStepIndex]?.time})` : `Current Status: ${liveState.landfallStatus} (${liveState.timeStr} IST)`}
                   </span>
                   <span className={`text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 ${
                     isNormalDay ? 'bg-amber-950 text-amber-400 border border-amber-800' : liveState.landfallPhase === 'weakened_inland' ? 'bg-emerald-700 text-white border border-emerald-500' : 'bg-red-600 text-white border border-red-400 animate-pulse'
@@ -1067,7 +1092,7 @@ export default function CycloneMap({
                   </span>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0 text-[10px] text-cyan-300 font-mono">
-                  <span>⏱️ {AKVAN_TIMELINE_STEPS[timeStepIndex]?.date} • {AKVAN_TIMELINE_STEPS[timeStepIndex]?.time}</span>
+                  <span>⏱️ {currentTimelineSteps[timeStepIndex]?.date} • {currentTimelineSteps[timeStepIndex]?.time}</span>
                   <span className="sm:hidden text-[9px] text-sky-400 font-sans font-medium">Swipe cards 👉</span>
                 </div>
               </div>
@@ -1080,13 +1105,13 @@ export default function CycloneMap({
                   <div className="min-w-0 flex-1 overflow-hidden">
                     <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">1. Storm Center Position</span>
                     <strong className="text-white text-xs block truncate">
-                      {AKVAN_TIMELINE_STEPS[timeStepIndex]?.lat.toFixed(2)}°N, {AKVAN_TIMELINE_STEPS[timeStepIndex]?.lon.toFixed(2)}°E
+                      {currentTimelineSteps[timeStepIndex]?.lat.toFixed(2)}°N, {currentTimelineSteps[timeStepIndex]?.lon.toFixed(2)}°E
                     </strong>
                     <span className="text-[10px] text-sky-300 font-semibold block truncate">
-                      📍 ~{bobDist || 352} km to you ({userLocation.name})
+                      📍 ~{calculateDistanceKm(userLocation.lat, userLocation.lon, currentTimelineSteps[timeStepIndex]?.lat || 20, currentTimelineSteps[timeStepIndex]?.lon || 86)} km to you ({userLocation.name})
                     </span>
                     <span className="text-[9px] text-emerald-400 block font-semibold truncate">
-                      {AKVAN_TIMELINE_STEPS[timeStepIndex]?.status}
+                      {currentTimelineSteps[timeStepIndex]?.status}
                     </span>
                   </div>
                 </div>
@@ -1097,13 +1122,13 @@ export default function CycloneMap({
                   <div className="min-w-0 flex-1 overflow-hidden">
                     <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">2. Wind & Pressure</span>
                     <strong className="text-amber-300 text-xs block truncate">
-                      {AKVAN_TIMELINE_STEPS[timeStepIndex]?.wind} (Gusts: {AKVAN_TIMELINE_STEPS[timeStepIndex]?.gusts})
+                      {currentTimelineSteps[timeStepIndex]?.wind} (Gusts: {currentTimelineSteps[timeStepIndex]?.gusts})
                     </strong>
                     <span className="text-[10px] text-slate-300 block truncate">
-                      Pressure: <strong className="font-mono text-cyan-300">{AKVAN_TIMELINE_STEPS[timeStepIndex]?.pressure}</strong>
+                      Pressure: <strong className="font-mono text-cyan-300">{currentTimelineSteps[timeStepIndex]?.pressure}</strong>
                     </span>
                     <span className="text-[9px] text-slate-400 block truncate">
-                      Stage: {AKVAN_TIMELINE_STEPS[timeStepIndex]?.stage}
+                      Stage: {currentTimelineSteps[timeStepIndex]?.stage}
                     </span>
                   </div>
                 </div>
@@ -1114,13 +1139,13 @@ export default function CycloneMap({
                   <div className="min-w-0 flex-1 overflow-hidden">
                     <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">3. Track Progression</span>
                     <strong className="text-emerald-300 text-xs block truncate">
-                      {AKVAN_TIMELINE_STEPS[timeStepIndex]?.isLandfall ? 'Gopalpur Sector (Landfall)' : 'Inland Track'}
+                      {currentTimelineSteps[timeStepIndex]?.isLandfall ? (mapMode === 'history' ? activeReplayStorm.landfallPoint : 'Gopalpur Sector (Landfall)') : 'Inland Track'}
                     </strong>
                     <span className="text-[10px] text-amber-300 font-bold block truncate">
-                      {AKVAN_TIMELINE_STEPS[timeStepIndex]?.stage}
+                      {currentTimelineSteps[timeStepIndex]?.stage}
                     </span>
                     <span className="text-[9px] text-slate-300 block truncate">
-                      {AKVAN_TIMELINE_STEPS[timeStepIndex]?.date} • {AKVAN_TIMELINE_STEPS[timeStepIndex]?.time}
+                      {currentTimelineSteps[timeStepIndex]?.date} • {currentTimelineSteps[timeStepIndex]?.time}
                     </span>
                   </div>
                 </div>
@@ -1131,13 +1156,13 @@ export default function CycloneMap({
                   <div className="min-w-0 flex-1 overflow-hidden">
                     <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">4. Official Warning Mandate</span>
                     <strong className="text-xs block text-amber-300 truncate">
-                      {isNormalDay ? 'Historical Archive Record' : liveState.landfallPhase === 'weakened_inland' ? 'De-escalated: Red Alert Withdrawn' : 'Severe Coastal Gale'}
+                      {isNormalDay ? (currentTimelineSteps[timeStepIndex]?.action || 'Historical Archive Record') : liveState.landfallPhase === 'weakened_inland' ? 'De-escalated: Red Alert Withdrawn' : 'Severe Coastal Gale'}
                     </strong>
                     <span className="text-[10px] text-slate-300 block truncate">
                       IMD RSMC Official Trajectory
                     </span>
                     <span className="text-[9px] text-slate-400 block truncate">
-                      Landfall crossed 20 Nov 12:30–13:30 IST
+                      {currentTimelineSteps[timeStepIndex]?.detail || 'Historical bulletin archive'}
                     </span>
                   </div>
                 </div>
@@ -1518,7 +1543,183 @@ export default function CycloneMap({
             )}
 
             {/* Plot storms: Active in emergency mode, or when user clicks Historical Replay */}
-            {(!isNormalDay || mapMode === 'history') && allStorms.map((storm) => {
+            {mapMode === 'history' ? (
+              <React.Fragment key={`replay-${activeReplayStorm.id}`}>
+                {/* Replay Storm Center Marker */}
+                {currentTimelineSteps[timeStepIndex] && (
+                  <>
+                    <Marker
+                      position={[currentTimelineSteps[timeStepIndex].lat, currentTimelineSteps[timeStepIndex].lon]}
+                      icon={cycloneBobIcon}
+                    >
+                      <Tooltip direction="auto" offset={[0, -16]} opacity={0.96} className="custom-map-tooltip">
+                        <div className="text-xs font-extrabold text-amber-400 flex items-center gap-1">
+                          <span>🌀</span>
+                          <span>{activeReplayStorm.name}</span>
+                        </div>
+                        <div className="text-[11px] font-semibold text-white mt-0.5">
+                          {currentTimelineSteps[timeStepIndex].status}
+                        </div>
+                        <div className="text-[10px] text-sky-300 mt-1">
+                          📍 To You ({userLocation.name}): <strong>{calculateDistanceKm(userLocation.lat, userLocation.lon, currentTimelineSteps[timeStepIndex].lat, currentTimelineSteps[timeStepIndex].lon)} km</strong>
+                        </div>
+                        <div className="text-[10px] text-amber-300">
+                          ⏱️ {currentTimelineSteps[timeStepIndex].date} {currentTimelineSteps[timeStepIndex].time} • {currentTimelineSteps[timeStepIndex].stage} ({currentTimelineSteps[timeStepIndex].wind})
+                        </div>
+                        <div className="text-[10px] text-slate-300">
+                          Coords: {currentTimelineSteps[timeStepIndex].lat.toFixed(2)}°N, {currentTimelineSteps[timeStepIndex].lon.toFixed(2)}°E • Barometer: {currentTimelineSteps[timeStepIndex].pressure}
+                        </div>
+                      </Tooltip>
+                      <Popup>
+                        <div className="text-xs text-slate-900 font-sans p-1">
+                          <strong className="block text-red-600 text-sm font-bold">{activeReplayStorm.name}</strong>
+                          <span className="text-[11px] font-semibold text-slate-700 block">Basin: {activeReplayStorm.basin} ({activeReplayStorm.dates})</span>
+                          <span className="text-[10px] text-slate-600 block mt-1">{currentTimelineSteps[timeStepIndex].status}</span>
+                          <div className="mt-1 pt-1 border-t border-slate-200 space-y-0.5">
+                            <span className="text-[11px] font-bold text-sky-700 block">
+                              📍 To You ({userLocation.name}): {calculateDistanceKm(userLocation.lat, userLocation.lon, currentTimelineSteps[timeStepIndex].lat, currentTimelineSteps[timeStepIndex].lon)} km
+                            </span>
+                            <span className="text-[10px] font-bold text-amber-700 block">
+                              ⏱️ Milestone: {currentTimelineSteps[timeStepIndex].date} {currentTimelineSteps[timeStepIndex].time} • {currentTimelineSteps[timeStepIndex].wind}
+                            </span>
+                            <span className="text-[10px] text-slate-800 block">
+                              Landfall Sector: {activeReplayStorm.landfallPoint}
+                            </span>
+                          </div>
+                        </div>
+                      </Popup>
+                    </Marker>
+
+                    {/* Core Eyewall Zone (35 km radius) */}
+                    <Circle
+                      center={[currentTimelineSteps[timeStepIndex].lat, currentTimelineSteps[timeStepIndex].lon]}
+                      radius={35000}
+                      pathOptions={{
+                        color: '#ef4444',
+                        fillColor: '#dc2626',
+                        fillOpacity: 0.35,
+                        weight: 2
+                      }}
+                    />
+
+                    {/* Gale Danger Zone (85 km radius) */}
+                    <Circle
+                      center={[currentTimelineSteps[timeStepIndex].lat, currentTimelineSteps[timeStepIndex].lon]}
+                      radius={85000}
+                      pathOptions={{
+                        color: '#ea580c',
+                        fillColor: '#ea580c',
+                        fillOpacity: 0.16,
+                        weight: 1.5,
+                        dashArray: '4, 4'
+                      }}
+                    />
+
+                    {/* Outer Squally Zone (180 km radius) */}
+                    <Circle
+                      center={[currentTimelineSteps[timeStepIndex].lat, currentTimelineSteps[timeStepIndex].lon]}
+                      radius={180000}
+                      pathOptions={{
+                        color: '#eab308',
+                        fillColor: '#eab308',
+                        fillOpacity: 0.08,
+                        weight: 1,
+                        dashArray: '6, 6'
+                      }}
+                    />
+                  </>
+                )}
+
+                {/* Historical Trajectory Polyline */}
+                {activeReplayStorm.pastCoords && (
+                  <Polyline
+                    positions={activeReplayStorm.pastCoords}
+                    pathOptions={{
+                      color: '#f59e0b',
+                      weight: 3.5,
+                      dashArray: '4, 6'
+                    }}
+                  />
+                )}
+
+                {/* Trajectory Milestones & Landfall Checkpoints */}
+                {activeReplayStorm.steps.map((pt, pIdx) => (
+                  <Marker
+                    key={pIdx}
+                    position={[pt.lat, pt.lon]}
+                    icon={pt.isLandfall ? landfallDotIcon : milestoneDotIcon}
+                  >
+                    <Tooltip
+                      direction={pt.isLandfall ? "bottom" : "auto"}
+                      offset={[0, pt.isLandfall ? 14 : -10]}
+                      opacity={0.96}
+                      className="custom-map-tooltip"
+                    >
+                      {pt.isLandfall ? (
+                        <div className="space-y-1">
+                          <div className="text-xs font-black text-red-400 flex items-center justify-between gap-1 border-b border-red-500/30 pb-0.5">
+                            <span className="flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                              <span>🎯 HISTORICAL LANDFALL</span>
+                            </span>
+                            <span className="text-[10px] font-mono text-cyan-300 font-bold">{pt.date} {pt.time}</span>
+                          </div>
+                          <div className="text-sm font-black text-white">{activeReplayStorm.landfallPoint}</div>
+                          <div className="text-[11px] font-bold text-amber-300">
+                            {pt.wind} (Gusts: {pt.gusts}) • {pt.pressure}
+                          </div>
+                          <div className="text-[10px] text-slate-200 leading-snug">
+                            {pt.detail}
+                          </div>
+                          <div className="text-[9px] text-amber-300 font-semibold bg-amber-950/60 p-1 rounded border border-amber-800/80">
+                            {pt.action}
+                          </div>
+                          <div className="text-[9px] text-slate-400 font-mono">
+                            Coords: {pt.lat.toFixed(2)}°N, {pt.lon.toFixed(2)}°E
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-0.5">
+                          <div className="text-xs font-bold text-orange-400 flex items-center gap-1">
+                            <span>⏱️</span>
+                            <span>{pt.date} {pt.time} • {pt.stage}</span>
+                          </div>
+                          <div className="text-sm font-bold text-white">{pt.status}</div>
+                          <div className="text-[10px] text-slate-300">
+                            Winds: {pt.wind} (Gusts {pt.gusts}) • {pt.pressure}
+                          </div>
+                          <div className="text-[9px] text-slate-400 font-mono">
+                            Coords: {pt.lat.toFixed(2)}°N, {pt.lon.toFixed(2)}°E
+                          </div>
+                        </div>
+                      )}
+                    </Tooltip>
+                    <Popup>
+                      <div className="text-xs text-slate-900 font-sans p-1 space-y-1 max-w-[260px]">
+                        <div className="flex items-center justify-between border-b border-slate-200 pb-1">
+                          <strong className="text-red-600 font-black flex items-center gap-1 text-xs">
+                            <span>{pt.isLandfall ? '🎯' : '⏱️'}</span>
+                            <span>{pt.isLandfall ? 'Landfall Checkpoint' : 'Track Milestone'}</span>
+                          </strong>
+                          <span className="text-[10px] font-mono text-slate-500 font-bold">{pt.date} {pt.time}</span>
+                        </div>
+                        <div className="font-bold text-slate-900 text-xs">{pt.isLandfall ? activeReplayStorm.landfallPoint : pt.stage}</div>
+                        <div className="text-[11px] text-amber-800 font-bold">{pt.wind} • {pt.pressure}</div>
+                        <p className="text-[10px] text-slate-700 leading-snug">
+                          {pt.detail}
+                        </p>
+                        <div className="text-[10px] text-red-700 font-bold bg-red-50 p-1.5 rounded border border-red-200">
+                          {pt.action}
+                        </div>
+                        <span className="text-[9px] text-slate-500 font-mono block">
+                          Coords: {pt.lat.toFixed(2)}°N, {pt.lon.toFixed(2)}°E
+                        </span>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </React.Fragment>
+            ) : (!isNormalDay) && allStorms.map((storm) => {
               const isBob = storm.basin === 'Bay of Bengal';
               const activeStep = (isBob && AKVAN_TIMELINE_STEPS[timeStepIndex]) ? AKVAN_TIMELINE_STEPS[timeStepIndex] : null;
               const stormLat = (isBob && activeStep) ? activeStep.lat : storm.center.lat;
@@ -1936,19 +2137,46 @@ export default function CycloneMap({
 
           {/* Bottom Floating Time Scrubber Bar (Only rendered during active Historical Replay Studio) */}
           {mapMode === 'history' && (
-            <div className="absolute bottom-2.5 inset-x-2 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-[400] bg-slate-950/95 backdrop-blur-md border border-slate-800/90 rounded-2xl p-1.5 sm:p-2 shadow-2xl flex items-center justify-between sm:justify-center gap-1.5 max-w-full">
-              <div className="flex items-center gap-1 sm:gap-1.5 w-full">
+            <div className="absolute bottom-2.5 inset-x-2 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-[400] bg-slate-950/95 backdrop-blur-md border border-slate-800/90 rounded-2xl p-2 shadow-2xl flex flex-col gap-1.5 max-w-full">
+              {/* Quick Storm Switcher Tabs */}
+              <div className="flex items-center justify-between gap-1 border-b border-slate-800/80 pb-1.5 overflow-x-auto no-scrollbar">
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] uppercase font-bold text-amber-400 flex items-center gap-1 flex-shrink-0 mr-1">
+                    <History className="w-3 h-3 text-amber-400" />
+                    <span>Replay:</span>
+                  </span>
+                  {Object.values(HISTORICAL_STORM_TRACKS).map((s) => {
+                    const isSelected = s.id === replayStormId;
+                    return (
+                      <button
+                        key={s.id}
+                        onClick={() => handleSwitchReplayStorm(s.id)}
+                        className={`whitespace-nowrap px-2 py-0.5 rounded-lg text-[10px] font-bold border transition-all ${
+                          isSelected
+                            ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-sm'
+                            : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white hover:bg-slate-800'
+                        }`}
+                      >
+                        {s.name.replace('Severe Cyclonic Storm ', '').replace('Deep Depression ', '')}
+                      </button>
+                    );
+                  })}
+                </div>
+
                 <button
                   onClick={() => {
                     setMapMode('live');
                     if (onExitReplay) onExitReplay();
                   }}
-                  className="flex items-center gap-1 px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 rounded-lg text-xs font-bold transition-all flex-shrink-0 mr-1 active:scale-95"
+                  className="flex items-center gap-1 px-2 py-0.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 rounded-lg text-[10px] font-bold transition-all flex-shrink-0 active:scale-95 ml-1"
                   title="Exit Replay and Return to Today's Live Radar"
                 >
                   <span>✕ Exit Replay</span>
                 </button>
+              </div>
 
+              {/* Player Controls & Scrubber Buttons */}
+              <div className="flex items-center gap-1 sm:gap-1.5 w-full">
                 {/* Play / Pause Toggle */}
                 <button
                   onClick={() => setIsPlayingTime(!isPlayingTime)}
@@ -1974,13 +2202,13 @@ export default function CycloneMap({
                   ref={timelineScrollRef}
                   className="flex-1 min-w-0 relative flex items-center gap-1 flex-nowrap overflow-x-auto no-scrollbar py-0.5 scroll-smooth"
                 >
-                  {AKVAN_TIMELINE_STEPS.map((step, idx) => {
+                  {currentTimelineSteps.map((step, idx) => {
                     const isSelected = timeStepIndex === idx;
                     const isLandfall = step.isLandfall;
                     const isDissipated = step.isDissipated;
                     return (
                       <button
-                        key={step.id}
+                        key={step.id || idx}
                         ref={(el) => (timeStepButtonRefs.current[idx] = el)}
                         onClick={() => {
                           setTimeStepIndex(idx);
@@ -2008,8 +2236,8 @@ export default function CycloneMap({
                 </div>
 
                 <button
-                  onClick={() => setTimeStepIndex((prev) => Math.min(AKVAN_TIMELINE_STEPS.length - 1, prev + 1))}
-                  disabled={timeStepIndex === AKVAN_TIMELINE_STEPS.length - 1}
+                  onClick={() => setTimeStepIndex((prev) => Math.min(currentTimelineSteps.length - 1, prev + 1))}
+                  disabled={timeStepIndex === currentTimelineSteps.length - 1}
                   className="p-1 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
                   title="Next Time Step"
                 >
