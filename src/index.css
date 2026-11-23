@@ -83,6 +83,47 @@ html, body {
   animation: rain-drop-fall 0.9s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* Animated Snowfall Drift for Himalayan Mountain & Valley Stations */
+@keyframes snowfall-drift {
+  0% {
+    transform: translateY(-4px) translateX(-2px) rotate(0deg);
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(2px) translateX(2px) rotate(180deg);
+  }
+  100% {
+    transform: translateY(8px) translateX(-2px) rotate(360deg);
+    opacity: 0.2;
+  }
+}
+
+.snow-flake-anim {
+  display: inline-block;
+  animation: snowfall-drift 2.2s ease-in-out infinite;
+}
+
+/* Animated Dense Fog Wave for Northern Plains & Expressway Belts */
+@keyframes fog-drift {
+  0% {
+    transform: translateX(-4px) scaleX(0.96);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translateX(4px) scaleX(1.04);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateX(-4px) scaleX(0.96);
+    opacity: 0.45;
+  }
+}
+
+.fog-pulse-anim {
+  animation: fog-drift 4s ease-in-out infinite;
+}
+
 @keyframes lightning-flash {
   0%, 100% { opacity: 0.2; filter: drop-shadow(0 0 0px #facc15); }
   45% { opacity: 0.3; }

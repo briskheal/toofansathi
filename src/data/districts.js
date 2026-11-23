@@ -109,7 +109,16 @@ export const ALL_INDIA_REGIONS = [
   { id: 'nagapattinam', name: 'Nagapattinam', state: 'Tamil Nadu', basin: 'Bay of Bengal', lat: 10.7672, lon: 79.8449, highRisk: true, isMajorCity: false, category: 'Cauvery Delta Coast', market: 'Nagore Marine Fishery Harbor & Delta Paddy Mandi', deoc: '04365-251992' },
   { id: 'kanyakumari', name: 'Kanyakumari', state: 'Tamil Nadu', basin: 'Indian Ocean', lat: 8.0883, lon: 77.5385, highRisk: true, isMajorCity: true, category: 'Southernmost Tip of India', market: 'Vadasery Plantain Market & Coastal Fishery Point', deoc: '04652-227000' },
   { id: 'puducherry', name: 'Puducherry', state: 'Puducherry', basin: 'Bay of Bengal', lat: 11.9416, lon: 79.8083, highRisk: true, isMajorCity: true, category: 'Heritage Coastal Territory', market: 'Goubert Market (Grand Bazaar) & Fish Auction Shore', deoc: '0413-2253407' },
-  { id: 'port_blair', name: 'Port Blair', state: 'Andaman & Nicobar', basin: 'Bay of Bengal', lat: 11.6234, lon: 92.7265, highRisk: true, isMajorCity: true, category: 'Bay of Bengal Island Capital', market: 'Aberdeen Bazaar & Junglighat Marine Jetty', deoc: '03192-238881' },
+
+  // ==========================================
+  // 8. ISLAND TERRITORIES: LAKSHADWEEP & ANDAMAN-NICOBAR
+  // ==========================================
+  { id: 'port_blair', name: 'Port Blair', state: 'Andaman & Nicobar', basin: 'Bay of Bengal Deep Sea', lat: 11.6234, lon: 92.7265, highRisk: true, isMajorCity: true, category: 'Bay of Bengal Island Capital', market: 'Aberdeen Bazaar & Junglighat Marine Jetty', deoc: '03192-238881' },
+  { id: 'car_nicobar', name: 'Car Nicobar', state: 'Andaman & Nicobar', basin: 'Bay of Bengal Deep Sea', lat: 9.1549, lon: 92.7566, highRisk: true, isMajorCity: true, category: 'Nicobar District Capital', market: 'Malacca Jetty Coconut & Marine Copra Yard', deoc: '03193-265241' },
+  { id: 'diglipur', name: 'Diglipur', state: 'Andaman & Nicobar', basin: 'Bay of Bengal Deep Sea', lat: 13.2667, lon: 92.9833, highRisk: true, isMajorCity: true, category: 'North Andaman Agricultural & Rice Hub', market: 'Subhash Gram Main Market & Aerial Bay Jetty', deoc: '03192-272234' },
+  { id: 'kavaratti', name: 'Kavaratti', state: 'Lakshadweep', basin: 'Arabian Sea Island', lat: 10.5667, lon: 72.6417, highRisk: true, isMajorCity: true, category: 'Lakshadweep UT Capital & Coral Atoll', market: 'Ujra Mandi, Coconut Copra & Oceanic Tuna Jetty', deoc: '04896-262244' },
+  { id: 'agatti', name: 'Agatti', state: 'Lakshadweep', basin: 'Arabian Sea Island', lat: 10.8533, lon: 72.1931, highRisk: true, isMajorCity: true, category: 'Airport Island & Coral Lagoon Hub', market: 'Agatti Marine Fishery Center & Coral Lagoon Jetty', deoc: '04896-242222' },
+  { id: 'minicoy', name: 'Minicoy (Maliku)', state: 'Lakshadweep', basin: 'Arabian Sea Island', lat: 8.2833, lon: 73.0500, highRisk: true, isMajorCity: true, category: 'Southernmost Lakshadweep Atoll & Light House', market: 'Minicoy Tuna Processing Yard & Harbor Jetty', deoc: '04892-222225' },
 
   // ==========================================
   // 8. KARNATAKA & KERALA

@@ -274,14 +274,50 @@ const rainAreaPulseIcon = (label, wind) => L.divIcon({
   iconAnchor: [60, 15]
 });
 
-const denseFogMarkerIcon = (city, vis) => L.divIcon({
-  className: 'custom-fog-marker',
-  html: `<div style="background:rgba(15,23,42,0.9); border:1px solid #94a3b8; border-radius:8px; padding:2px 6px; font-size:9px; font-weight:bold; color:#e2e8f0; box-shadow:0 2px 6px rgba(0,0,0,0.4); display:flex; align-items:center; gap:3px; white-space:nowrap;">
-          <span>🌫️</span>
-          <span>${city}: Fog (${vis})</span>
+// Animated Snowfall & Mountain Freeze Icon (J&K, Ladakh, Himachal, Uttarakhand)
+const snowfallPulseIcon = (city, temp, desc = 'Snow & Frost') => L.divIcon({
+  className: 'custom-snow-pulse',
+  html: `<div style="position:relative; display:flex; flex-direction:column; align-items:center; cursor:pointer;">
+          <div style="background:rgba(15,23,42,0.92); border:1.5px solid #38bdf8; border-radius:10px; padding:2px 8px; font-size:10px; font-weight:bold; color:#e0f2fe; box-shadow:0 4px 12px rgba(0,0,0,0.6); display:flex; align-items:center; gap:4px; white-space:nowrap;">
+            <span style="font-size:12px;">❄️</span>
+            <span>${city}: ${temp}</span>
+            <span style="color:#7dd3fc; font-size:9px;">(${desc})</span>
+          </div>
+          <div style="display:flex; gap:3px; font-size:11px; margin-top:1px;">
+            <span class="snow-flake-anim">❄️</span>
+            <span class="snow-flake-anim" style="animation-delay:0.7s;">❄️</span>
+            <span class="snow-flake-anim" style="animation-delay:1.4s;">❄️</span>
+          </div>
          </div>`,
-  iconSize: [110, 24],
-  iconAnchor: [55, 12]
+  iconSize: [140, 36],
+  iconAnchor: [70, 18]
+});
+
+// Animated Dense Fog Wave Icon for Northern Plains & Highway Belts
+const animatedDenseFogIcon = (city, vis, highway = 'NH-44') => L.divIcon({
+  className: 'custom-fog-pulse',
+  html: `<div style="position:relative; display:flex; flex-direction:column; align-items:center; cursor:pointer;">
+          <div style="background:rgba(15,23,42,0.92); border:1.5px solid #facc15; border-radius:8px; padding:2px 7px; font-size:9px; font-weight:bold; color:#fef08a; box-shadow:0 3px 10px rgba(0,0,0,0.6); display:flex; align-items:center; gap:4px; white-space:nowrap;">
+            <span style="font-size:11px;">🌫️</span>
+            <span>${city}: Fog (${vis})</span>
+          </div>
+          <div class="fog-pulse-anim" style="background:linear-gradient(90deg, rgba(254,240,138,0.1), rgba(254,240,138,0.5), rgba(254,240,138,0.1)); border-radius:4px; height:3px; width:70px; margin-top:2px;"></div>
+         </div>`,
+  iconSize: [130, 32],
+  iconAnchor: [65, 16]
+});
+
+const denseFogMarkerIcon = (city, vis) => animatedDenseFogIcon(city, vis);
+
+// Island Coral & Ocean Swell Icon (Lakshadweep & Andaman-Nicobar)
+const islandCoralIcon = (island, condition, wave) => L.divIcon({
+  className: 'custom-island-marker',
+  html: `<div style="background:rgba(15,23,42,0.92); border:1.5px solid #2dd4bf; border-radius:8px; padding:2px 7px; font-size:9px; font-weight:bold; color:#99f6e4; box-shadow:0 3px 8px rgba(0,0,0,0.5); display:flex; align-items:center; gap:3px; white-space:nowrap;">
+          <span>🌴</span>
+          <span>${island}: ${condition} (${wave})</span>
+         </div>`,
+  iconSize: [140, 26],
+  iconAnchor: [70, 13]
 });
 
 const easterlyWaveVectorTagIcon = L.divIcon({
@@ -1310,18 +1346,94 @@ export default function CycloneMap({
                   </Tooltip>
                 </Marker>
 
-                {/* Dense Fog Markers */}
-                <Marker position={[31.63, 74.87]} icon={denseFogMarkerIcon('Amritsar', '100m')}>
+                {/* Animated Dense Fog Markers across Northern Plains */}
+                <Marker position={[31.63, 74.87]} icon={animatedDenseFogIcon('Amritsar (Punjab)', '<50m', 'GT Road NH-44')}>
                   <Tooltip direction="top" opacity={0.96} className="custom-map-tooltip">
-                    <div className="text-xs font-bold text-slate-300">Amritsar (Punjab): Dense Fog</div>
-                    <div className="text-[10px] text-white">Morning visibility down to 100 meters</div>
+                    <div className="text-xs font-bold text-amber-300">Amritsar (Punjab): Radiation Dense Fog</div>
+                    <div className="text-[10px] text-white">Morning visibility down to 50 meters (GT Road Corridor)</div>
+                    <div className="text-[9px] text-slate-300">Safe transit with low beam fog lights after 09:30 AM</div>
                   </Tooltip>
                 </Marker>
 
-                <Marker position={[20.29, 85.82]} icon={denseFogMarkerIcon('Bhubaneswar', '50m')}>
+                <Marker position={[28.61, 77.21]} icon={animatedDenseFogIcon('Delhi NCR', '<100m', 'Yamuna Exp')}>
                   <Tooltip direction="top" opacity={0.96} className="custom-map-tooltip">
-                    <div className="text-xs font-bold text-slate-300">Bhubaneswar (Odisha): Dense Fog</div>
-                    <div className="text-[10px] text-white">Morning visibility down to 50 meters</div>
+                    <div className="text-xs font-bold text-amber-300">New Delhi (NCR): Morning Fog & Smog</div>
+                    <div className="text-[10px] text-white">Morning visibility 50–150m across expressways</div>
+                  </Tooltip>
+                </Marker>
+
+                <Marker position={[27.18, 78.01]} icon={animatedDenseFogIcon('Agra Belt', '<150m', 'Expressway')}>
+                  <Tooltip direction="top" opacity={0.96} className="custom-map-tooltip">
+                    <div className="text-xs font-bold text-amber-300">Agra / Western UP: Winter Fog</div>
+                    <div className="text-[10px] text-white">Yamuna & Agra-Lucknow Expressway morning fog</div>
+                  </Tooltip>
+                </Marker>
+
+                <Marker position={[20.29, 85.82]} icon={animatedDenseFogIcon('Bhubaneswar', '<50m', 'Coastal Fog')}>
+                  <Tooltip direction="top" opacity={0.96} className="custom-map-tooltip">
+                    <div className="text-xs font-bold text-amber-300">Bhubaneswar (Odisha): Dense Morning Fog</div>
+                    <div className="text-[10px] text-white">Morning radiation fog visibility down to 50 meters</div>
+                  </Tooltip>
+                </Marker>
+
+                {/* Animated Snowfall & Mountain Freeze Markers across Himalayan High Belts */}
+                <Marker position={[34.08, 74.80]} icon={snowfallPulseIcon('Srinagar (J&K)', '2°C / -2°C', 'Valley Frost')}>
+                  <Tooltip direction="top" opacity={0.96} className="custom-map-tooltip">
+                    <div className="text-xs font-bold text-sky-300">Srinagar (Kashmir Valley): Sub-Zero Dip</div>
+                    <div className="text-[10px] text-white">Night minimum -2°C • Ground Frost & Chilly Morning Mist</div>
+                    <div className="text-[9px] text-amber-300">SKUAST Advisory: Protect apple basins & polyhouses</div>
+                  </Tooltip>
+                </Marker>
+
+                <Marker position={[34.05, 74.38]} icon={snowfallPulseIcon('Gulmarg', '-5°C', 'Snowpack')}>
+                  <Tooltip direction="top" opacity={0.96} className="custom-map-tooltip">
+                    <div className="text-xs font-bold text-sky-300">Gulmarg High Range: Sub-Zero Snowpack</div>
+                    <div className="text-[10px] text-white">Temperature: -5°C • Light Snow Flurries & Icy Slopes</div>
+                  </Tooltip>
+                </Marker>
+
+                <Marker position={[34.15, 77.58]} icon={snowfallPulseIcon('Leh (Ladakh)', '-12°C', 'Cold Desert')}>
+                  <Tooltip direction="top" opacity={0.96} className="custom-map-tooltip">
+                    <div className="text-xs font-bold text-sky-300">Leh (Ladakh): Severe Winter Chill</div>
+                    <div className="text-[10px] text-white">Night lows -12°C to -15°C • Extreme High Altitude Freeze</div>
+                  </Tooltip>
+                </Marker>
+
+                <Marker position={[31.10, 77.17]} icon={snowfallPulseIcon('Shimla (HP)', '3°C / 11°C', 'Mountain Frost')}>
+                  <Tooltip direction="top" opacity={0.96} className="custom-map-tooltip">
+                    <div className="text-xs font-bold text-sky-300">Shimla (Himachal Pradesh): Mountain Chill</div>
+                    <div className="text-[10px] text-white">Night dip to 3°C • Clear Mountain Air & Ground Frost</div>
+                  </Tooltip>
+                </Marker>
+
+                {/* Island Coral Reef & Oceanic Marine Markers (Lakshadweep & Andaman-Nicobar) */}
+                <Marker position={[11.62, 92.73]} icon={islandCoralIcon('Port Blair (A&N)', '29°C Tropical', 'Swell 1.1m')}>
+                  <Tooltip direction="top" opacity={0.96} className="custom-map-tooltip">
+                    <div className="text-xs font-bold text-teal-300">Port Blair (Andaman & Nicobar Islands)</div>
+                    <div className="text-[10px] text-white">Tropical Fair Skies • Swell 1.1m (Slight)</div>
+                    <div className="text-[9px] text-emerald-300">Safe for inter-island ferries & coastal fishing</div>
+                  </Tooltip>
+                </Marker>
+
+                <Marker position={[9.15, 92.76]} icon={islandCoralIcon('Car Nicobar', '29°C Tropical', 'Swell 1.2m')}>
+                  <Tooltip direction="top" opacity={0.96} className="custom-map-tooltip">
+                    <div className="text-xs font-bold text-teal-300">Car Nicobar (Ten Degree Channel)</div>
+                    <div className="text-[10px] text-white">Deep Sea Tropical Breeze • Swell 1.2m</div>
+                  </Tooltip>
+                </Marker>
+
+                <Marker position={[10.57, 72.64]} icon={islandCoralIcon('Kavaratti (Lakshadweep)', '28°C Coral Lagoon', 'Swell 0.9m')}>
+                  <Tooltip direction="top" opacity={0.96} className="custom-map-tooltip">
+                    <div className="text-xs font-bold text-teal-300">Kavaratti (Lakshadweep Capital)</div>
+                    <div className="text-[10px] text-white">Coral Atoll Lagoon • Calm Swell 0.9m</div>
+                    <div className="text-[9px] text-emerald-300">Safe for Skipjack Tuna pole-and-line boats</div>
+                  </Tooltip>
+                </Marker>
+
+                <Marker position={[8.28, 73.05]} icon={islandCoralIcon('Minicoy Island', '28°C Maliku Atoll', 'Swell 1.0m')}>
+                  <Tooltip direction="top" opacity={0.96} className="custom-map-tooltip">
+                    <div className="text-xs font-bold text-teal-300">Minicoy Island (Southern Atoll)</div>
+                    <div className="text-[10px] text-white">Oceanic Reef Swell 1.0m • Nine Degree Channel Calm</div>
                   </Tooltip>
                 </Marker>
               </>

@@ -46,7 +46,15 @@ export function detectAgroClimaticZone(stateName = '', locationName = '') {
     return 'CENTRAL_PLATEAU';
   }
 
-  // 4. Tamil Nadu & Puducherry (Northeast Monsoon & Easterly Waves Season)
+  // 4. Island Territories: Lakshadweep & Andaman-Nicobar Islands (Coral Atolls, Oceanic Tuna, Coconut, Inter-Island Ferries)
+  if (
+    s.includes('lakshadweep') || s.includes('kavaratti') || s.includes('agatti') || s.includes('minicoy') ||
+    s.includes('andaman') || s.includes('nicobar') || s.includes('port blair') || s.includes('diglipur') || s.includes('havelock')
+  ) {
+    return 'ISLAND_TERRITORIES';
+  }
+
+  // 5. Tamil Nadu & Puducherry (Northeast Monsoon & Easterly Waves Season)
   if (s.includes('tamil nadu') || s.includes('puducherry') || s.includes('pondicherry') || s.includes('chennai') || s.includes('coimbatore') || s.includes('madurai')) {
     return 'COASTAL_SOUTH';
   }
@@ -301,7 +309,73 @@ export function getStateAgroIntelligence(stateName = 'Odisha', selectedLang = 'e
   }
 
   // ==========================================================================
-  // ZONE 4: COASTAL SOUTH - TAMIL NADU & PUDUCHERRY
+  // ZONE 4: ISLAND TERRITORIES (Lakshadweep & Andaman-Nicobar Islands)
+  // Island Marine: Coral Atolls, Oceanic Skipjack Tuna, Coconut Palms, High Sea Swell
+  // ==========================================================================
+  if (zone === 'ISLAND_TERRITORIES') {
+    const isOdia = lang === 'odia';
+    const isHindi = lang === 'hindi';
+    const isTamil = lang === 'tamil';
+
+    return {
+      zone: 'ISLAND_TERRITORIES',
+      isCoastal: true,
+      zoneTitle: isOdia
+        ? 'ଦ୍ୱୀପପୁଞ୍ଜ କୃଷି-ପାଣିପାଗ ଓ ମହାସାଗରୀୟ ସୂଚନା'
+        : isHindi
+        ? 'द्वीपीय कृषि-मौसम व महासागरीय सुरक्षा केंद्र'
+        : isTamil
+        ? 'தீவு வேளாண்-வானிலை மற்றும் கடல்சார் தகவல்'
+        : 'Island Agro-Meteorological & Oceanic Marine Intelligence',
+      basinStatus: isOdia
+        ? '🌴 ଦ୍ୱୀପପୁଞ୍ଜ: ସ୍ୱାଭାବିକ ସାମୁଦ୍ରିକ ପାଗ'
+        : isHindi
+        ? '🌴 द्वीपसमूह: सामान्य महासागरीय अनुकूल मौसम'
+        : '🌴 Island Territories: Stable Oceanic Marine Window',
+      windDesc: isOdia
+        ? '✓ ସମୁଦ୍ର ପବନ ୧୦-୧୮ କିମି/ଘଂ • ଡଙ୍ଗା ଚଳାଚଳ ଅନୁକୂଳ'
+        : '✓ Oceanic Breeze 10–18 km/h • Lagoon Transit Favorable',
+      rainDesc: livePrecip > 0
+        ? (isOdia ? `🌧️ ${livePrecip} ମି.ମି କ୍ରାନ୍ତୀୟ ବର୍ଷା` : `🌧️ ${livePrecip} mm Tropical Island Showers`)
+        : (isOdia ? '🌤️ ଉଜ୍ଜ୍ୱଳ ଖରାଟିଆ ଦ୍ୱୀପ ପାଗ' : '🌤️ Bright Tropical Weather • Safe for Harvesting'),
+      authorityTitle: isOdia
+        ? 'ICAR-CIARI ପୋର୍ଟ ବ୍ଲେୟାର୍ ଓ ICAR-CPCRI କବାରତ୍ତି ନିର୍ଦ୍ଦେଶାବଳୀ'
+        : isHindi
+        ? 'भाकृअनुप-सीआईएआरआई पोर्ट ब्लेयर व सीपीसीआरआई लक्षद्वीप परामर्श'
+        : 'ICAR-CIARI Port Blair & ICAR-CPCRI Lakshadweep: Island Directives',
+      authoritySubtitle: isOdia
+        ? 'ନାଳିକେଳ ବଗିଚା, ଟୁନା ମାଛ ଶିକାର ଓ ଆନ୍ତଃ-ଦ୍ୱୀପ ଫେରି ଯାତ୍ରା ସୁରକ୍ଷା'
+        : 'Agro-marine advisory for island coconut plantations, coral lagoon fisheries and inter-island sea transit',
+      advisory1Title: isOdia
+        ? 'ଗଭୀର ସମୁଦ୍ର ସ୍କିପଜ୍ୟାକ୍ ଟୁନା ଓ ଲାଗୁନ୍ ମାଛ ଶିକାର'
+        : isHindi
+        ? 'गहरे समुद्र में टूना मत्स्य व लैगून नौकायन सुरक्षा'
+        : 'Oceanic Skipjack Tuna & Coral Lagoon Fishery Safety',
+      advisory1Desc: isOdia
+        ? 'ଆରବ ସାଗର ଓ ବଙ୍ଗୋପସାଗର ଦ୍ୱୀପପୁଞ୍ଜରେ ସ୍ୱାଭାବିକ ପାଗ। ପୋଲ୍-ଏଣ୍ଡ-ଲାଇନ୍ ଟୁନା ଡଙ୍ଗା ପାଇଁ ପାଗ ଅନୁକୂଳ। ଉଚ୍ଚ ଜୁଆର ସମୟରେ ପ୍ରବାଳ ପ୍ରାଚୀର ନିକଟରେ ସତର୍କ ରୁହନ୍ତୁ।'
+        : isHindi
+        ? 'द्वीपसमूहों में सामान्य महासागरीय स्थिति बनी हुई है। पोल-एंड-लाइन टूना मछली पकड़ने हेतु मौसम अनुकूल है। उच्च ज्वार के समय प्रवाल भित्तियों (रीफ) के पास सतर्कता बरतें।'
+        : 'Stable ocean conditions across island waters. Favorable weather for pole-and-line oceanic skipjack tuna fishery around outer reefs. Exercise caution around coral bar mouths during high tide swells.',
+      advisory2Title: isOdia
+        ? 'ଦ୍ୱୀପ ନଡ଼ିଆ ଗଛ ଓ ମଧୁର ଜଳ ସଂରକ୍ଷଣ ଯତ୍ନ'
+        : isHindi
+        ? 'द्वीपीय नारियल बागवानी व मीठे भूजल का संरक्षण'
+        : 'Island Coconut Palms, Spices & Soil Moisture Preservation',
+      advisory2Desc: isOdia
+        ? 'ଲୁଣିଆ ପବନରୁ ନୂତନ ଚାରାକୁ ରକ୍ଷା କରନ୍ତୁ। ନଡ଼ିଆ ଗଛ ମୂଳରେ ନଡ଼ା କିମ୍ବା ଶୁଖିଲା ପତ୍ର ଆଚ୍ଛାଦନ ଦେଇ ଦ୍ୱୀପର ସୀମିତ ମଧୁର ଜଳ ସଂରକ୍ଷଣ କରନ୍ତୁ।'
+        : isHindi
+        ? 'खारे समुद्री झोंकों से नन्हे पौधों का बचाव करें। नारियल थालों में जैविक मल्चिंग देकर द्वीपीय मीठे भूजल (Freshwater Lens) की नमी को सुरक्षित रखें।'
+        : 'Protect young saplings from oceanic salt spray. Apply thick coir pith and organic mulch around coconut basins to conserve limited island freshwater lens moisture.',
+      marineStatus: isOdia ? 'ସମୁଦ୍ର ଯାତ୍ରା ସମ୍ପୂର୍ଣ୍ଣ ସୁରକ୍ଷିତ' : isHindi ? 'नौकायन हेतु पूर्णतः सुरक्षित' : 'SAFE FOR NAVIGATION',
+      marineStatusClass: 'bg-emerald-950/80 text-emerald-300 border-emerald-800',
+      waveHeight: '1.0 m – 1.8 m (Moderate Swell)',
+      offshoreWind: '12–18 knots (Island Breeze)',
+      fishermenWarning: 'Safe for Island Trawlers, High Speed Crafts & Fishing Ferries'
+    };
+  }
+
+  // ==========================================================================
+  // ZONE 5: COASTAL SOUTH - TAMIL NADU & PUDUCHERRY
   // Coastal: Northeast Monsoon & Easterly Waves (Nov 23-27)
   // ==========================================================================
   if (zone === 'COASTAL_SOUTH') {
