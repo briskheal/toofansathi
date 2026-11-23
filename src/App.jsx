@@ -15,6 +15,7 @@ import DistrictPickerModal from './components/DistrictPickerModal';
 import LiveTvModal from './components/LiveTvModal';
 import CycloneWelcomeSplash from './components/CycloneWelcomeSplash';
 import ProComingSoonModal from './components/ProComingSoonModal';
+import StormReplayArchive from './components/StormReplayArchive';
 
 import { ALL_INDIA_REGIONS, findNearestDistrict } from './data/districts';
 import { getTranslation } from './data/translations';
@@ -60,6 +61,15 @@ export default function App() {
   const [isLiveTvFloating, setIsLiveTvFloating] = useState(false);
   const [isProComingSoonOpen, setIsProComingSoonOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('alert');
+  const [replayRequest, setReplayRequest] = useState(null);
+
+  const handleLaunchReplayOnMap = (stormId) => {
+    setReplayRequest({ stormId, timestamp: Date.now() });
+    const element = document.getElementById('radar-section');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   const scrollToSection = (sectionId) => {
     setActiveSection(sectionId);
@@ -590,6 +600,16 @@ export default function App() {
             allStorms={liveAllStorms}
             weatherData={weatherData}
             selectedLang={selectedLang}
+            replayRequest={replayRequest}
+            onExitReplay={() => setReplayRequest(null)}
+          />
+        </div>
+
+        {/* 7. Dedicated Historical Storm Archive & Low-Pressure Trajectory Replay Hub */}
+        <div id="storm-archive-section" className="scroll-mt-16">
+          <StormReplayArchive
+            selectedLang={selectedLang}
+            onLaunchReplayOnMap={handleLaunchReplayOnMap}
           />
         </div>
 

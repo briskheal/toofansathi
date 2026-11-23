@@ -330,14 +330,22 @@ const easterlyWaveVectorTagIcon = L.divIcon({
   iconAnchor: [85, 12]
 });
 
-// Component to handle smooth pan/fly to coordinates
-function MapRecenterController({ centerCoords, zoomLevel, triggerKey }) {
+// Component to handle smooth pan/fly to coordinates and invalidate size on fullscreen toggle
+function MapRecenterController({ centerCoords, zoomLevel, triggerKey, isTheaterMode }) {
   const map = useMap();
   useEffect(() => {
     if (centerCoords && centerCoords[0] && centerCoords[1]) {
       map.flyTo(centerCoords, zoomLevel || 6, { duration: 1.4 });
     }
   }, [centerCoords, zoomLevel, triggerKey, map]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [isTheaterMode, map]);
+
   return null;
 }
 
@@ -350,7 +358,9 @@ export default function CycloneMap({
   activeStorm,
   allStorms = [],
   weatherData,
-  selectedLang = 'english'
+  selectedLang = 'english',
+  replayRequest = null,
+  onExitReplay = null
 }) {
   // Real-time observation metrics for selected area
   const liveWind = weatherData ? Math.round(weatherData.current.wind_speed_10m) : 11;
@@ -406,6 +416,19 @@ export default function CycloneMap({
   const [flyTrigger, setFlyTrigger] = useState(0);
   const [isLocating, setIsLocating] = useState(false);
   const [justUpdated, setJustUpdated] = useState(false);
+
+  // Sync external replay launch requests from the Storm Replay Archive Hub
+  useEffect(() => {
+    if (replayRequest) {
+      setMapMode('history');
+      setTimeStepIndex(2); // Landfall step
+      setIsPlayingTime(false);
+      setMapViewMode('bay-of-bengal');
+      setFlyTarget([19.26, 84.88]);
+      setFlyZoom(7);
+      setFlyTrigger(prev => prev + 1);
+    }
+  }, [replayRequest]);
 
   // Zoom Earth-Style Immersive Theater Mode & Temporal Scrubbing
   const [isTheaterMode, setIsTheaterMode] = useState(false);
@@ -822,30 +845,40 @@ export default function CycloneMap({
         </div>
       </div>
 
-      {/* 1. Basin Focus Switcher & Quick Navigation Bar (Swipeable on mobile) */}
-      {activeTab === 'trajectory' && (
+      {/* 1. Basin Focus Switcher & Quick Navigation Bar (Hidden in Fullscreen Theater Mode) */}
+      {activeTab === 'trajectory' && !isTheaterMode && (
         <div className="bg-slate-950 px-2.5 py-2 border-b border-slate-800 flex items-center overflow-x-auto no-scrollbar gap-1.5 text-xs">
           <div className="flex items-center gap-1 flex-shrink-0 pr-1">
             <Layers className="w-3.5 h-3.5 text-sky-400" />
             <span className="text-[10px] font-bold text-slate-400 uppercase">Focus:</span>
           </div>
 
-          <div className="flex items-center gap-1.5 flex-nowrap">
-            {/* Severe Cyclone Akvan / Bay of Bengal Button */}
+          <div className="flex items-center gap-1.5 flex-nowrap w-full">
+            {/* Bay of Bengal Button (Adapts to Active Cyclone vs Basin All-Clear vs Replay) */}
             <button
               onClick={() => switchMapView('bay-of-bengal')}
               className={`whitespace-nowrap flex-shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all border flex items-center gap-1.5 ${
                 mapViewMode === 'bay-of-bengal'
-                  ? 'bg-red-600 text-white border-red-400 shadow-md ring-1 ring-red-400'
+                  ? (isNormalDay && mapMode === 'live' ? 'bg-emerald-600 text-white border-emerald-400 shadow-md ring-1 ring-emerald-400' : 'bg-red-600 text-white border-red-400 shadow-md ring-1 ring-red-400')
                   : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
               }`}
             >
-              <span className="w-2 h-2 rounded-full bg-red-400 animate-ping"></span>
-              <span>🌀 Severe Cyclone Akvan (Bay of Bengal)</span>
-              {bobDist && <span className="text-[10px] opacity-90 font-mono">• {bobDist} km</span>}
+              {isNormalDay && mapMode === 'live' ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <span>🌊 Bay of Bengal</span>
+                  <span className="text-[10px] text-emerald-300 font-semibold">• All-Clear</span>
+                </>
+              ) : (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-red-400 animate-ping"></span>
+                  <span>🌀 Severe Cyclone Akvan</span>
+                  {bobDist && <span className="text-[10px] opacity-90 font-mono">• {bobDist} km</span>}
+                </>
+              )}
             </button>
 
-            {/* Arabian Sea Depression Button */}
+            {/* Arabian Sea Button */}
             <button
               onClick={() => switchMapView('arabian-sea')}
               className={`whitespace-nowrap flex-shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all border flex items-center gap-1.5 ${
@@ -854,7 +887,7 @@ export default function CycloneMap({
                   : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
               }`}
             >
-              <span>🟠 Arabian Sea System</span>
+              <span>🟠 Arabian Sea Basin</span>
               {arbDist && <span className="text-[10px] opacity-90 font-mono">• {arbDist} km</span>}
             </button>
 
@@ -881,12 +914,33 @@ export default function CycloneMap({
             >
               📍 My Location
             </button>
+
+            {/* Active Replay Exit Button or Archive Hub Link */}
+            {mapMode === 'history' ? (
+              <button
+                onClick={() => {
+                  setMapMode('live');
+                  if (onExitReplay) onExitReplay();
+                }}
+                className="whitespace-nowrap flex-shrink-0 px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all border bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-400 shadow-sm flex items-center gap-1 ml-auto active:scale-95"
+              >
+                <span>✕ Exit Replay (Back to Live Radar)</span>
+              </button>
+            ) : (
+              <a
+                href="#storm-archive-section"
+                className="whitespace-nowrap flex-shrink-0 px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all border bg-slate-900 hover:bg-slate-800 text-amber-300 border-amber-500/30 flex items-center gap-1 ml-auto"
+              >
+                <History className="w-3.5 h-3.5 text-amber-400" />
+                <span>Storm Archive Hub ➔</span>
+              </a>
+            )}
           </div>
         </div>
       )}
 
-      {/* 2. Key Status Briefing Bar (Swipeable Horizontal Slider on Mobile, 4-Col Grid on Desktop) */}
-      {activeTab === 'trajectory' && (
+      {/* 2. Key Status Briefing Bar (Hidden in Fullscreen Theater Mode) */}
+      {activeTab === 'trajectory' && !isTheaterMode && (
         <div className="bg-slate-950/95 border-b border-slate-800/90 px-2.5 sm:px-3 py-2 text-xs">
           {isNormalDay && mapMode === 'live' ? (
             <div className="space-y-1.5">
@@ -1235,7 +1289,7 @@ export default function CycloneMap({
 
             <ZoomControl position="bottomright" />
 
-            <MapRecenterController centerCoords={flyTarget} zoomLevel={flyZoom} triggerKey={flyTrigger} />
+            <MapRecenterController centerCoords={flyTarget} zoomLevel={flyZoom} triggerKey={flyTrigger} isTheaterMode={isTheaterMode} />
 
             {/* User Location Marker (Clean, clutter-free dot with hover/tap tooltip) */}
             <Marker position={[userLocation.lat, userLocation.lon]} icon={userDotIcon}>
@@ -1880,44 +1934,20 @@ export default function CycloneMap({
 
 
 
-          {/* Bottom Floating Time Scrubber Bar (Zoom Earth Style) */}
-          <div className="absolute bottom-2.5 inset-x-2 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-[400] bg-slate-950/95 backdrop-blur-md border border-slate-800/90 rounded-2xl p-1.5 sm:p-2 shadow-2xl flex items-center justify-between sm:justify-center gap-1.5 max-w-full">
-            {isNormalDay && mapMode === 'live' ? (
-              <div className="flex flex-wrap items-center justify-between gap-2.5 w-full sm:min-w-[460px] px-1">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>
-                  <div className="text-left">
-                    <span className="text-xs font-bold text-slate-100 block sm:inline">
-                      🌤️ Today's Live Radar • All-Clear Routine
-                    </span>
-                    <span className="text-[10px] text-emerald-400 block sm:inline sm:ml-2">
-                      No active cyclones in Bay of Bengal
-                    </span>
-                  </div>
-                </div>
-
+          {/* Bottom Floating Time Scrubber Bar (Only rendered during active Historical Replay Studio) */}
+          {mapMode === 'history' && (
+            <div className="absolute bottom-2.5 inset-x-2 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-[400] bg-slate-950/95 backdrop-blur-md border border-slate-800/90 rounded-2xl p-1.5 sm:p-2 shadow-2xl flex items-center justify-between sm:justify-center gap-1.5 max-w-full">
+              <div className="flex items-center gap-1 sm:gap-1.5 w-full">
                 <button
                   onClick={() => {
-                    setMapMode('history');
-                    setTimeStepIndex(2); // Start at Landfall step
+                    setMapMode('live');
+                    if (onExitReplay) onExitReplay();
                   }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-yellow-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition-all shadow-sm active:scale-95 whitespace-nowrap ml-auto"
+                  className="flex items-center gap-1 px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 rounded-lg text-xs font-bold transition-all flex-shrink-0 mr-1 active:scale-95"
+                  title="Exit Replay and Return to Today's Live Radar"
                 >
-                  <History className="w-3.5 h-3.5" />
-                  <span>Replay Storm Akvan (20–21 Nov) ➔</span>
+                  <span>✕ Exit Replay</span>
                 </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1 sm:gap-1.5 w-full">
-                {isNormalDay && (
-                  <button
-                    onClick={() => setMapMode('live')}
-                    className="flex items-center gap-1 px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 rounded-lg text-xs font-bold transition-all flex-shrink-0 mr-1 active:scale-95"
-                    title="Return to Today's Live Radar"
-                  >
-                    <span>🌤️ Live</span>
-                  </button>
-                )}
 
                 {/* Play / Pause Toggle */}
                 <button
@@ -1986,8 +2016,8 @@ export default function CycloneMap({
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Legend Overlay - Responsive & Collapsible on Mobile */}
           <div className="absolute bottom-14 left-2.5 z-[400]">
