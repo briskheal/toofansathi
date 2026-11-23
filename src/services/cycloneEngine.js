@@ -387,6 +387,100 @@ export function evaluateThreatLevel(distanceKm, localWindKmph, localGustsKmph, r
   };
 }
 
+// Dynamic time-of-day greeting generator matching user's exact login / device clock
+export function getTimeGreeting(lang = 'english', date = new Date()) {
+  const hour = date.getHours();
+  // 4 AM - 11:59 AM: Morning
+  // 12 PM - 4:29 PM: Afternoon
+  // 4:30 PM - 8:59 PM: Evening
+  // 9 PM - 3:59 AM: Night Watch
+  const isMorning = hour >= 4 && hour < 12;
+  const isAfternoon = hour >= 12 && hour < 16.5;
+  const isEvening = hour >= 16.5 && hour < 21;
+
+  switch (lang) {
+    case 'odia':
+      if (isMorning) return { text: 'ଶୁଭ ସକାଳ।', phonetic: 'Subha sakala.' };
+      if (isAfternoon) return { text: 'ଶୁଭ ମଧ୍ୟାହ୍ନ।', phonetic: 'Subha madhyahna.' };
+      if (isEvening) return { text: 'ଶୁଭ ସନ୍ଧ୍ୟା।', phonetic: 'Subha sandhya.' };
+      return { text: 'ଶୁଭ ରାତ୍ରି।', phonetic: 'Subha ratri.' };
+    case 'hindi':
+      if (isMorning) return { text: 'सुप्रभात।', phonetic: 'Suprabhat.' };
+      if (isAfternoon) return { text: 'शुभ दोपहर।', phonetic: 'Shubh dopahar.' };
+      if (isEvening) return { text: 'शुभ संध्या।', phonetic: 'Shubh sandhya.' };
+      return { text: 'शुभ रात्रि।', phonetic: 'Shubh ratri.' };
+    case 'bangla':
+      if (isMorning) return { text: 'সুপ্রভাত।', phonetic: 'Suprabhat.' };
+      if (isAfternoon) return { text: 'শুভ দুপুর।', phonetic: 'Shubho dupur.' };
+      if (isEvening) return { text: 'শুভ সন্ধ্যা।', phonetic: 'Shubho shondhya.' };
+      return { text: 'শুভ রাত্রি।', phonetic: 'Shubho ratri.' };
+    case 'telugu':
+      if (isMorning) return { text: 'శుభోదయం.', phonetic: 'Subhodayam.' };
+      if (isAfternoon) return { text: 'శుభ మధ్యాహ్నం.', phonetic: 'Subha madhyahnam.' };
+      if (isEvening) return { text: 'శుభ సాయంత్రం.', phonetic: 'Subha sayantram.' };
+      return { text: 'శుభ రాత్రి.', phonetic: 'Subha ratri.' };
+    default:
+      if (isMorning) return { text: 'Good morning!', phonetic: 'Good morning.' };
+      if (isAfternoon) return { text: 'Good afternoon!', phonetic: 'Good afternoon.' };
+      if (isEvening) return { text: 'Good evening!', phonetic: 'Good evening.' };
+      return { text: 'Good night!', phonetic: 'Good night.' };
+  }
+}
+
+// Map English district keys to authentic Odia names for clean rural speech
+export const ODISHA_DISTRICTS_ODIA = {
+  'cuttack': 'କଟକ',
+  'bhubaneswar': 'ଭୁବନେଶ୍ୱର',
+  'puri': 'ପୁରୀ',
+  'balasore': 'ବାଲେଶ୍ୱର',
+  'baleswar': 'ବାଲେଶ୍ୱର',
+  'bhadrak': 'ଭଦ୍ରକ',
+  'kendrapara': 'କେନ୍ଦ୍ରାପଡ଼ା',
+  'jagatsinghpur': 'ଜଗତସିଂହପୁର',
+  'paradip': 'ପାରାଦ୍ୱୀପ',
+  'ganjam': 'ଗଞ୍ଜାମ',
+  'berhampur': 'ବ୍ରହ୍ମପୁର',
+  'khordha': 'ଖୋର୍ଦ୍ଧା',
+  'jajpur': 'ଯାଜପୁର',
+  'sambalpur': 'ସମ୍ବଲପୁର',
+  'bargarh': 'ବରଗଡ଼',
+  'rourkela': 'ରାଉରକେଲା',
+  'sundargarh': 'ସୁନ୍ଦରଗଡ଼',
+  'mayurbhanj': 'ମୟୂରଭଞ୍ଜ',
+  'baripada': 'ବାରିପଦା',
+  'keonjhar': 'କେନ୍ଦୁଝର',
+  'dhenkanal': 'ଢେଙ୍କାନାଳ',
+  'angul': 'ଅନୁଗୋଳ',
+  'nayagarh': 'ନୟାଗଡ଼',
+  'kandhamal': 'କନ୍ଧମାଳ',
+  'phulbani': 'ଫୁଲବାଣୀ',
+  'koraput': 'କୋରାପୁଟ',
+  'jeypore': 'ଜୟପୁର',
+  'malkangiri': 'ମାଲକାନଗିରି',
+  'rayagada': 'ରାୟଗଡ଼ା',
+  'nabarangpur': 'ନବରଙ୍ଗପୁର',
+  'kalahandi': 'କଳାହାଣ୍ଡି',
+  'nuapada': 'ନୂଆପଡ଼ା',
+  'bolangir': 'ବଲାଙ୍ଗୀର',
+  'subarnapur': 'ସୁବର୍ଣ୍ଣପୁର',
+  'sonepur': 'ସୋନପୁର',
+  'boudh': 'ବୌଦ୍ଧ',
+  'deogarh': 'ଦେବଗଡ଼',
+  'jharsuguda': 'ଝାରସୁଗୁଡ଼ା'
+};
+
+export function cleanDistrictDisplay(districtName, lang = 'english') {
+  if (!districtName) return lang === 'odia' ? 'ଆପଣଙ୍କ ଅଞ୍ଚଳ' : 'Your Area';
+  const clean = districtName.replace(/Live Tracking \((.*?)\)/i, '$1').replace(/^GPS:\s*/i, '').trim();
+  if (lang === 'odia') {
+    const lower = clean.toLowerCase();
+    for (const [k, v] of Object.entries(ODISHA_DISTRICTS_ODIA)) {
+      if (lower.includes(k)) return v;
+    }
+  }
+  return clean;
+}
+
 // Multi-lingual Complete Voice & Text Briefing Scripts for Field Workers with Winter Protection Advice
 export function generateVoiceBriefing(lang, threat, districtName, distanceKm, windSpeed, gustSpeed, directionText, minTemp = 17, maxTemp = 29) {
   const isRed = threat.level === 'RED';
@@ -397,6 +491,10 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
   const isSevereCold = minTemp <= 10;
   const isChillyWinter = minTemp > 10 && minTemp <= 16;
   const isMildWinter = minTemp > 16 && minTemp <= 20;
+
+  // Dynamic greeting based on current local hour (Morning, Afternoon, Evening, Night)
+  const greeting = getTimeGreeting(lang);
+  const localizedArea = cleanDistrictDisplay(districtName, lang);
 
   // Peacetime / Normal Day Weather Pulse (When no active cyclone is threatening the region)
   if (threat.isNormalDay) {
@@ -414,9 +512,9 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
     switch (lang) {
       case 'odia':
         return {
-          headline: `ତୁଫାନ ସାଥୀ ଦୈନିକ ପାଣିପାଗ ସୂଚନା: ସ୍ୱାଭାବିକ ପାଗ • ${districtName}`,
-          speech: `ଶୁଭ ସକାଳ। ଆଜି ${districtName} ଅଞ୍ଚଳରେ ପାଗ ସମ୍ପୂର୍ଣ୍ଣ ସ୍ୱାଭାବିକ ଓ ଅନୁକୂଳ ରହିଛି। ସର୍ବନିମ୍ନ ତାପମାତ୍ରା ${minTemp} ଡିଗ୍ରୀ ଏବଂ ସର୍ବୋଚ୍ଚ ${maxTemp} ଡିଗ୍ରୀ ରହିବ। ପବନର ବେଗ ଘଣ୍ଟା ପ୍ରତି ${windSpeed} କିଲୋମିଟର। ବଙ୍ଗୋପସାଗରରେ କୌଣସି ବାତ୍ୟା କିମ୍ବା ଲଘୁଚାପ ଆଶଙ୍କା ନାହିଁ। ଚାଷୀ ଭାଇମାନେ ନିର୍ଭୟରେ ଧାନ ଅମଳ, ଖଳାବାଡ଼ି କାର୍ଯ୍ୟ ଏବଂ ରବି ଫସଲ ବୁଣାବୁଣି କରିପାରିବେ। ସମୁଦ୍ର ଶାନ୍ତ ରହିଥିବାରୁ ମତ୍ସ୍ୟଜୀବୀମାନେ ମାଛ ଧରିବାକୁ ଯାଇପାରିବେ।`,
-          phoneticSpeech: `Subha sakala. Aji ${districtName} anchalare paga sampurna swabhabika achhi. Sarbanimna tapamatra ${minTemp} degree o sarbochha ${maxTemp} degree. Pabana beg ${windSpeed} km/h. Bangopasagarare kounasi batya asanka nahin. Chasi bhai mane nischintare amala o rabi fasala kama karantu.`,
+          headline: `ତୁଫାନ ସାଥୀ ଦୈନିକ ପାଣିପାଗ ସୂଚନା: ସ୍ୱାଭାବିକ ପାଗ • ${localizedArea}`,
+          speech: `${greeting.text} ଆଜି ${localizedArea} ଅଞ୍ଚଳରେ ପାଗ ସମ୍ପୂର୍ଣ୍ଣ ସ୍ୱାଭାବିକ ଓ ଅନୁକୂଳ ରହିଛି। ସର୍ବନିମ୍ନ ତାପମାତ୍ରା ${minTemp} ଡିଗ୍ରୀ ଏବଂ ସର୍ବୋଚ୍ଚ ${maxTemp} ଡିଗ୍ରୀ ରହିବ। ପବନର ବେଗ ଘଣ୍ଟା ପ୍ରତି ${windSpeed} କିଲୋମିଟର। ବଙ୍ଗୋପସାଗରରେ କୌଣସି ବାତ୍ୟା କିମ୍ବା ଲଘୁଚାପ ଆଶଙ୍କା ନାହିଁ। ଚାଷୀ ଭାଇମାନେ ନିର୍ଭୟରେ ଧାନ ଅମଳ, ଖଳାବାଡ଼ି କାର୍ଯ୍ୟ ଏବଂ ରବି ଫସଲ ବୁଣାବୁଣି କରିପାରିବେ। ସମୁଦ୍ର ଶାନ୍ତ ରହିଥିବାରୁ ମତ୍ସ୍ୟଜୀବୀମାନେ ମାଛ ଧରିବାକୁ ଯାଇପାରିବେ।`,
+          phoneticSpeech: `${greeting.phonetic} Aji ${localizedArea} anchalare paga sampurna swabhabika achhi. Sarbanimna tapamatra ${minTemp} degree o sarbochha ${maxTemp} degree. Pabana beg ${windSpeed} km/h. Bangopasagarare kounasi batya asanka nahin. Chasi bhai mane nischintare amala o rabi fasala kama karantu.`,
           actionSteps: [
             'ପାଗ ସ୍ୱାଭାବିକ: ନିର୍ଭୟରେ ଚାଷ କାମ କରନ୍ତୁ',
             'ଅମଳ ଧାନ ଶୁଖାଇବା ଓ ରବି ବୁଣିବା ଅନୁକୂଳ',
@@ -426,9 +524,9 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
         };
       case 'hindi':
         return {
-          headline: `तूफानसाथी दैनिक मौसम: सामान्य व शांत मौसम • ${districtName}`,
-          speech: `सुप्रभात। आज ${districtName} क्षेत्र में मौसम पूरी तरह सामान्य और शांत है। न्यूनतम तापमान ${minTemp} डिग्री और अधिकतम ${maxTemp} डिग्री रहेगा। हवा की गति ${windSpeed} किमी/घंटा है। बंगाल की खाड़ी में कोई भी चक्रवात या अवदाब सक्रिय नहीं है। किसान भाई धान की कटाई, सुखाने और रबी बुवाई का कार्य सुचारू रूप से करें। समुद्र शांत है, मछुआरों के लिए तट सुरक्षित है।`,
-          phoneticSpeech: `Suprabhat. Aaj ${districtName} mein mausam poori tarah samanya hai. Koi chakrawat sakriya nahi hai. Kheti-bari aur fasal katai ka kam sucharu karein.`,
+          headline: `तूफानसाथी दैनिक मौसम: सामान्य व शांत मौसम • ${localizedArea}`,
+          speech: `${greeting.text} आज ${localizedArea} क्षेत्र में मौसम पूरी तरह सामान्य और शांत है। न्यूनतम तापमान ${minTemp} डिग्री और अधिकतम ${maxTemp} डिग्री रहेगा। हवा की गति ${windSpeed} किमी/घंटा है। बंगाल की खाड़ी में कोई भी चक्रवात या अवदाब सक्रिय नहीं है। किसान भाई धान की कटाई, सुखाने और रबी बुवाई का कार्य सुचारू रूप से करें। समुद्र शांत है, मछुआरों के लिए तट सुरक्षित है।`,
+          phoneticSpeech: `${greeting.phonetic} Aaj ${localizedArea} mein mausam poori tarah samanya hai. Koi chakrawat sakriya nahi hai. Kheti-bari aur fasal katai ka kam sucharu karein.`,
           actionSteps: [
             'मौसम सामान्य: कृषि कार्य जारी रखें',
             'धान सुखाने व रबी बुवाई के लिए उत्तम समय',
@@ -438,9 +536,9 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
         };
       case 'bangla':
         return {
-          headline: `তুফানসাথী দৈনিক আবহাওয়া: শান্ত ও স্বাভাবিক • ${districtName}`,
-          speech: `সুপ্রভাত। আজ ${districtName} এলাকায় আবহাওয়া সম্পূর্ণ স্বাভাবিক ও শান্ত। বঙ্গোপসাগরে কোনো ঘূর্ণিঝড় বা নিম্নচাপ নেই। কৃষকরা নিশ্চিন্তে ধান কাটা ও রবি ফসলের কাজ করতে পারেন। সমুদ্রে মাছ ধরার জন্য পরিস্থিতি অনুকূল।`,
-          phoneticSpeech: `Suprabhat. Aaj ${districtName} elakay abahawa shanto o swabhabik. Kono cyclone nei. Krishi kaj cholche.`,
+          headline: `তুফানসাথী দৈনিক আবহাওয়া: শান্ত ও স্বাভাবিক • ${localizedArea}`,
+          speech: `${greeting.text} আজ ${localizedArea} এলাকায় আবহাওয়া সম্পূর্ণ স্বাভাবিক ও শান্ত। বঙ্গোপসাগরে কোনো ঘূর্ণিঝড় বা নিম্নচাপ নেই। কৃষকরা নিশ্চিন্তে ধান কাটা ও রবি ফসলের কাজ করতে পারেন। সমুদ্রে মাছ ধরার জন্য পরিস্থিতি অনুকূল।`,
+          phoneticSpeech: `${greeting.phonetic} Aaj ${localizedArea} elakay abahawa shanto o swabhabik. Kono cyclone nei. Krishi kaj cholche.`,
           actionSteps: [
             'আবহাওয়া শান্ত: কৃষি কাজ স্বাভাবিক',
             'ধান শুকানো ও রবি ফসলের উপযুক্ত সময়',
@@ -450,9 +548,9 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
         };
       case 'telugu':
         return {
-          headline: `తుఫాన్ సాథీ రోజువారీ వాతావరణం: సాధారణ వాతావరణం • ${districtName}`,
-          speech: `శుభోదయం. నేడు ${districtName} ప్రాంతంలో వాతావరణం సాధారణంగా మరియు ప్రశాంతంగా ఉంది. బంగాళాఖాతంలో ఎటువంటి తుఫాను ముప్పు లేదు. రైతులు కోత పనులు మరియు రబీ సాగును నిరభ్యంతరంగా చేసుకోవచ్చు. మత్స్యకారులకు సముద్రం అనుకూలంగా ఉంది.`,
-          phoneticSpeech: `Subhodayam. Nedu ${districtName} pranthamulo vathavaranam prashanthamga undi. Ee vidhamaina cyclone ledu.`,
+          headline: `తుఫాన్ సాథీ రోజువారీ వాతావరణం: సాధారణ వాతావరణం • ${localizedArea}`,
+          speech: `${greeting.text} నేడు ${localizedArea} ప్రాంతంలో వాతావరణం సాధారణంగా మరియు ప్రశాంతంగా ఉంది. బంగాళాఖాతంలో ఎటువంటి తుఫాను ముప్పు లేదు. రైతులు కోత పనులు మరియు రబీ సాగును నిరభ్యంతరంగా చేసుకోవచ్చు. మత్స్యకారులకు సముద్రం అనుకూలంగా ఉంది.`,
+          phoneticSpeech: `${greeting.phonetic} Nedu ${localizedArea} pranthamulo vathavaranam prashanthamga undi. Ee vidhamaina cyclone ledu.`,
           actionSteps: [
             'వాతావరణం ప్రశాంతం: వ్యవసాయ పనులు కొనసాగించండి',
             'రబీ విత్తనాలు వేయడానికి అనుకూల సమయం',
@@ -462,9 +560,9 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
         };
       default: // english
         return {
-          headline: `ToofanSathi Daily Weather Pulse: Fair & Normal Weather • ${districtName}`,
-          speech: `Good morning! Today in ${districtName}, weather conditions are fair and completely normal with temperatures between ${minTemp} and ${maxTemp} degrees Celsius and gentle winds of ${windSpeed} km/h. There are no tropical cyclones or depressions active in the Bay of Bengal. Farmers can carry out kharif harvesting, grain sun drying, and rabi sowing with confidence. Sea conditions are safe for coastal marine fishing. ${winterTextEn}`,
-          phoneticSpeech: `Good morning. Today in ${districtName}, weather conditions are fair and normal with no cyclone activity in the Bay of Bengal. Normal farming and fishing operations permitted.`,
+          headline: `ToofanSathi Daily Weather Pulse: Fair & Normal Weather • ${localizedArea}`,
+          speech: `${greeting.text} Today in ${localizedArea}, weather conditions are fair and completely normal with temperatures between ${minTemp} and ${maxTemp} degrees Celsius and gentle winds of ${windSpeed} km/h. There are no tropical cyclones or depressions active in the Bay of Bengal. Farmers can carry out kharif harvesting, grain sun drying, and rabi sowing with confidence. Sea conditions are safe for coastal marine fishing. ${winterTextEn}`,
+          phoneticSpeech: `${greeting.phonetic} Today in ${localizedArea}, weather conditions are fair and normal with no cyclone activity in the Bay of Bengal. Normal farming and fishing operations permitted.`,
           actionSteps: [
             'Fair Weather Routine: All Clear',
             'Ideal for Paddy Drying & Rabi Sowing',
@@ -501,9 +599,9 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
 
       if (threat.isNormalDay) {
         return {
-          headline: `ତୁଫାନ ସାଥୀ ଦୈନିକ ପାଣିପାଗ ସୂଚନା: ସ୍ୱାଭାବିକ ପାଗ • ${districtName}`,
-          speech: `ଶୁଭ ସକାଳ। ଆଜି ${districtName} ଅଞ୍ଚଳରେ ପାଗ ସମ୍ପୂର୍ଣ୍ଣ ସ୍ୱାଭାବିକ ଓ ଅନୁକୂଳ ରହିଛି। ସର୍ବନିମ୍ନ ତାପମାତ୍ରା ${minTemp} ଡିଗ୍ରୀ ଏବଂ ସର୍ବୋଚ୍ଚ ${maxTemp} ଡିଗ୍ରୀ ରହିବ। ପବନର ବେଗ ଘଣ୍ଟା ପ୍ରତି ${windSpeed} କିଲୋମିଟର। ବଙ୍ଗୋପସାଗରରେ କୌଣସି ବାତ୍ୟା କିମ୍ବା ଲଘୁଚାପର ଆଶଙ୍କା ନାହିଁ। ଚାଷୀ ଭାଇମାନେ ନିର୍ଭୟରେ ଧାନ ଅମଳ, ଖଳାବାଡ଼ି କାର୍ଯ୍ୟ ଏବଂ ରବି ଫସଲ ବୁଣାବୁଣି କରିପାରିବେ। ସମୁଦ୍ର ଶାନ୍ତ ରହିଥିବାରୁ ମତ୍ସ୍ୟଜୀବୀମାନେ ନିର୍ଭୟରେ ମାଛ ଧରିବାକୁ ଯାଇପାରିବେ। ${winterSpeech}`,
-          phoneticSpeech: `Subha sakala. Aji ${districtName} anchalare paga sampurna swabhabika achhi. Sarbanimna tapamatra ${minTemp} degree o sarbochha ${maxTemp} degree. Pabana beg ${windSpeed} km/h. Bangopasagarare kounasi batya asanka nahin. Chasi bhai mane nischintare amala o rabi fasala kama karantu. ${winterPhonetic}`,
+          headline: `ତୁଫାନ ସାଥୀ ଦୈନିକ ପାଣିପାଗ ସୂଚନା: ସ୍ୱାଭାବିକ ପାଗ • ${localizedArea}`,
+          speech: `${greeting.text} ଆଜି ${localizedArea} ଅଞ୍ଚଳରେ ପାଗ ସମ୍ପୂର୍ଣ୍ଣ ସ୍ୱାଭାବିକ ଓ ଅନୁକୂଳ ରହିଛି। ସର୍ବନିମ୍ନ ତାପମାତ୍ରା ${minTemp} ଡିଗ୍ରୀ ଏବଂ ସର୍ବୋଚ୍ଚ ${maxTemp} ଡିଗ୍ରୀ ରହିବ। ପବନର ବେଗ ଘଣ୍ଟା ପ୍ରତି ${windSpeed} କିଲୋମିଟର। ବଙ୍ଗୋପସାଗରରେ କୌଣସି ବାତ୍ୟା କିମ୍ବା ଲଘୁଚାପର ଆଶଙ୍କା ନାହିଁ। ଚାଷୀ ଭାଇମାନେ ନିର୍ଭୟରେ ଧାନ ଅମଳ, ଖଳାବାଡ଼ି କାର୍ଯ୍ୟ ଏବଂ ରବି ଫସଲ ବୁଣାବୁଣି କରିପାରିବେ। ସମୁଦ୍ର ଶାନ୍ତ ରହିଥିବାରୁ ମତ୍ସ୍ୟଜୀବୀମାନେ ନିର୍ଭୟରେ ମାଛ ଧରିବାକୁ ଯାଇପାରିବେ। ${winterSpeech}`,
+          phoneticSpeech: `${greeting.phonetic} Aji ${localizedArea} anchalare paga sampurna swabhabika achhi. Sarbanimna tapamatra ${minTemp} degree o sarbochha ${maxTemp} degree. Pabana beg ${windSpeed} km/h. Bangopasagarare kounasi batya asanka nahin. Chasi bhai mane nischintare amala o rabi fasala kama karantu. ${winterPhonetic}`,
           actionSteps: [
             'ପାଗ ସ୍ୱାଭାବିକ: ନିର୍ଭୟରେ ଚାଷ କାମ କରନ୍ତୁ',
             'ଅମଳ ଧାନ ଶୁଖାଇବା ଓ ରବି ବୁଣିବା ଅନୁକୂଳ',

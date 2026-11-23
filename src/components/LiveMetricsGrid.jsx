@@ -19,10 +19,12 @@ export default function LiveMetricsGrid({
   maxTemp,
   minTemp,
   apparentTemp,
-  humidity
+  humidity,
+  selectedLang = 'english'
 }) {
   const isColdLow = minTemp !== undefined && minTemp !== null && minTemp <= 15;
   const isSevereCold = minTemp !== undefined && minTemp !== null && minTemp <= 10;
+  const isOdia = selectedLang === 'odia';
 
   return (
     <div className="space-y-1.5">
@@ -31,7 +33,9 @@ export default function LiveMetricsGrid({
         {/* Metric 1: Distance to Storm Center & Coastline */}
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
           <div className="flex items-center justify-between text-slate-400 mb-1.5">
-            <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider">Cyclone Eye</span>
+            <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider">
+              {isOdia ? 'ବାତ୍ୟା କେନ୍ଦ୍ର' : 'Cyclone Eye'}
+            </span>
             <Compass className="w-4 h-4 text-sky-400" />
           </div>
           <div>
@@ -39,7 +43,7 @@ export default function LiveMetricsGrid({
               {distanceKm} <span className="text-xs font-semibold text-slate-400">km</span>
             </div>
             <p className="text-[11px] text-sky-400 font-medium truncate mt-0.5">
-              To you ({directionText})
+              {isOdia ? `ଆପଣଙ୍କ ଠାରୁ (${directionText})` : `To you (${directionText})`}
             </p>
             {distanceToCoastKm && (
               <div className="mt-1.5 pt-1.5 border-t border-slate-800/80 text-[10px] space-y-0.5">
@@ -57,7 +61,9 @@ export default function LiveMetricsGrid({
         {/* Metric 2: Wind & Peak Gusts */}
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
           <div className="flex items-center justify-between text-slate-400 mb-1.5">
-            <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider">Wind & Gusts</span>
+            <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider">
+              {isOdia ? 'ପବନ ଓ ଝଟକା' : 'Wind & Gusts'}
+            </span>
             <Wind className="w-4 h-4 text-amber-400" />
           </div>
           <div>
@@ -65,7 +71,7 @@ export default function LiveMetricsGrid({
               {windSpeed} <span className="text-xs font-semibold text-slate-400">km/h</span>
             </div>
             <p className="text-[11px] text-amber-400 font-medium truncate mt-0.5">
-              Gusts to {windGusts} km/h
+              {isOdia ? `ଝଟକା: ${windGusts} km/h` : `Gusts to ${windGusts} km/h`}
             </p>
           </div>
         </div>
@@ -74,7 +80,7 @@ export default function LiveMetricsGrid({
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
           <div className="flex items-center justify-between text-slate-400 mb-1.5">
             <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider">
-              {isColdLow ? 'Winter Temp' : 'Temperature'}
+              {isOdia ? (isColdLow ? 'ଶୀତ ତାପମାତ୍ରା' : 'ତାପମାତ୍ରା') : (isColdLow ? 'Winter Temp' : 'Temperature')}
             </span>
             {isColdLow ? (
               <ThermometerSnowflake className="w-4 h-4 text-cyan-400 animate-pulse" />
@@ -88,7 +94,7 @@ export default function LiveMetricsGrid({
                 {currentTemp !== undefined ? `${currentTemp}°` : '--'}
               </span>
               <span className="text-[10px] text-slate-400 font-medium">
-                (Feels {apparentTemp !== undefined ? `${apparentTemp}°` : '--'})
+                ({isOdia ? 'ଅନୁଭୂତ' : 'Feels'} {apparentTemp !== undefined ? `${apparentTemp}°` : '--'})
               </span>
             </div>
             
@@ -103,7 +109,9 @@ export default function LiveMetricsGrid({
               </span>
             </div>
             <p className="text-[10px] text-slate-400 mt-0.5 truncate">
-              {isSevereCold ? '❄️ Cold Wave Chill' : isColdLow ? '❄️ Chilly Morning Low' : 'Mild Season Temp'}
+              {isOdia
+                ? (isSevereCold ? '❄️ ପ୍ରବଳ ଶୀତ ଲହରୀ' : isColdLow ? '❄️ ସକାଳେ ଥଣ୍ଡା କାକର' : 'ସ୍ୱାଭାବିକ ତାପମାତ୍ରା')
+                : (isSevereCold ? '❄️ Cold Wave Chill' : isColdLow ? '❄️ Chilly Morning Low' : 'Mild Season Temp')}
             </p>
           </div>
         </div>
@@ -111,7 +119,9 @@ export default function LiveMetricsGrid({
         {/* Metric 4: 3-Hour Expected Rain & Overnight Outlook */}
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
           <div className="flex items-center justify-between text-slate-400 mb-1.5">
-            <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider">Next 3h Rain</span>
+            <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider">
+              {isOdia ? 'ଆଗାମୀ ୩ଘଂ ବର୍ଷା' : 'Next 3h Rain'}
+            </span>
             <CloudRain className="w-4 h-4 text-blue-400" />
           </div>
           <div>
@@ -159,7 +169,9 @@ export default function LiveMetricsGrid({
         {/* Metric 5: Atmospheric Pressure */}
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between col-span-2 sm:col-span-1">
           <div className="flex items-center justify-between text-slate-400 mb-1.5">
-            <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider">Barometer</span>
+            <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider">
+              {isOdia ? 'ବାୟୁମଣ୍ଡଳ ଚାପ' : 'Barometer'}
+            </span>
             <Gauge className="w-4 h-4 text-purple-400" />
           </div>
           <div>

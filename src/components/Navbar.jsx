@@ -1,5 +1,6 @@
 import React from 'react';
 import { Radio, Wifi, WifiOff, PhoneCall, ShieldAlert, Tv } from 'lucide-react';
+import { getTranslation } from '../data/translations';
 
 export default function Navbar({
   isOffline,
@@ -11,6 +12,8 @@ export default function Navbar({
   onOpenLiveTv,
   onOpenWelcome
 }) {
+  const t = getTranslation(selectedLang);
+
   return (
     <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 w-full overflow-x-clip">
       {/* Container aligned with main content blocks (max-w-4xl with px-3 sm:px-5) */}
@@ -29,22 +32,22 @@ export default function Navbar({
             <div className="min-w-0">
               <div className="flex items-center gap-1 sm:gap-1.5">
                 <span className="font-extrabold text-sm sm:text-base tracking-tight text-white group-hover:text-sky-300 transition-colors truncate">
-                  ToofanSathi
+                  {t.appTitle}
                 </span>
                 <span className="text-[9px] sm:text-[10px] font-mono px-1 py-0.2 rounded bg-sky-950 text-sky-400 border border-sky-800 flex-shrink-0 font-bold">
-                  PWA
+                  {t.appBadge}
                 </span>
               </div>
               <p className="text-[9px] sm:text-[10px] text-slate-400 leading-none truncate">
                 {isOffline ? (
                   <span className="text-amber-400 flex items-center gap-1">
                     <WifiOff className="w-2.5 h-2.5 inline flex-shrink-0" />
-                    <span>Offline</span>
+                    <span>{t.offline}</span>
                   </span>
                 ) : (
                   <span className="text-emerald-400 flex items-center gap-1">
                     <Wifi className="w-2.5 h-2.5 inline flex-shrink-0" />
-                    <span>Sync • {lastUpdated || 'Live'}</span>
+                    <span>{t.syncLive} • {lastUpdated || 'Live'}</span>
                   </span>
                 )}
               </p>
@@ -57,15 +60,15 @@ export default function Navbar({
             <select
               value={selectedLang}
               onChange={(e) => setSelectedLang(e.target.value)}
-              className="text-[11px] sm:text-xs bg-slate-800 text-slate-200 border border-slate-700 rounded-lg px-1.5 sm:px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-500 font-semibold cursor-pointer max-w-[78px] xs:max-w-[90px] sm:max-w-none truncate"
+              className="text-[11px] sm:text-xs bg-slate-800 text-slate-200 border border-slate-700 rounded-lg px-1.5 sm:px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-500 font-semibold cursor-pointer max-w-[85px] xs:max-w-[105px] sm:max-w-none truncate"
               title="Select Language"
             >
               <option value="english">English</option>
-              <option value="hindi">हिन्दी (Hindi)</option>
               <option value="odia">ଓଡ଼ିଆ (Odia)</option>
+              <option value="hindi">हिन्दी (Hindi)</option>
               <option value="bengali">বাংলা (Bengali)</option>
-              <option value="gujarati">ગુજરાતી (Gujarati)</option>
               <option value="telugu">తెలుగు (Telugu)</option>
+              <option value="gujarati">ગુજરાતી (Gujarati)</option>
               <option value="tamil">தமிழ் (Tamil)</option>
               <option value="malayalam">മലയാളം (Malayalam)</option>
               <option value="kannada">ಕನ್ನಡ (Kannada)</option>
@@ -80,7 +83,7 @@ export default function Navbar({
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping flex-shrink-0"></span>
                 <Tv className="w-3.5 h-3.5 flex-shrink-0" />
-                <span className="hidden sm:inline">Live TV</span>
+                <span className="hidden sm:inline">{t.liveTv}</span>
               </button>
             )}
 
@@ -91,7 +94,7 @@ export default function Navbar({
               title="Emergency Helpline Numbers"
             >
               <PhoneCall className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="hidden sm:inline">Helplines</span>
+              <span className="hidden sm:inline">{t.helplines}</span>
             </button>
 
             {/* Safety Tips (Hidden on ultra-narrow mobile since it's already in BottomNav) */}

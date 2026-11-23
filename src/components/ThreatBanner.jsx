@@ -1,9 +1,18 @@
 import React from 'react';
 import { AlertTriangle, ShieldCheck, Siren, SunDim } from 'lucide-react';
+import { getTranslation } from '../data/translations';
+import { cleanDistrictDisplay } from '../services/cycloneEngine';
 
-export default function ThreatBanner({ threat, districtName }) {
+export default function ThreatBanner({ threat, districtName, selectedLang = 'english' }) {
   const isDanger = threat.level === 'RED' || threat.level === 'ORANGE';
   const isNormal = threat.isNormalDay || threat.level === 'GREEN';
+  const t = getTranslation(selectedLang);
+  const localizedArea = cleanDistrictDisplay(districtName, selectedLang);
+
+  // Dynamic localized text according to active language
+  const displaySummary = isNormal ? t.peacetimeTitle : threat.summary;
+  const displayAction = isNormal ? t.peacetimeAction : threat.action;
+  const displayBadge = isNormal ? t.peacetimeBadge : `IMD ${threat.level} Warning`;
 
   return (
     <section className={`rounded-xl p-4 sm:p-5 shadow-lg border transition-all ${
@@ -33,17 +42,19 @@ export default function ThreatBanner({ threat, districtName }) {
             <span className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
               isNormal ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : threat.badge
             }`}>
-              {isNormal ? '🟢 ALL-CLEAR • PEACETIME ROUTINE' : `IMD ${threat.level} Warning`}
+              {displayBadge}
             </span>
-            <span className="text-xs text-slate-400">Target Area: <strong className="text-slate-200">{districtName}</strong></span>
+            <span className="text-xs text-slate-400">
+              {t.targetArea} <strong className="text-slate-200">{localizedArea}</strong>
+            </span>
           </div>
 
           <h1 className="text-lg sm:text-xl font-black tracking-tight text-white leading-tight">
-            {threat.summary}
+            {displaySummary}
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-200 mt-1 leading-relaxed">
-            {threat.action}
+            {displayAction}
           </p>
         </div>
       </div>

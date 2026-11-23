@@ -17,6 +17,7 @@ import CycloneWelcomeSplash from './components/CycloneWelcomeSplash';
 import ProComingSoonModal from './components/ProComingSoonModal';
 
 import { ALL_INDIA_REGIONS, findNearestDistrict } from './data/districts';
+import { getTranslation } from './data/translations';
 import { fetchLiveWeather } from './services/weatherApi';
 import {
   ALL_INDIA_ACTIVE_STORMS,
@@ -25,7 +26,8 @@ import {
   calculateDistanceKm,
   calculateBearingDirection,
   evaluateThreatLevel,
-  generateVoiceBriefing
+  generateVoiceBriefing,
+  cleanDistrictDisplay
 } from './services/cycloneEngine';
 
 import { MapPin, Locate, RefreshCw, AlertCircle, Navigation, Globe, Calendar, ChevronDown, Tv, Crown, ArrowRight } from 'lucide-react';
@@ -340,6 +342,9 @@ export default function App() {
     maxTemp
   );
 
+  const t = getTranslation(selectedLang);
+  const localizedActiveArea = cleanDistrictDisplay(activeLocation.name, selectedLang);
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
       {/* Top Navbar */}
@@ -363,7 +368,7 @@ export default function App() {
         <section className="bg-slate-900 border border-slate-800 rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-1.5 text-slate-300">
             <Globe className="w-4 h-4 text-sky-400" />
-            <span className="font-bold">All-India Storm Monitor:</span>
+            <span className="font-bold">{t.stormMonitor}</span>
           </div>
           <div className="flex items-center gap-1.5 flex-wrap">
             {ALL_INDIA_ACTIVE_STORMS.map((storm) => (
@@ -379,7 +384,7 @@ export default function App() {
                     : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
                 }`}
               >
-                <span>{storm.basin}</span>
+                <span>{selectedLang === 'odia' && storm.basin.includes('Bengal') ? t.bayOfBengal : selectedLang === 'odia' && storm.basin.includes('Arabian') ? t.arabianSea : storm.basin}</span>
                 <span className="text-[10px] ml-1 opacity-80">({storm.name.split('/')[0].trim()})</span>
               </button>
             ))}
@@ -391,7 +396,7 @@ export default function App() {
                   : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-slate-200'
               }`}
             >
-              Auto-Track Closest
+              {t.autoTrackClosest}
             </button>
           </div>
         </section>
@@ -399,7 +404,7 @@ export default function App() {
         {/* District & GPS Selector Bar (Mobile-Boundary Safe) */}
         <section className="bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col gap-2.5 overflow-hidden">
           <div className="flex items-center gap-1.5 flex-1 min-w-0 w-full">
-            <span className="text-xs font-bold text-slate-400 flex-shrink-0">Area:</span>
+            <span className="text-xs font-bold text-slate-400 flex-shrink-0">{t.area}</span>
             
             {/* Mobile-Friendly Searchable District Trigger */}
             <button
@@ -411,11 +416,11 @@ export default function App() {
               <div className="flex items-center gap-1.5 min-w-0 truncate">
                 <MapPin className="w-3.5 h-3.5 text-sky-400 flex-shrink-0" />
                 <span className="truncate font-bold">
-                  {customGpsLocation ? customGpsLocation.name : `${activeLocation.name} (${activeLocation.state})`}
+                  {customGpsLocation ? customGpsLocation.name : `${localizedActiveArea} (${activeLocation.state})`}
                 </span>
                 {activeLocation.highRisk && (
                   <span className="text-[9px] bg-red-950/80 text-red-300 border border-red-700/60 px-1 py-0.2 rounded font-medium flex-shrink-0">
-                    Risk
+                    {t.risk}
                   </span>
                 )}
               </div>
@@ -436,7 +441,7 @@ export default function App() {
             >
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping flex-shrink-0"></span>
               <Tv className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="truncate">Live TV</span>
+              <span className="truncate">{t.liveTv}</span>
             </button>
 
             {/* 2. Plan Visit Button */}
@@ -446,7 +451,7 @@ export default function App() {
               title="Plan field visit on future dates (5-7 days outlook)"
             >
               <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="truncate">Plan Visit</span>
+              <span className="truncate">{t.planVisit}</span>
             </button>
 
             {/* 3. Instant GPS Refresh Button */}
@@ -461,7 +466,7 @@ export default function App() {
               title="Detect or refresh exact GPS location"
             >
               <Locate className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="truncate">{customGpsLocation ? 'GPS Fix' : 'Use GPS'}</span>
+              <span className="truncate">{t.gpsFix}</span>
             </button>
 
             {/* 4. Continuous Live Watch Toggle */}
@@ -475,7 +480,7 @@ export default function App() {
               title="Continuously track GPS as you move in the field"
             >
               <Navigation className={`w-3.5 h-3.5 flex-shrink-0 ${isWatchActive ? 'animate-pulse text-white' : 'text-slate-400'}`} />
-              <span className="truncate">{isWatchActive ? 'Live ON' : 'Live Watch'}</span>
+              <span className="truncate">{isWatchActive ? t.liveOn : t.liveOff}</span>
             </button>
 
             {/* 5. Reload Weather & Bulletin */}
@@ -486,7 +491,7 @@ export default function App() {
               title="Refresh weather data and IMD status"
             >
               <RefreshCw className={`w-3.5 h-3.5 flex-shrink-0 ${isLoading ? 'animate-spin text-sky-400' : 'text-slate-400'}`} />
-              <span className="truncate">Refresh</span>
+              <span className="truncate">{t.refresh}</span>
             </button>
           </div>
         </section>
@@ -497,21 +502,21 @@ export default function App() {
             <div className="flex items-center gap-2 flex-wrap">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping flex-shrink-0"></span>
               <span>
-                <strong>Live Coordinates:</strong> {activeLocation.lat.toFixed(4)}°N, {activeLocation.lon.toFixed(4)}°E
-                {gpsAccuracy && ` (Accuracy: ±${Math.round(gpsAccuracy)}m)`}
+                <strong>{t.liveCoordinates}:</strong> {activeLocation.lat.toFixed(4)}°N, {activeLocation.lon.toFixed(4)}°E
+                {gpsAccuracy && ` (${t.accuracy}: ±${Math.round(gpsAccuracy)}m)`}
               </span>
               <span className="px-1.5 py-0.5 rounded bg-sky-900/60 border border-sky-700/60 text-[10px] text-sky-300 font-mono font-medium">
                 📅 {new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
               </span>
             </div>
             <div className="flex items-center gap-2 text-[11px] text-slate-400">
-              <span>Updated: <strong className="text-slate-300 font-mono">{gpsTimestamp || `${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}, ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`}</strong></span>
+              <span>{t.updated}: <strong className="text-slate-300 font-mono">{gpsTimestamp || `${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}, ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`}</strong></span>
               <button
                 onClick={handleUseGps}
                 className="text-sky-400 hover:text-sky-300 underline font-semibold flex items-center gap-1"
               >
                 <RefreshCw className="w-3 h-3 inline" />
-                <span>Refresh Now</span>
+                <span>{t.refreshNow}</span>
               </button>
             </div>
           </div>
@@ -527,7 +532,7 @@ export default function App() {
 
         {/* 1. Main Actionable Threat Banner (Red/Orange/Yellow/Green) */}
         <div id="alert-section" className="scroll-mt-16">
-          <ThreatBanner threat={threat} districtName={activeLocation.name} />
+          <ThreatBanner threat={threat} districtName={activeLocation.name} selectedLang={selectedLang} />
         </div>
 
         {/* 2. One-Tap 30-Second Audio Briefing (Odia/Bengali/Hindi/English) */}
@@ -535,6 +540,7 @@ export default function App() {
 
         {/* 3. Core Real-time Indicators & Winter Temperature Range */}
         <LiveMetricsGrid
+          selectedLang={selectedLang}
           distanceKm={distanceKm}
           directionText={bearing.text}
           distanceToCoastKm={activeStorm.distanceToCoastKm}
@@ -561,6 +567,7 @@ export default function App() {
           threat={threat}
           weatherData={weatherData}
           activeLocation={activeLocation}
+          selectedLang={selectedLang}
         />
 
         {/* 5. 10-Hour Forecast Timeline */}
@@ -584,7 +591,7 @@ export default function App() {
         </div>
 
         {/* 7. Install PWA Prompt for Mobile Home Screen */}
-        <PwaInstallPrompt />
+        <PwaInstallPrompt selectedLang={selectedLang} />
 
         {/* 8. ToofanSathi Pro • Commercial & Enterprise Advisory Card */}
         <section className="bg-gradient-to-r from-amber-950/40 via-slate-900 to-amber-950/30 border border-amber-500/40 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden">
@@ -597,21 +604,21 @@ export default function App() {
                   ToofanSathi Pro
                 </span>
                 <span className="text-[11px] font-bold text-amber-400">
-                  Commercial & Enterprise Edition
+                  {selectedLang === 'odia' ? 'ବାଣିଜ୍ୟିକ ଓ ଏଣ୍ଟରପ୍ରାଇଜ୍ ସଂସ୍କରଣ' : 'Commercial & Enterprise Edition'}
                 </span>
               </div>
               <h3 className="text-sm sm:text-base font-extrabold text-white tracking-tight">
-                Need High-Precision Commercial Weather & Insurance Protection?
+                {t.proTitle}
               </h3>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Advised for <strong>Aquaculture Ponds, Commercial Trawlers, Agronomists & Field Insurers</strong>. Access 1-Hour ECMWF/GFS forecasts, 48h crop harvest windows, shrimp pond surge defense & certified PMFBY weather insurance claim certificates.
+                {t.proSubtitle}
               </p>
               <div className="flex items-center gap-2 pt-1 text-[11px] text-amber-300/90 flex-wrap">
-                <span className="flex items-center gap-1">✓ Mandatory KYC Verified Login</span>
+                <span className="flex items-center gap-1">✓ {selectedLang === 'odia' ? 'ବାଧ୍ୟତାମୂଳକ KYC ଭେରିଫାଏଡ୍ ଲଗଇନ୍' : 'Mandatory KYC Verified Login'}</span>
                 <span className="text-slate-600">•</span>
-                <span className="flex items-center gap-1">✓ Email OTP Security</span>
+                <span className="flex items-center gap-1">✓ {selectedLang === 'odia' ? 'ଇମେଲ୍ OTP ସୁରକ୍ଷା' : 'Email OTP Security'}</span>
                 <span className="text-slate-600">•</span>
-                <span className="flex items-center gap-1">✓ 15-Day Extended Horizon</span>
+                <span className="flex items-center gap-1">✓ {selectedLang === 'odia' ? '୧୫-ଦିନର ବର୍ଦ୍ଧିତ ପୂର୍ବାନୁମାନ' : '15-Day Extended Horizon'}</span>
               </div>
             </div>
 
@@ -621,11 +628,11 @@ export default function App() {
                 onClick={() => setIsProComingSoonOpen(true)}
                 className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 active:scale-95 transition-all cursor-pointer group"
               >
-                <span>Coming Soon ... ToofanSathi Pro</span>
+                <span>{selectedLang === 'odia' ? 'ଖୁବ୍ ଶୀଘ୍ର ଆସୁଛି ... ତୁଫାନ ସାଥୀ ପ୍ରୋ' : 'Coming Soon ... ToofanSathi Pro'}</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </button>
               <span className="text-[10px] text-slate-400 text-center md:text-right font-medium">
-                Enterprise Pilot Active • <span className="text-amber-400 font-semibold">Priority Beta Waitlist</span>
+                {selectedLang === 'odia' ? 'ପ୍ରାଥମିକ ୱେଟିଂ ଲିଷ୍ଟ୍ ଚାଲୁଅଛି' : 'Enterprise Pilot Active • Priority Beta Waitlist'}
               </span>
             </div>
           </div>
@@ -634,15 +641,17 @@ export default function App() {
 
       {/* Footer */}
       <footer className="border-t border-slate-900 bg-slate-950/80 p-4 sm:p-6 text-center text-xs text-slate-500 mb-16 sm:mb-0 space-y-1.5">
-        <p className="font-semibold text-slate-300">ToofanSathi.in • Pan-India Cyclone & Disaster Early Warning System</p>
+        <p className="font-semibold text-slate-300">
+          {selectedLang === 'odia' ? 'ତୁଫାନ ସାଥୀ • ସର୍ବଭାରତୀୟ ବାତ୍ୟା ଓ ବିପର୍ଯ୍ୟୟ ପୂର୍ବଚେତାବନୀ ବ୍ୟବସ୍ଥା' : 'ToofanSathi.in • Pan-India Cyclone & Disaster Early Warning System'}
+        </p>
         <p className="text-[11px] text-slate-400">
-          Covering Bay of Bengal, Arabian Sea & Coastal Belts (Data: IMD RSMC New Delhi, INCOIS & ECMWF/GFS High-Res Models).
+          {selectedLang === 'odia' ? 'ବଙ୍ଗୋପସାଗର, ଆରବ ସାଗର ଓ ଉପକୂଳ ଅଞ୍ଚଳ (ତଥ୍ୟ: IMD RSMC ନୂଆଦିଲ୍ଲୀ, INCOIS ଓ ECMWF/GFS)' : 'Covering Bay of Bengal, Arabian Sea & Coastal Belts (Data: IMD RSMC New Delhi, INCOIS & ECMWF/GFS High-Res Models).'}
         </p>
         <p className="text-[10px] text-slate-500">
-          Offline-first PWA designed for agricultural, coastal communities, and emergency disaster relief teams across India.
+          {selectedLang === 'odia' ? 'ଗ୍ରାମାଞ୍ଚଳ, ଚାଷୀ, ମତ୍ସ୍ୟଜୀବୀ ଓ ବିପର୍ଯ୍ୟୟ ପ୍ରଶମନ ଟିମ୍ ପାଇଁ ପ୍ରସ୍ତୁତ ୧୦୦% ଅଫଲାଇନ୍ PWA।' : 'Offline-first PWA designed for agricultural, coastal communities, and emergency disaster relief teams across India.'}
         </p>
         <div className="pt-2 border-t border-slate-900/80 text-[11px] text-slate-400">
-          © {new Date().getFullYear()} ToofanSathi. All Rights Reserved.
+          © {new Date().getFullYear()} ToofanSathi. {selectedLang === 'odia' ? 'ସମସ୍ତ ଅଧିକାର ସଂରକ୍ଷିତ।' : 'All Rights Reserved.'}
         </div>
       </footer>
 
@@ -652,6 +661,7 @@ export default function App() {
         onSelectSection={scrollToSection}
         onOpenEmergency={() => setIsEmergencyOpen(true)}
         onOpenSafety={() => setIsSafetyOpen(true)}
+        selectedLang={selectedLang}
       />
 
       {/* Modals */}

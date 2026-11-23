@@ -21,10 +21,14 @@ import {
   Anchor,
   History
 } from 'lucide-react';
+import { getTranslation } from '../data/translations';
+import { cleanDistrictDisplay } from '../services/cycloneEngine';
 
-export default function CycloneTrackerCard({ bulletin, threat, weatherData, activeLocation }) {
+export default function CycloneTrackerCard({ bulletin, threat, weatherData, activeLocation, selectedLang = 'english' }) {
   const [showIncoisDetails, setShowIncoisDetails] = useState(false);
   const [showHistoricalArchive, setShowHistoricalArchive] = useState(false);
+  const t = getTranslation(selectedLang);
+  const localizedArea = cleanDistrictDisplay(activeLocation?.name, selectedLang);
 
   const isNormalDay = threat?.isNormalDay || threat?.level === 'GREEN';
 
@@ -57,24 +61,24 @@ export default function CycloneTrackerCard({ bulletin, threat, weatherData, acti
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  All Clear • Normal Weather Routine
+                  {t.allClearRoutine}
                 </span>
                 <span className="text-xs text-slate-400 font-mono hidden sm:inline">
                   {todayDateStr}
                 </span>
               </div>
               <h2 className="text-sm sm:text-base font-extrabold text-white tracking-wide mt-0.5">
-                Coastal Agro-Meteorological & Marine Intelligence
+                {t.agroHeader}
               </h2>
             </div>
           </div>
 
           <div className="text-right">
             <span className="text-[11px] font-mono bg-emerald-950/80 text-emerald-300 border border-emerald-800/80 px-2.5 py-0.5 rounded-full font-bold inline-block">
-              🟢 Basin-Wide Calm
+              {t.basinCalm}
             </span>
             <span className="text-[9px] text-slate-400 block mt-0.5">
-              Target: <strong className="text-slate-200">{activeLocation?.name || 'Coastal Belt'}</strong>
+              {t.target} <strong className="text-slate-200">{localizedArea}</strong>
             </span>
           </div>
         </div>
@@ -83,53 +87,53 @@ export default function CycloneTrackerCard({ bulletin, threat, weatherData, acti
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3.5 text-xs">
           <div className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-2.5">
             <div className="flex items-center justify-between text-slate-400 mb-0.5">
-              <span className="text-[10px] font-medium">Field Wind Speed</span>
+              <span className="text-[10px] font-medium">{t.fieldWindSpeed}</span>
               <Wind className="w-3.5 h-3.5 text-sky-400" />
             </div>
             <strong className="text-sm font-bold text-sky-300">
               {liveWind} km/h
             </strong>
             <span className="text-[9px] text-emerald-400 block mt-0.5">
-              ✓ Gentle • Safe for Spraying & Drying
+              {t.gentleWindDesc}
             </span>
           </div>
 
           <div className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-2.5">
             <div className="flex items-center justify-between text-slate-400 mb-0.5">
-              <span className="text-[10px] font-medium">Atmospheric Pressure</span>
+              <span className="text-[10px] font-medium">{t.atmosphericPressure}</span>
               <Gauge className="w-3.5 h-3.5 text-cyan-400" />
             </div>
             <strong className="text-sm font-mono font-bold text-cyan-300">
               {livePressure} hPa
             </strong>
             <span className="text-[9px] text-slate-400 block mt-0.5">
-              Stable High • Fair Skies
+              {t.normalPressureDesc}
             </span>
           </div>
 
           <div className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-2.5">
             <div className="flex items-center justify-between text-slate-400 mb-0.5">
-              <span className="text-[10px] font-medium">Relative Humidity</span>
+              <span className="text-[10px] font-medium">{t.relativeHumidity}</span>
               <Droplets className="w-3.5 h-3.5 text-amber-400" />
             </div>
             <strong className="text-sm font-bold text-amber-300">
               {liveHumidity}%
             </strong>
             <span className="text-[9px] text-slate-400 block mt-0.5">
-              Sun Drying Ideal (Paddy &lt;14%)
+              {t.idealDryingDesc}
             </span>
           </div>
 
           <div className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-2.5">
             <div className="flex items-center justify-between text-slate-400 mb-0.5">
-              <span className="text-[10px] font-medium">3-Hour Rain Risk</span>
+              <span className="text-[10px] font-medium">{t.rainRisk}</span>
               <Sun className="w-3.5 h-3.5 text-emerald-400" />
             </div>
             <strong className="text-sm font-bold text-emerald-300">
               {livePrecip > 0 ? `${livePrecip} mm` : '0.0 mm (Nil)'}
             </strong>
             <span className="text-[9px] text-emerald-400 block mt-0.5">
-              ✓ 100% Safe for Field Harvest
+              {t.dryWeatherDesc}
             </span>
           </div>
         </div>
@@ -138,27 +142,27 @@ export default function CycloneTrackerCard({ bulletin, threat, weatherData, acti
         <div className="space-y-2 text-xs bg-slate-950/60 border border-slate-800/80 rounded-xl p-3 mb-3">
           <div className="flex items-center gap-1.5 pb-2 border-b border-slate-800 text-amber-300 font-bold text-xs">
             <Sprout className="w-4 h-4 text-emerald-400" />
-            <span>Today's Agricultural & Harvest Advisories (ICAR / KVK Aligned):</span>
+            <span>{t.icarTitle}:</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-1">
             <div className="space-y-1">
               <div className="flex items-center gap-1.5 text-slate-200 font-bold text-[11px]">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                <span>Kharif Paddy Harvesting & Drying:</span>
+                <span>{t.paddyHarvestTitle}:</span>
               </div>
               <p className="text-[11px] text-slate-300 leading-relaxed pl-5">
-                Clear sunny weather offers an optimal 72-hour window for manual and mechanized combine harvesting. Thresh and spread grains on elevated clean yards (khala) to reach safe storage moisture (&lt; 14%).
+                {t.paddyHarvestDesc}
               </p>
             </div>
 
             <div className="space-y-1">
               <div className="flex items-center gap-1.5 text-slate-200 font-bold text-[11px]">
                 <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
-                <span>Rabi Pulses & Oilseeds Sowing Window:</span>
+                <span>{t.rabiSowingTitle}:</span>
               </div>
               <p className="text-[11px] text-slate-300 leading-relaxed pl-5">
-                Residual soil moisture in coastal lowlands is ideal for paira/utera cropping of Green Gram (Mung), Black Gram (Biri), Mustard, and Groundnut. Ensure seed treatment with Trichoderma @ 5g/kg seed.
+                {t.rabiSowingDesc}
               </p>
             </div>
           </div>
@@ -171,10 +175,10 @@ export default function CycloneTrackerCard({ bulletin, threat, weatherData, acti
               <Anchor className="w-4 h-4 text-teal-400" />
               <div>
                 <span className="font-bold text-teal-200 text-xs sm:text-sm">
-                  INCOIS Marine Safety: Sea State Normal • Fishing Permitted
+                  {t.incoisTitle}
                 </span>
                 <span className="text-[10px] text-slate-400 block">
-                  Bay of Bengal Coastal Waters (Odisha, Andhra & West Bengal)
+                  {t.incoisSubtitle}
                 </span>
               </div>
             </div>
@@ -194,7 +198,7 @@ export default function CycloneTrackerCard({ bulletin, threat, weatherData, acti
             </div>
             <div>
               <span className="text-slate-400">Fishermen Warning: </span>
-              <strong className="text-emerald-400 font-semibold">NIL • Venturing into Deep Sea Permitted</strong>
+              <strong className="text-emerald-400 font-semibold">{t.marineSafeTitle}</strong>
             </div>
           </div>
         </div>
@@ -204,14 +208,14 @@ export default function CycloneTrackerCard({ bulletin, threat, weatherData, acti
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
             <div>
-              <strong className="text-white text-xs">7-Day Basin Cyclogenesis Watch (IMD RSMC & ECMWF):</strong>
+              <strong className="text-white text-xs">{t.cyclogenesisTitle}:</strong>
               <span className="text-[11px] text-slate-400 block sm:inline sm:ml-1.5">
-                Nil probability of tropical cyclogenesis in Bay of Bengal or Arabian Sea through the next 7 days.
+                {t.cyclogenesisDesc}
               </span>
             </div>
           </div>
           <span className="text-[10px] font-mono text-emerald-400 font-bold px-2 py-0.5 bg-emerald-950 rounded border border-emerald-800 flex-shrink-0">
-            0% RISK
+            {t.cyclogenesis0}
           </span>
         </div>
 

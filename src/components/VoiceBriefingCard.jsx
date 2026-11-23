@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Volume2, Square, Sparkles, Share2, Copy, Check, ShieldAlert, CheckCircle } from 'lucide-react';
 import { speechService } from '../services/speechService';
+import { getTranslation } from '../data/translations';
 
 export default function VoiceBriefingCard({ briefing, selectedLang }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [copied, setCopied] = useState(false);
+  const t = getTranslation(selectedLang);
 
   // Stop speech if language changes
   useEffect(() => {
@@ -73,14 +75,14 @@ export default function VoiceBriefingCard({ briefing, selectedLang }) {
           </div>
           <div>
             <h2 className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
-              <span>Complete Vernacular Field Briefing</span>
+              <span>{t.briefingTitle}</span>
               {isPlaying && (
                 <span className="text-[10px] font-mono text-amber-400 bg-amber-950 px-2 py-0.5 rounded-full border border-amber-800 animate-pulse">
                   Playing ({progress.current}/{progress.total})
                 </span>
               )}
             </h2>
-            <p className="text-[11px] text-slate-400">Audio playback designed for outdoor personnel</p>
+            <p className="text-[11px] text-slate-400">{t.briefingSubtitle}</p>
           </div>
         </div>
 
@@ -96,7 +98,7 @@ export default function VoiceBriefingCard({ briefing, selectedLang }) {
           {isPlaying ? (
             <>
               <Square className="w-4 h-4 fill-current animate-pulse" />
-              <span>Stop Voice</span>
+              <span>{selectedLang === 'odia' ? 'ଅଡିଓ ବନ୍ଦ କରନ୍ତୁ' : 'Stop Voice'}</span>
             </>
           ) : (
             <>
@@ -123,7 +125,7 @@ export default function VoiceBriefingCard({ briefing, selectedLang }) {
         {briefing.actionSteps && briefing.actionSteps.length > 0 && (
           <div className="pt-2">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
-              Immediate Safety Steps:
+              {t.safetyStepsTitle}
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
               {briefing.actionSteps.map((step, idx) => (
@@ -143,7 +145,7 @@ export default function VoiceBriefingCard({ briefing, selectedLang }) {
       {/* Bottom Share & Copy Utilities */}
       <div className="p-3 bg-slate-900 border-t border-slate-800 flex items-center justify-between gap-2 text-xs">
         <span className="text-[11px] text-slate-400 hidden sm:inline">
-          Share this complete text warning with field teams:
+          {selectedLang === 'odia' ? 'ଚାଷୀ ଭାଇ ଓ ଫିଲ୍ଡ ଟିମ୍‌ଙ୍କ ସହ ସେୟାର କରନ୍ତୁ:' : 'Share this complete text warning with field teams:'}
         </span>
 
         <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
@@ -152,7 +154,7 @@ export default function VoiceBriefingCard({ briefing, selectedLang }) {
             className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition-colors"
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-            <span>{copied ? 'Copied' : 'Copy Full Message'}</span>
+            <span>{copied ? (selectedLang === 'odia' ? 'କପି ହୋଇଗଲା' : 'Copied') : t.copyText}</span>
           </button>
 
           <button
@@ -160,7 +162,7 @@ export default function VoiceBriefingCard({ briefing, selectedLang }) {
             className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-colors shadow-sm"
           >
             <Share2 className="w-3.5 h-3.5" />
-            <span>Forward WhatsApp</span>
+            <span>{t.shareWhatsapp}</span>
           </button>
         </div>
       </div>
