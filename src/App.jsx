@@ -540,6 +540,7 @@ export default function App() {
 
         {/* 3. Core Real-time Indicators & Winter Temperature Range */}
         <LiveMetricsGrid
+          threat={threat}
           selectedLang={selectedLang}
           distanceKm={distanceKm}
           directionText={bearing.text}
@@ -587,6 +588,8 @@ export default function App() {
             isGpsActive={!!customGpsLocation}
             activeStorm={activeStorm}
             allStorms={liveAllStorms}
+            weatherData={weatherData}
+            selectedLang={selectedLang}
           />
         </div>
 

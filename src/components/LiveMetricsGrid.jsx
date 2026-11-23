@@ -1,7 +1,8 @@
 import React from 'react';
-import { Compass, Wind, CloudRain, Gauge, Info, Thermometer, ThermometerSnowflake, ThermometerSun } from 'lucide-react';
+import { Compass, Wind, CloudRain, Gauge, Info, Thermometer, ThermometerSnowflake, ThermometerSun, ShieldCheck, Waves } from 'lucide-react';
 
 export default function LiveMetricsGrid({
+  threat,
   distanceKm,
   directionText,
   distanceToCoastKm,
@@ -24,36 +25,89 @@ export default function LiveMetricsGrid({
 }) {
   const isColdLow = minTemp !== undefined && minTemp !== null && minTemp <= 15;
   const isSevereCold = minTemp !== undefined && minTemp !== null && minTemp <= 10;
-  const isOdia = selectedLang === 'odia';
+  const lang = (selectedLang || 'english').toLowerCase();
+  const isOdia = lang === 'odia';
+  const isTamil = lang === 'tamil';
+
+  const isPeaceTime = threat?.isNormalDay || threat?.level === 'GREEN';
+  const isEasterlyWaves = threat?.isEasterlyWaves;
 
   return (
     <div className="space-y-1.5">
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-2.5">
         
-        {/* Metric 1: Distance to Storm Center & Coastline */}
+        {/* Metric 1: Dynamic Basin Shield / Monsoon Pulse when no active cyclone, Cyclone Eye when active cyclone */}
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
           <div className="flex items-center justify-between text-slate-400 mb-1.5">
             <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider">
-              {isOdia ? 'ବାତ୍ୟା କେନ୍ଦ୍ର' : 'Cyclone Eye'}
+              {isEasterlyWaves
+                ? (isTamil ? 'பருவமழை அலை' : isOdia ? 'ମୌସୁମୀ ପ୍ରବାହ' : 'Monsoon Pulse')
+                : isPeaceTime
+                ? (isTamil ? 'புயல் கண்காணிப்பு' : isOdia ? 'ବାତ୍ୟା ନଜର' : 'Cyclone Shield')
+                : (isTamil ? 'புயல் மையம்' : isOdia ? 'ବାତ୍ୟା କେନ୍ଦ୍ର' : 'Cyclone Eye')}
             </span>
-            <Compass className="w-4 h-4 text-sky-400" />
+            {isEasterlyWaves ? (
+              <Waves className="w-4 h-4 text-sky-400" />
+            ) : isPeaceTime ? (
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            ) : (
+              <Compass className="w-4 h-4 text-sky-400" />
+            )}
           </div>
           <div>
-            <div className="text-xl sm:text-2xl font-black text-white">
-              {distanceKm} <span className="text-xs font-semibold text-slate-400">km</span>
-            </div>
-            <p className="text-[11px] text-sky-400 font-medium truncate mt-0.5">
-              {isOdia ? `ଆପଣଙ୍କ ଠାରୁ (${directionText})` : `To you (${directionText})`}
-            </p>
-            {distanceToCoastKm && (
-              <div className="mt-1.5 pt-1.5 border-t border-slate-800/80 text-[10px] space-y-0.5">
-                <div className="text-emerald-400 font-bold truncate">
-                  🌊 ~{distanceToCoastKm} km to coast
+            {isEasterlyWaves ? (
+              <>
+                <div className="text-xl sm:text-2xl font-black text-sky-300">
+                  {isTamil ? 'தீவிரம்' : isOdia ? 'ସକ୍ରିୟ' : 'Active'}
                 </div>
-                <div className="text-slate-400 text-[9px]">
-                  ⏱️ Approaching at {movementSpeed} km/h {movementDirection}
+                <p className="text-[11px] text-amber-400 font-medium truncate mt-0.5">
+                  Easterly Waves • SW Bay
+                </p>
+                <div className="mt-1.5 pt-1.5 border-t border-slate-800/80 text-[10px] space-y-0.5">
+                  <div className="text-sky-300 font-bold truncate">
+                    🌧️ Rain & Squalls (23–27 Nov)
+                  </div>
+                  <div className="text-slate-400 text-[9px]">
+                    ⏱️ Convective Inflow from Sea
+                  </div>
                 </div>
-              </div>
+              </>
+            ) : isPeaceTime ? (
+              <>
+                <div className="text-xl sm:text-2xl font-black text-emerald-400">
+                  {isTamil ? '0 செயலில்' : isOdia ? '୦ ସକ୍ରିୟ' : '0 Active'}
+                </div>
+                <p className="text-[11px] text-emerald-400 font-medium truncate mt-0.5">
+                  🟢 7-Day Basin All-Clear
+                </p>
+                <div className="mt-1.5 pt-1.5 border-t border-slate-800/80 text-[10px] space-y-0.5">
+                  <div className="text-emerald-400 font-bold truncate">
+                    🌊 Bay of Bengal Calm
+                  </div>
+                  <div className="text-slate-400 text-[9px]">
+                    ⏱️ Marine & Routine Safe
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-xl sm:text-2xl font-black text-white">
+                  {distanceKm} <span className="text-xs font-semibold text-slate-400">km</span>
+                </div>
+                <p className="text-[11px] text-sky-400 font-medium truncate mt-0.5">
+                  {isOdia ? `ଆପଣଙ୍କ ଠାରୁ (${directionText})` : `To you (${directionText})`}
+                </p>
+                {distanceToCoastKm && (
+                  <div className="mt-1.5 pt-1.5 border-t border-slate-800/80 text-[10px] space-y-0.5">
+                    <div className="text-emerald-400 font-bold truncate">
+                      🌊 ~{distanceToCoastKm} km to coast
+                    </div>
+                    <div className="text-slate-400 text-[9px]">
+                      ⏱️ Approaching at {movementSpeed} km/h {movementDirection}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

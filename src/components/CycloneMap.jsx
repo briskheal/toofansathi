@@ -31,6 +31,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { calculateDistanceKm } from '../services/cycloneEngine';
+import { getStateAgroIntelligence } from '../data/agroIntelligence';
 
 // Dynamic Real-Time Storm Progression Engine based on Current Clock Time
 export function getLiveAkvanState() {
@@ -310,8 +311,20 @@ export default function CycloneMap({
   onRefreshLocation,
   isGpsActive,
   activeStorm,
-  allStorms = []
+  allStorms = [],
+  weatherData,
+  selectedLang = 'english'
 }) {
+  // Real-time observation metrics for selected area
+  const liveWind = weatherData ? Math.round(weatherData.current.wind_speed_10m) : 11;
+  const liveGusts = weatherData ? Math.round(weatherData.current.wind_gusts_10m) : 21;
+  const livePressure = weatherData ? Math.round(weatherData.current.surface_pressure) : 1013;
+  const liveHumidity = weatherData?.current?.relative_humidity_2m !== undefined ? Math.round(weatherData.current.relative_humidity_2m) : 88;
+  const livePrecip = weatherData?.current?.precipitation !== undefined ? Math.round(weatherData.current.precipitation * 10) / 10 : 0.1;
+  const liveTemp = weatherData?.current?.temperature_2m !== undefined ? Math.round(weatherData.current.temperature_2m) : 26;
+
+  const stateAgro = getStateAgroIntelligence(userLocation?.state || userLocation?.name, selectedLang, livePrecip, liveWind);
+
   const [activeTab, setActiveTab] = useState('trajectory'); // 'trajectory' | 'radar' | 'satellite' | 'global' | 'zoomearth'
   const [mapViewMode, setMapViewMode] = useState('bay-of-bengal'); // Focus on active Severe Cyclone by default
   const [satChannel, setSatChannel] = useState('ir1'); // 'ir1' | 'vis' | 'wv'
@@ -847,18 +860,24 @@ export default function CycloneMap({
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                   </span>
                   <span className="font-extrabold text-white text-[11px] sm:text-sm truncate">
-                    Daily Coastal Weather Radar • All-Clear Routine ({new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })})
+                    {isSouthIndiaOrMonsoon
+                      ? `Daily Coastal Weather Radar • Northeast Monsoon & Easterly Waves (${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })})`
+                      : `Daily Coastal Weather Radar • All-Clear Routine (${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })})`}
                   </span>
-                  <span className="text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded bg-emerald-700/80 text-white border border-emerald-500 whitespace-nowrap flex-shrink-0">
-                    🟢 NO ACTIVE CYCLONE
+                  <span className={`text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded border whitespace-nowrap flex-shrink-0 ${
+                    isSouthIndiaOrMonsoon
+                      ? 'bg-amber-950/80 text-amber-300 border-amber-600'
+                      : 'bg-emerald-700/80 text-white border border-emerald-500'
+                  }`}>
+                    {isSouthIndiaOrMonsoon ? '⚠️ NE MONSOON / EASTERLY WAVES' : '🟢 NO ACTIVE CYCLONE'}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0 text-[10px] text-emerald-300 font-mono">
-                  <span>🟢 BASIN CALM</span>
+                <div className="flex items-center gap-2 flex-shrink-0 text-[10px] text-cyan-300 font-mono">
+                  <span>{isSouthIndiaOrMonsoon ? '🌊 SW BAY SQUALLS' : '🟢 BASIN CALM'}</span>
                 </div>
               </div>
 
-              {/* 4 Points Horizontal Slider for Peacetime */}
+              {/* 4 Points Horizontal Slider for Peacetime & Active Monsoon */}
               <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 overflow-x-auto sm:overflow-visible gap-2 text-[11px] pb-1 sm:pb-0 no-scrollbar snap-x snap-mandatory">
                 {/* Point 1: Your Area Weather */}
                 <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
@@ -866,13 +885,17 @@ export default function CycloneMap({
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">1. Local Field Weather</span>
                     <strong className="text-white text-xs block">
-                      {userLocation.name} (Coastal Belt)
+                      {userLocation.name} ({userLocation.state || 'Local'})
                     </strong>
-                    <span className="text-[10px] text-sky-300 font-semibold block">
-                      🌤️ Fair Skies • Gentle Breeze
+                    <span className={`text-[10px] font-semibold block ${isSouthIndiaOrMonsoon || livePrecip > 0 ? 'text-amber-300' : 'text-sky-300'}`}>
+                      {isSouthIndiaOrMonsoon || livePrecip > 0
+                        ? `🌧️ Showers & Rain (${livePrecip > 0 ? livePrecip + ' mm' : 'Active'}) • ${liveTemp}°C`
+                        : `🌤️ Fair Skies • Gentle Breeze • ${liveTemp}°C`}
                     </span>
-                    <span className="text-[9px] text-emerald-400 block font-semibold">
-                      ✓ No Severe Cyclone Warnings
+                    <span className={`text-[9px] block font-semibold ${isSouthIndiaOrMonsoon || livePrecip > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                      {isSouthIndiaOrMonsoon || livePrecip > 0
+                        ? `⚠️ Wind ${liveWind} km/h (Gusts ${liveGusts} km/h) • Easterly Waves`
+                        : `✓ Wind ${liveWind} km/h (Gusts ${liveGusts} km/h) • Calm Routine`}
                     </span>
                   </div>
                 </div>
@@ -882,14 +905,14 @@ export default function CycloneMap({
                   <Waves className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">2. INCOIS Ocean State</span>
-                    <strong className="text-cyan-300 text-xs block">
-                      Waves: 0.9 m – 1.5 m (Slight)
+                    <strong className="text-cyan-300 text-xs block truncate" title={stateAgro.waveHeight}>
+                      Waves: {stateAgro.waveHeight}
                     </strong>
-                    <span className="text-[10px] text-slate-300 block">
-                      Sea Surface Temp: 28.5°C
+                    <span className="text-[10px] text-slate-300 block truncate" title={stateAgro.offshoreWind}>
+                      Offshore: {stateAgro.offshoreWind}
                     </span>
-                    <span className="text-[9px] text-emerald-400 block font-semibold">
-                      ✓ Coastal & Deep-Sea Fishing Safe
+                    <span className={`text-[9px] block font-semibold truncate ${stateAgro.marineStatusClass.includes('amber') ? 'text-amber-400' : 'text-emerald-400'}`} title={stateAgro.fishermenWarning}>
+                      {stateAgro.marineStatus}
                     </span>
                   </div>
                 </div>
@@ -903,7 +926,7 @@ export default function CycloneMap({
                       0% Risk (Next 7 Days)
                     </strong>
                     <span className="text-[10px] text-slate-300 block">
-                      Bay of Bengal & Arabian Sea
+                      {isSouthIndiaOrMonsoon ? 'SW Bay Easterly Wave Stream' : 'Bay of Bengal & Arabian Sea'}
                     </span>
                     <span className="text-[9px] text-emerald-400 block font-semibold">
                       ✓ Nil Cyclonic Disturbances
@@ -916,14 +939,14 @@ export default function CycloneMap({
                   <Sprout className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">4. Farm Harvest Advisory</span>
-                    <strong className="text-amber-300 text-xs block">
-                      Paddy Harvesting Window
+                    <strong className="text-amber-300 text-xs block truncate" title={stateAgro.advisory1Title}>
+                      {stateAgro.advisory1Title}
                     </strong>
-                    <span className="text-[10px] text-slate-300 block">
-                      Sun drying: Safe (Moisture &lt;14%)
+                    <span className="text-[10px] text-slate-300 block line-clamp-2">
+                      {stateAgro.advisory1Desc.substring(0, 95)}...
                     </span>
-                    <span className="text-[9px] text-amber-300 block font-semibold">
-                      Optimal for Rabi Pulses Sowing
+                    <span className="text-[9px] text-cyan-300 block font-semibold truncate mt-0.5" title={stateAgro.advisory2Title}>
+                      {stateAgro.advisory2Title}
                     </span>
                   </div>
                 </div>
@@ -1656,7 +1679,7 @@ export default function CycloneMap({
                         <Wind className="w-3.5 h-3.5 text-amber-400" />
                         <span>Wind Speed & Gusts</span>
                       </span>
-                      <span className="text-[9px] font-mono text-amber-200">115 km/h</span>
+                      <span className="text-[9px] font-mono text-amber-200">{liveWind} km/h (Gusts {liveGusts} km/h)</span>
                     </button>
 
                     <button
@@ -1669,7 +1692,7 @@ export default function CycloneMap({
                         <Compass className="w-3.5 h-3.5 text-rose-400" />
                         <span>Pressure & Isobars</span>
                       </span>
-                      <span className="text-[9px] font-mono text-rose-200">988 hPa</span>
+                      <span className="text-[9px] font-mono text-rose-200">{livePressure} hPa</span>
                     </button>
                   </div>
                 </div>
@@ -1692,15 +1715,21 @@ export default function CycloneMap({
               )}
               {activeWeatherOverlay === 'wind' && (
                 <div>
-                  <div className="flex items-center justify-between text-[8px] sm:text-[9px] font-mono text-slate-300 font-bold mb-0.5">
-                    <span>0</span>
-                    <span>30</span>
-                    <span>60</span>
-                    <span>90</span>
-                    <span>115 (Gale)</span>
-                    <span>150+ km/h</span>
+                  <div className="flex items-center justify-between text-[8px] sm:text-[9px] font-mono text-amber-300 font-bold mb-0.5">
+                    <span>{userLocation.name} Wind: {liveWind} km/h</span>
+                    <span>Peak Gusts: {liveGusts} km/h</span>
+                    <span>{liveWind < 20 ? 'Gentle Breeze' : liveWind < 40 ? 'Moderate Squall' : 'High Wind'}</span>
                   </div>
                   <div className="h-1.5 sm:h-2 w-full rounded-full bg-gradient-to-r from-sky-400 via-emerald-400 via-amber-400 via-orange-500 to-rose-600 shadow-inner"></div>
+                </div>
+              )}
+              {activeWeatherOverlay === 'pressure' && (
+                <div>
+                  <div className="flex items-center justify-between text-[8px] sm:text-[9px] font-mono text-rose-300 font-bold mb-0.5">
+                    <span>{userLocation.name} Barometer: {livePressure} hPa</span>
+                    <span>Atmospheric Status: {livePressure >= 1010 ? 'Stable Normal' : 'Low Pressure System'}</span>
+                  </div>
+                  <div className="h-1.5 sm:h-2 w-full rounded-full bg-gradient-to-r from-red-600 via-amber-500 via-sky-500 to-blue-700 shadow-inner"></div>
                 </div>
               )}
 
