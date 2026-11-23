@@ -277,13 +277,36 @@ export function calculateBearingDirection(userLat, userLon, stormLat, stormLon) 
   };
 }
 
-// Determine Threat Level based on Distance, Local Wind, Gusts, Rain, and Storm Stage
-export function evaluateThreatLevel(distanceKm, localWindKmph, localGustsKmph, rainMm3h, storm = ALL_INDIA_ACTIVE_STORMS[0]) {
+// Determine Threat Level based on Distance, Local Wind, Gusts, Rain, Storm Stage, and Active Location
+export function evaluateThreatLevel(distanceKm, localWindKmph, localGustsKmph, rainMm3h, storm = ALL_INDIA_ACTIVE_STORMS[0], location = null) {
   const now = new Date();
-  // If post-storm date (Nov 22 or later), default to peaceful peacetime weather intelligence
-  const isNormalDay = (now.getDate() >= 22 && now.getMonth() >= 10) || now.getFullYear() > 2026;
+  // If post-storm date (Nov 22 or later)
+  const isPostNov21 = (now.getDate() >= 22 && now.getMonth() >= 10) || now.getFullYear() > 2026;
 
-  if (isNormalDay) {
+  // Active Northeast Monsoon & Easterly Waves Detection (23–27 Nov Window)
+  // Coastal Tamil Nadu, Puducherry, Kerala, and Rayalaseema / South Coastal AP experience heavy showers & 40-50 km/h squalls
+  const locState = location?.state || '';
+  const locId = (location?.id || location?.name || '').toLowerCase();
+  const isMonsoonRegion = locState === 'Tamil Nadu' || 
+                          locState === 'Puducherry' || 
+                          locState === 'Kerala' || 
+                          (locState === 'Andhra Pradesh' && (locId.includes('chennai') || locId.includes('tirupati') || locId.includes('nellore') || rainMm3h > 0 || localWindKmph >= 25));
+
+  if (isMonsoonRegion || rainMm3h >= 1.5) {
+    const isHeavy = rainMm3h >= 25 || localWindKmph >= 50 || localGustsKmph >= 65;
+    return {
+      level: isHeavy ? 'ORANGE' : 'YELLOW',
+      color: isHeavy ? 'bg-amber-600 text-white' : 'bg-yellow-500 text-slate-950',
+      badge: isHeavy ? 'border-amber-500 text-amber-400 bg-amber-950/60' : 'border-yellow-500 text-yellow-400 bg-yellow-950/60',
+      title: isHeavy ? 'ORANGE ALERT: Heavy Rain & Squalls (Easterly Waves)' : 'IMD ALERT: Northeast Monsoon & Easterly Waves (23–27 Nov)',
+      summary: 'ACTIVE EASTERLY WAVES • COASTAL RAIN & SQUALL WATCH',
+      action: 'Convective rain bands & 40–50 km/h wind gusts active across Tamil Nadu & coastal belt. Ensure field drainage, do not shelter under trees during lightning, and coastal fishermen exercise caution.',
+      isEasterlyWaves: true,
+      isNormalDay: false
+    };
+  }
+
+  if (isPostNov21) {
     if (localWindKmph >= 65 || localGustsKmph >= 80 || rainMm3h >= 60) {
       return {
         level: 'ORANGE',
@@ -398,7 +421,9 @@ export function getTimeGreeting(lang = 'english', date = new Date()) {
   const isAfternoon = hour >= 12 && hour < 16.5;
   const isEvening = hour >= 16.5 && hour < 21;
 
-  switch (lang) {
+  const normalizedLang = (lang || 'english').toLowerCase();
+
+  switch (normalizedLang) {
     case 'odia':
       if (isMorning) return { text: 'ଶୁଭ ସକାଳ।', phonetic: 'Subha sakala.' };
       if (isAfternoon) return { text: 'ଶୁଭ ମଧ୍ୟାହ୍ନ।', phonetic: 'Subha madhyahna.' };
@@ -409,16 +434,37 @@ export function getTimeGreeting(lang = 'english', date = new Date()) {
       if (isAfternoon) return { text: 'शुभ दोपहर।', phonetic: 'Shubh dopahar.' };
       if (isEvening) return { text: 'शुभ संध्या।', phonetic: 'Shubh sandhya.' };
       return { text: 'शुभ रात्रि।', phonetic: 'Shubh ratri.' };
+    case 'bengali':
     case 'bangla':
       if (isMorning) return { text: 'সুপ্রভাত।', phonetic: 'Suprabhat.' };
       if (isAfternoon) return { text: 'শুভ দুপুর।', phonetic: 'Shubho dupur.' };
       if (isEvening) return { text: 'শুভ সন্ধ্যা।', phonetic: 'Shubho shondhya.' };
       return { text: 'শুভ রাত্রি।', phonetic: 'Shubho ratri.' };
+    case 'gujarati':
+      if (isMorning) return { text: 'સુપ્રભાત!', phonetic: 'Suprabhat!' };
+      if (isAfternoon) return { text: 'શુભ બપોર!', phonetic: 'Shubh bapor!' };
+      if (isEvening) return { text: 'શુભ સંધ્યા!', phonetic: 'Shubh sandhya!' };
+      return { text: 'શુભ રાત્રિ!', phonetic: 'Shubh ratri!' };
     case 'telugu':
       if (isMorning) return { text: 'శుభోదయం.', phonetic: 'Subhodayam.' };
       if (isAfternoon) return { text: 'శుభ మధ్యాహ్నం.', phonetic: 'Subha madhyahnam.' };
       if (isEvening) return { text: 'శుభ సాయంత్రం.', phonetic: 'Subha sayantram.' };
       return { text: 'శుభ రాత్రి.', phonetic: 'Subha ratri.' };
+    case 'tamil':
+      if (isMorning) return { text: 'காலை வணக்கம்!', phonetic: 'Kaalai vanakkam!' };
+      if (isAfternoon) return { text: 'மதிய வணக்கம்!', phonetic: 'Madhiya vanakkam!' };
+      if (isEvening) return { text: 'மாலை வணக்கம்!', phonetic: 'Maalai vanakkam!' };
+      return { text: 'இரவு வணக்கம்!', phonetic: 'Iravu vanakkam!' };
+    case 'malayalam':
+      if (isMorning) return { text: 'സുപ്രഭാതം!', phonetic: 'Suprabhatham!' };
+      if (isAfternoon) return { text: 'ശുഭ ഉച്ചതിരിഞ്ഞ്!', phonetic: 'Shubha uchathirinju!' };
+      if (isEvening) return { text: 'ശുഭ സായാഹ്നം!', phonetic: 'Shubha saayahnam!' };
+      return { text: 'ശുഭ രാത്രി!', phonetic: 'Shubha rathri!' };
+    case 'kannada':
+      if (isMorning) return { text: 'ಶುಭೋದಯ!', phonetic: 'Shubhdaya!' };
+      if (isAfternoon) return { text: 'ಶುಭ ಮಧ್ಯಾಹ್ನ!', phonetic: 'Shubha madhyahna!' };
+      if (isEvening) return { text: 'ಶುಭ ಸಂಜೆ!', phonetic: 'Shubha sanje!' };
+      return { text: 'ಶುಭ ರಾತ್ರಿ!', phonetic: 'Shubha ratri.' };
     default:
       if (isMorning) return { text: 'Good morning!', phonetic: 'Good morning.' };
       if (isAfternoon) return { text: 'Good afternoon!', phonetic: 'Good afternoon.' };
@@ -492,11 +538,128 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
   const isChillyWinter = minTemp > 10 && minTemp <= 16;
   const isMildWinter = minTemp > 16 && minTemp <= 20;
 
-  // Dynamic greeting based on current local hour (Morning, Afternoon, Evening, Night)
-  const greeting = getTimeGreeting(lang);
-  const localizedArea = cleanDistrictDisplay(districtName, lang);
+  const normalizedLang = (lang || 'english').toLowerCase();
 
-  // Peacetime / Normal Day Weather Pulse (When no active cyclone is threatening the region)
+  // Dynamic greeting based on current local hour (Morning, Afternoon, Evening, Night)
+  const greeting = getTimeGreeting(normalizedLang);
+  const localizedArea = cleanDistrictDisplay(districtName, normalizedLang);
+
+  // 1. ACTIVE NORTHEAST MONSOON & EASTERLY WAVES BRIEFING (Tamil Nadu, Puducherry, Kerala, South AP)
+  if (threat.isEasterlyWaves) {
+    switch (normalizedLang) {
+      case 'tamil':
+        return {
+          headline: `தூபான் சாதி தினசரி வானிலை: வடகிழக்கு பருவமழை & கிழக்கு அலைகள் (Easterly Waves) எச்சரிக்கை • ${localizedArea}`,
+          speech: `${greeting.text} இன்று ${localizedArea} மற்றும் கடலோரப் பகுதிகளில் வடகிழக்கு பருவமழை மற்றும் வங்கக்கடல் கிழக்கு அலைகள் (Easterly Waves) காரணமாக இடைவிடாத மழை, இடிமின்னல் மற்றும் மணிக்கு 40 முதல் 50 கி.மீ வேகத்தில் பலத்த காற்று வீசக்கூடும் (ଝଟକା 60 கி.மீ வரை, 23-27 நவம்பர்). விவசாயிகள் சம்பா நெல் மற்றும் பயிர் நிலங்களில் நீர் தேங்காமல் உடனடி வடிகால் வசதி செய்யுங்கள். உரமிடுவதை தற்காலிகமாக ஒத்திவையுங்கள். இடிமின்னலின் போது மரங்களின் கீழ் நிற்க வேண்டாம். கடலில் அலைகள் சீற்றமாக இருப்பதால் மீனவர்கள் ஆழ்கடல் செல்வதை தவிர்க்கவும்.`,
+          phoneticSpeech: `${greeting.phonetic} Indru ${localizedArea} paguthiyil vadakizhakku paruvamazhai kaaranamaaga mazhai peiyya kooodum. Vivasayigal thottangalil vadikaal vasathi seiyavum. Meenavargal aazhkadal selvathai thavirkkavum.`,
+          actionSteps: [
+            'வயல்களில் தேங்கிய நீரை உடனே வடியுங்கள்',
+            'இடிமின்னலின் போது மரங்கள் கீழ் நிற்க வேண்டாம்',
+            'மணிக்கு 40-50 கி.மீ வேகத்தில் காற்று எச்சரிக்கை',
+            'மீனவர்கள் ஆழ்கடல் செல்வதை தவிர்க்கவும்'
+          ]
+        };
+      case 'malayalam':
+        return {
+          headline: `തൂഫാൻ സാഥി ദിനാന്തരീക്ഷം: തുലാവർഷം & ഈസ്റ്റർലി വേവ് ജാഗ്രത • ${localizedArea}`,
+          speech: `${greeting.text} ഇന്ന് ${localizedArea} പ്രദേശത്ത് തുലാവർഷവും (Northeast Monsoon) ബംഗാൾ ഉൾക്കടലിലെ ഈസ്റ്റർലി തരംഗങ്ങളും കാരണം ഇടിമിന്നലോടു കൂടിയ മഴയ്ക്കും മണിക്കൂറിൽ 40 മുതൽ 50 കി.മീ വരെ വേഗതയുള്ള കാറ്റിനും സാധ്യതയുണ്ട് (23-27 നവംബർ). കർഷകർ തോട്ടങ്ങളിലും പാടങ്ങളിലും വെള്ളക്കെട്ട് ഒഴിവാക്കാൻ നീർവാർച്ചാ സൗകര്യം ഉറപ്പാക്കുക. ഇടിമിന്നലുള്ളപ്പോൾ മരങ്ങളുടെ ചുവട്ടിൽ നിൽക്കരുത്. തീരദേശത്ത് കടൽ പ്രക്ഷുബ്ധമായതിനാൽ മത്സ്യത്തൊഴിലാളികൾ ജാഗ്രത പാലിക്കുക.`,
+          phoneticSpeech: `${greeting.phonetic} Innu ${localizedArea} pradesheth thulavarsham kaaranam mazha peyyan sadhyathayundu. Thottangalil vellakkettu ozhivakkuka.`,
+          actionSteps: [
+            'പാടങ്ങളിലും തോട്ടങ്ങളിലും നീർവാർച്ച ഉറപ്പാക്കുക',
+            'ഇടിമിന്നലുള്ളപ്പോൾ മരങ്ങൾക്ക് കീഴിൽ നിൽക്കരുത്',
+            'മണിക്കൂറിൽ 40-50 കി.മീ കാറ്റിന്റെ ജാഗ്രത',
+            'മത്സ്യത്തൊഴിലാളികൾ കടലിൽ ജാഗ്രത പാലിക്കുക'
+          ]
+        };
+      case 'kannada':
+        return {
+          headline: `ತೂಫಾನ್ ಸಾಥಿ ದೈನಂದಿನ ಹವಾಮಾನ: ಈಶಾನ್ಯ ಮಾನ್ಸೂನ್ & ಈಸ್ಟರ್ಲಿ ವೇವ್ ಎಚ್ಚರಿಕೆ • ${localizedArea}`,
+          speech: `${greeting.text} ಇಂದು ${localizedArea} ಪ್ರದೇಶದಲ್ಲಿ ಈಶಾನ್ಯ ಮಾನ್ಸೂನ್ ಮತ್ತು ಬಂಗಾಳ ಕೊಲ್ಲಿಯ ಈಸ್ಟರ್ಲಿ ಅಲೆಗಳ ಪ್ರಭಾವದಿಂದ ಗುಡುಗು-ಮಿಂಚು ಸಹಿತ ಮಳೆ ಮತ್ತು ಗಂಟೆಗೆ 40 ರಿಂದ 50 ಕಿ.ಮೀ ವೇಗದಲ್ಲಿ ಬಿರುಗಾಳಿ ಬೀಸುವ ಸಾಧ್ಯತೆಯಿದೆ (23-27 ನವೆಂಬರ್). ರೈತರು ಬೆಳೆ ಹೊಲಗಳಲ್ಲಿ ನೀರು ನಿಲ್ಲದಂತೆ ಒಳಚರಂಡಿ ವ್ಯವಸ್ಥೆ ಮಾಡಬೇಕು. ಸಿಡಿಲು ಬಡಿಯುವ ವೇಳೆ ಮರಗಳ ಕೆಳಗೆ ನಿಲ್ಲಬೇಡಿ. ಕಡಲು ಪ್ರಕ್ಷುಬ್ಧವಾಗಿರುವುದರಿಂದ ಮೀನುಗಾರರು ಎಚ್ಚರಿಕೆ ವಹಿಸಿ.`,
+          phoneticSpeech: `${greeting.phonetic} Indu ${localizedArea} dalli maleyshte gaali beesuva sadhyathe ide. Hola dalli neerannu horahakalu vyavasthe maadi.`,
+          actionSteps: [
+            'ಬೆಳೆ ಜಮೀನುಗಳಲ್ಲಿ ನೀರು ನಿಲ್ಲದಂತೆ ಬಸಿದು ಹೋಗಲು ದಾರಿ ಮಾಡಿ',
+            'ಗುಡುಗು ಮಿಂಚಿನ ವೇಳೆ ಮರಗಳ ಕೆಳಗೆ ನಿಲ್ಲಬೇಡಿ',
+            'ಗಂಟೆಗೆ 40-50 ಕಿ.ಮೀ ಬಿರುಗಾಳಿ ಎಚ್ಚರಿಕೆ',
+            'ಮೀನುಗಾರರು ಕಡಲಿಗೆ ಇಳಿಯುವಾಗ ಎಚ್ಚರಿಕೆ'
+          ]
+        };
+      case 'telugu':
+        return {
+          headline: `తుఫాన్ సాథీ రోజువారీ వాతావరణం: ఈశాన్య రుతుపవనాలు & ఈస్టర్లీ వేవ్ హెచ్చరిక • ${localizedArea}`,
+          speech: `${greeting.text} నేడు ${localizedArea} ప్రాంతంలో ఈశాన్య రుతుపవనాలు మరియు బంగాళాఖాత ఈస్టర్లీ వేవ్స్ కారణంగా ఉరుములు, మెరుపులతో కూడిన వర్షాలు మరియు గంటకు 40-50 కి.మీ వేగంతో ఈదురుగాలులు వీచే అవకాశం ఉంది (23-27 నవంబర్). రైతులు పంట పొలాల్లో నీరు నిలవకుండా డ్రైనేజీ ఏర్పాట్లు చేసుకోవాలి. ఉరుములు పడే సమయంలో చెట్ల కింద ఉండకూడదు. సముద్రంలో ఆటుపోట్లు ఎక్కువగా ఉన్నందున మత్స్యకారులు జాగ్రత్త వహించాలి.`,
+          phoneticSpeech: `${greeting.phonetic} Nedu ${localizedArea} pranthamlo vathavaranam varsham mariyu 40-50 km/h eedurugaalulatho koodi untundi. Polamlo water drainage chusukondi.`,
+          actionSteps: [
+            'పొలాల్లో నీరు నిలవకుండా డ్రైనేజీ చూడండి',
+            'ఉరుములు పడే సమయంలో చెట్ల కింద ఉండకండి',
+            'గంటకు 40-50 కి.మీ ఈదురుగాలుల పట్ల అప్రమత్తత',
+            'మత్స్యకారులు సముద్రంలో జాగ్రత్త వహించండి'
+          ]
+        };
+      case 'hindi':
+        return {
+          headline: `तूफानसाथी दैनिक मौसम: उत्तर-पूर्वी मानसून व ईस्टरली वेव चेतावनी • ${localizedArea}`,
+          speech: `${greeting.text} आज ${localizedArea} क्षेत्र में उत्तर-पूर्वी मानसून (Northeast Monsoon) और बंगाल की खाड़ी से आ रही ईस्टरली तरंगों (Easterly Waves) के प्रभाव से गरज-चमक के साथ बारिश और 40 से 50 किमी/घंटे की रफ्तार से तेज हवाएं (झोंके 60 किमी तक) चलने की संभावना है (23-27 नवंबर)। किसान भाई खेतों में जल निकासी की तुरंत व्यवस्था करें और छिड़काव टालें। बिजली चमकने के दौरान पेड़ों के नीचे न रुकें। समुद्र में ऊंची लहरों के कारण मछुआरे गहरे समुद्र में जाने से बचें।`,
+          phoneticSpeech: `${greeting.phonetic} Aaj ${localizedArea} mein Northeast Monsoon aur Easterly Waves ke kaaran baarish aur 40-50 km/h ki tez hawayen chalengi. Kheton se paani nikalne ki vyavastha karein.`,
+          actionSteps: [
+            'खेतों में जलभराव रोकने हेतु निकासी करें',
+            'बिजली कड़कने पर पेड़ों के नीचे न रुकें',
+            '40-50 किमी/घंटा तेज हवाओं से सतर्क रहें',
+            'मछुआरे गहरे समुद्र में जाने से बचें'
+          ]
+        };
+      case 'bengali':
+      case 'bangla':
+        return {
+          headline: `তুফানসাথী দৈনিক আবহাওয়া: উত্তর-পূর্ব মৌসুমি ও ইস্টার্লি ওয়েভ সতর্কতা • ${localizedArea}`,
+          speech: `${greeting.text} আজ ${localizedArea} এলাকায় উত্তর-পূর্ব মৌসুমি বায়ু ও বঙ্গোপসাগরের ইস্টার্লি তরঙ্গের কারণে বজ্রবিদ্যুৎ সহ বৃষ্টি এবং ঘণ্টায় ৪০-৫০ কিমি বেগে ঝোড়ো হাওয়া বইতে পারে (২৩-২৭ নভেম্বর)। কৃষকদের জমিতে জল নিকাশের পর্যাপ্ত ব্যবস্থা করার পরামর্শ দেওয়া হচ্ছে। বজ্রপাতের সময় গাছের নিচে আশ্রয় নেবেন না। উপকূলীয় সমুদ্রে উত্তাল পরিস্থিতির কারণে মৎস্যজীবীদের সতর্ক থাকতে বলা হয়েছে।`,
+          phoneticSpeech: `${greeting.phonetic} Aaj ${localizedArea} elakay brishti o jhoro batasher probhab thakbe. Jomi theke jol nikasher byabostha korun.`,
+          actionSteps: [
+            'ফসলের জমিতে জল নিকাশী ব্যবস্থা নিশ্চিত করুন',
+            'বজ্রপাতের সময় গাছের নিচে দাঁড়াবেন না',
+            'ঘণ্টায় ৪০-৫০ কিমি ঝোড়ো হাওয়া থেকে সাবধান',
+            'মৎস্যজীবীদের সমুদ্রে অতিরিক্ত সতর্কতা'
+          ]
+        };
+      case 'gujarati':
+        return {
+          headline: `તૂફાન સાથી દૈનિક હવામાન: ઉત્તર-પૂર્વ ચોમાસું અને ઈસ્ટર્લી વેવ ચેતવણી • ${localizedArea}`,
+          speech: `${greeting.text} આજે ${localizedArea} વિસ્તારમાં ઉત્તર-પૂર્વીય ચોમાસા અને બંગાળની ખાડીના ઈસ્ટર્લી વેવ્સના કારણે ગાજવીજ સાથે વરસાદ અને કલાકના 40 થી 50 કિમીની ઝડપે પવન ફૂંકાવાની શક્યતા છે (23-27 નવેમ્બર). ખેડૂતોએ પાકના ખેતરોમાં પાણી ભરાઈ ન રહે તે માટે તાત્કાલિક નિકાલની વ્યવસ્થા કરવી. વીજળીના કડાકા સમયે ઝાડ નીચે ન ઊભા રહેવું. દરિયામાં કરંટ હોવાથી માછીમારોએ સાવચેત રહેવું.`,
+          phoneticSpeech: `${greeting.phonetic} Aaje ${localizedArea} vistar ma varsad ane pavan ni shakiyata che. Khetar ma thi pani nikalvani vyavastha karo.`,
+          actionSteps: [
+            'ખેતરોમાં પાણી ભરાઈ ન રહે તે માટે નિકાલ કરો',
+            'વીજળી સમયે વૃક્ષો નીચે ઊભા ન રહેવું',
+            'કલાકના 40-50 કિમી ઝડપી પવનથી સાવચેત રહો',
+            'માછીમારો દરિયામાં સાવચેતી રાખે'
+          ]
+        };
+      case 'odia':
+        return {
+          headline: `ତୁଫାନ ସାଥୀ ଦୈନିକ ପାଣିପାଗ: ଉତ୍ତର-ପୂର୍ବ ମୌସୁମୀ ଓ ଇଷ୍ଟର୍ଲି ୱେଭ୍ ସତର୍କତା • ${localizedArea}`,
+          speech: `${greeting.text} ଆଜି ${localizedArea} ଅଞ୍ଚଳରେ ଉତ୍ତର-ପୂର୍ବ ମୌସୁମୀ ଏବଂ ବଙ୍ଗୋପସାଗରୀୟ ଇଷ୍ଟର୍ଲି ତରଙ୍ଗ (Easterly Waves) ପ୍ରଭାବରେ ବିଜୁଳି ଘଡ଼ଘଡ଼ି ସହ ବର୍ଷା ଏବଂ ଘଣ୍ଟା ପ୍ରତି ୪୦ ରୁ ୫୦ କିମି ବେଗରେ ଝଟକା ପବନ ହେବାର ସମ୍ଭାବନା ରହିଛି (୨୩-୨୭ ନଭେମ୍ବର)। ଚାଷୀ ଭାଇମାନେ ଫସଲ ଜମିରେ ପାଣି ନଜମିବା ପାଇଁ ତୁରନ୍ତ ନିଷ୍କାସନ ନାଳି ସଫା କରନ୍ତୁ ଏବଂ କୀଟନାଶକ ପ୍ରୟୋଗ ସ୍ଥଗିତ ରଖନ୍ତୁ। ବଜ୍ରପାତ ସମୟରେ ବଡ଼ ଗଛ ତଳେ ଆଶ୍ରୟ ନିଅନ୍ତୁ ନାହିଁ। ସମୁଦ୍ର ଅଶାନ୍ତ ରହିଥିବାରୁ ମତ୍ସ୍ୟଜୀବୀମାନେ ଗଭୀର ସମୁଦ୍ରକୁ ଯାଆନ୍ତୁ ନାହିଁ।`,
+          phoneticSpeech: `${greeting.phonetic} Aji ${localizedArea} anchalare barsa o pabana jhonka heba. Chasi bhai mane jami ru pani nishkasana karantu.`,
+          actionSteps: [
+            'ଜମିରେ ପାଣି ନଜମିବା ପାଇଁ ନିଷ୍କାସନ ବ୍ୟବସ୍ଥା କରନ୍ତୁ',
+            'ବଜ୍ରପାତ ସମୟରେ ଗଛ ତଳେ ଆଶ୍ରୟ ନିଅନ୍ତୁ ନାହିଁ',
+            'ଘଣ୍ଟା ପ୍ରତି ୪୦-୫୦ କିମି ପବନରୁ ସତର୍କ ରୁହନ୍ତୁ',
+            'ମତ୍ସ୍ୟଜୀବୀମାନେ ଗଭୀର ସମୁଦ୍ର ଯାତ୍ରା ଏଡ଼ାନ୍ତୁ'
+          ]
+        };
+      default: // english
+        return {
+          headline: `ToofanSathi Daily Weather Pulse: Northeast Monsoon & Easterly Waves Alert • ${localizedArea}`,
+          speech: `${greeting.text} Today in ${localizedArea}, active Northeast Monsoon and Bay of Bengal Easterly Waves are bringing convective rain showers, thunderstorms, and squally winds of 40-50 km/h with gusts up to 60 km/h (valid 23-27 Nov). Farmers should immediately provide field drainage for standing crops and postpone chemical spraying. Public should avoid sheltering under trees during lightning. Coastal fishermen are advised extreme caution as sea conditions remain rough.`,
+          phoneticSpeech: `${greeting.phonetic} Today in ${localizedArea}, Northeast Monsoon and Easterly Waves bring rain showers and gusty winds. Farmers ensure field drainage and fishermen exercise caution.`,
+          actionSteps: [
+            'Ensure Field Drainage for Standing Crops',
+            'Avoid Sheltering Under Trees in Lightning',
+            'Squally Winds 40-50 km/h (Gusts to 60 km/h)',
+            'Fishermen Caution: Rough Coastal Seas'
+          ]
+        };
+    }
+  }
+
+  // 2. Peacetime / Normal Day Weather Pulse (When no active cyclone is threatening the region)
   if (threat.isNormalDay) {
     const winterTextEn = isSevereCold
       ? `Winter advisory: Minimum temperature dropping to ${minTemp}°C. Heavy coat or jacket recommended.`
@@ -509,7 +672,7 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
       ? `Keep Jacket / Coat handy (${minTemp}°C)`
       : 'Fair Weather Routine';
 
-    switch (lang) {
+    switch (normalizedLang) {
       case 'odia':
         return {
           headline: `ତୁଫାନ ସାଥୀ ଦୈନିକ ପାଣିପାଗ ସୂଚନା: ସ୍ୱାଭାବିକ ପାଗ • ${localizedArea}`,
@@ -534,6 +697,7 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
             'आगामी 7 दिनों तक कोई चक्रवात नहीं'
           ]
         };
+      case 'bengali':
       case 'bangla':
         return {
           headline: `তুফানসাথী দৈনিক আবহাওয়া: শান্ত ও স্বাভাবিক • ${localizedArea}`,
@@ -546,16 +710,64 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
             'আগামী ৭ দিনে কোনো ঝড়ের আশঙ্কা নেই'
           ]
         };
+      case 'gujarati':
+        return {
+          headline: `તૂફાન સાથી દૈનિક હવામાન: શાંત અને સામાન્ય હવામાન • ${localizedArea}`,
+          speech: `${greeting.text} આજે ${localizedArea} વિસ્તારમાં હવામાન સંપૂર્ણ શાંત અને સામાન્ય છે. લઘુત્તમ તાપમાન ${minTemp} ડિગ્રી અને મહત્તમ ${maxTemp} ડિગ્રી રહેશે. પવનની ઝડપ ${windSpeed} કિમી/કલાક છે. બંગાળની ખાડીમાં કોઈ વાવાઝોડું કે ડિપ્રેશન સક્રિય નથી. ખેડૂત ભાઈઓ નિશ્ચિંત થઈને પાકની લણણી, સુકવણી અને રવિ વાવણી કરી શકે છે. દરિયો શાંત હોવાથી માછીમારો માટે સુરક્ષિત છે.`,
+          phoneticSpeech: `${greeting.phonetic} Aaje ${localizedArea} vistar ma havaman shant ane samanya che. Kono cyclone nathi. Kheti kam chalu rakho.`,
+          actionSteps: [
+            'હવામાન સામાન્ય: ખેતી કામ ચાલુ રાખો',
+            'પાક સુકવણી અને રવિ વાવણી માટે ઉત્તમ સમય',
+            'માછીમારો માટે દરિયો સંપૂર્ણ સલામત',
+            'આગામી 7 દિવસ સુધી વાવાઝોડાનો ખતરો નથી'
+          ]
+        };
       case 'telugu':
         return {
           headline: `తుఫాన్ సాథీ రోజువారీ వాతావరణం: సాధారణ వాతావరణం • ${localizedArea}`,
-          speech: `${greeting.text} నేడు ${localizedArea} ప్రాంతంలో వాతావరణం సాధారణంగా మరియు ప్రశాంతంగా ఉంది. బంగాళాఖాతంలో ఎటువంటి తుఫాను ముప్పు లేదు. రైతులు కోత పనులు మరియు రబీ సాగును నిరభ్యంతరంగా చేసుకోవచ్చు. మత్స్యకారులకు సముద్రం అనుకూలంగా ఉంది.`,
+          speech: `${greeting.text} నేడు ${localizedArea} ప్రాంతంలో వాతావరణం సాధారణంగా మరియు ప్రశాंतంగా ఉంది. బంగాళాఖాతంలో ఎటువంటి తుఫాను ముప్పు లేదు. రైతులు కోత పనులు మరియు రబీ సాగును నిరభ్యంతరంగా చేసుకోవచ్చు. మత్స్యకారులకు సముద్రం అనుకూలంగా ఉంది.`,
           phoneticSpeech: `${greeting.phonetic} Nedu ${localizedArea} pranthamulo vathavaranam prashanthamga undi. Ee vidhamaina cyclone ledu.`,
           actionSteps: [
             'వాతావరణం ప్రశాంతం: వ్యవసాయ పనులు కొనసాగించండి',
             'రబీ విత్తనాలు వేయడానికి అనుకూల సమయం',
             'మత్స్యకారులకు సముద్రం సురక్షితం',
             'రాబోయే 7 రోజుల్లో తుఫాను ముప్పు లేదు'
+          ]
+        };
+      case 'tamil':
+        return {
+          headline: `தூபான் சாதி தினசரி வானிலை: இயல்பான மற்றும் சீரான வானிலை • ${localizedArea}`,
+          speech: `${greeting.text} இன்று ${localizedArea} பகுதியில் வானிலை முற்றிலும் இயல்பாகவும் அமைதியாகவும் உள்ளது. குறைந்தபட்ச வெப்பநிலை ${minTemp} டிகிரி மற்றும் அதிகபட்சம் ${maxTemp} டிகிரியாக இருக்கும். காற்றின் வேகம் மணிக்கு ${windSpeed} கி.மீ. வங்கக்கடலில் புயல் அச்சுறுத்தல் ஏதுமில்லை. விவசாயிகள் பயிர் அறுவடை மற்றும் தானியம் காயவைக்கும் பணிகளை தடையின்றி செய்யலாம். கடல் அமைதியாக இருப்பதால் மீனவர்களுக்கு பாதுகாப்பானது.`,
+          phoneticSpeech: `${greeting.phonetic} Indru ${localizedArea} paguthiyil vaanilay iyulbaaga ullathu. Puyal ethuvum illai. Vivasaayam matrum meenpidi safe.`,
+          actionSteps: [
+            'வானிலை சீரானது: விவசாய பணிகளை தொடரலாம்',
+            'தானியம் காயவைக்க மற்றும் விதைப்புக்கு உகந்தது',
+            'மீனவர்களுக்கு கடல் முற்றிலும் பாதுகாப்பானது',
+            'அடுத்த 7 நாட்களுக்கு புயல் அபாயம் இல்லை'
+          ]
+        };
+      case 'malayalam':
+        return {
+          headline: `തൂഫാൻ സാഥി ദിനാന്തരീക്ഷം: ശാന്തവും സാധാരണവുമായ കാലാവസ്ഥ • ${localizedArea}`,
+          speech: `${greeting.text} ഇന്ന് ${localizedArea} പ്രദേശത്ത് കാലാവസ്ഥ തികച്ചും ശാന്തവും സാധാരണവുമാണ്. കുറഞ്ഞ താപനില ${minTemp} ഡിഗ്രിയും കൂടിയ താപനില ${maxTemp} ഡിഗ്രിയും ആയിരിക്കും. കാറ്റിന്റെ വേഗത മണിക്കൂറിൽ ${windSpeed} കി.മീറ്റർ. ബംഗാൾ ഉൾക്കടലിൽ ചുഴലിക്കാറ്റ് ഭീഷണിയില്ല. കർഷകർക്ക് വിളവെടുപ്പും ഉണക്കലും സുഗമമായി നടത്താം. കടൽ ശാന്തമായതിനാൽ മത്സ്യത്തൊഴിലാളികൾക്ക് സുരക്ഷിതമാണ്.`,
+          phoneticSpeech: `${greeting.phonetic} Innu ${localizedArea} pradesheth kaalavastha shanthamaanu. Chuzhalikkaatu bheeshani illa. Krishi panikal thudaruka.`,
+          actionSteps: [
+            'കാലാവസ്ഥ സാധാരണ നിലയിൽ: കൃഷിപ്പണികൾ തുടരാം',
+            'വിളവെടുപ്പിനും ധാന്യം ഉണക്കാനും അനുകൂല സമയം',
+            'മത്സ്യത്തൊഴിലാളികൾക്ക് കടൽ സുരക്ഷിതം',
+            'അടുത്ത 7 ദിവസത്തേക്ക് ചുഴലിക്കാറ്റ് ഭീഷണിയില്ല'
+          ]
+        };
+      case 'kannada':
+        return {
+          headline: `ತೂಫಾನ್ ಸಾಥಿ ದೈನಂದಿನ ಹವಾಮಾನ: ಶಾಂತ ಹಾಗೂ ಸಾಮಾನ್ಯ ಹವಾಮಾನ • ${localizedArea}`,
+          speech: `${greeting.text} ಇಂದು ${localizedArea} ಪ್ರದೇಶದಲ್ಲಿ ಹವಾಮಾನವು ಸಂಪೂರ್ಣ ಶಾಂತ ಮತ್ತು ಸಾಮಾನ್ಯವಾಗಿರಲಿದೆ. ಕನಿಷ್ಠ ತಾಪಮಾನ ${minTemp} ಡಿಗ್ರಿ ಮತ್ತು ಗರಿಷ್ಠ ${maxTemp} ಡಿಗ್ರಿ ಇರಲಿದೆ. ಗಾಳಿಯ ವೇಗ ಗಂಟೆಗೆ ${windSpeed} ಕಿ.ಮೀ. ಬಂಗಾಳ ಕೊಲ್ಲಿಯಲ್ಲಿ ಯಾವುದೇ ಚಂಡಮಾರುತ ಅಥವಾ ವಾಯುಭಾರ ಕುಸಿತವಿಲ್ಲ. ರೈತರು ನಿರಾತಂಕವಾಗಿ ಬೆಳೆ ಕಟಾವು, ಧಾನ್ಯ ಒಣಗಿಸುವಿಕೆ ಹಾಗೂ ಹಿಂಗಾರು ಬಿತ್ತನೆ ಕಾರ್ಯಗಳನ್ನು ಮಾಡಬಹುದು. ಸಮುದ್ರ ಶಾಂತವಾಗಿದ್ದು ಮೀನುಗಾರರಿಗೆ ಸುರಕ್ಷಿತವಾಗಿದೆ.`,
+          phoneticSpeech: `${greeting.phonetic} Indu ${localizedArea} dalli havaman samanya vagide. Chundamarutha bhaya illa. Krushi kelsa niraatankavaagi maadi.`,
+          actionSteps: [
+            'ಹವಾಮಾನ ಶಾಂತ: ಕೃಷಿ ಚಟುವಟಿಕೆ ಮುಂದುವರಿಸಿ',
+            'ಧಾನ್ಯ ಒಣಗಿಸಲು ಮತ್ತು ಹಿಂಗಾರು ಬಿತ್ತನೆಗೆ ಸೂಕ್ತ ಸಮಯ',
+            'ಮೀನುಗಾರರಿಗೆ ಕಡಲು ಸಂಪೂರ್ಣ ಸುರಕ್ಷಿತ',
+            'ಮುಂದಿನ 7 ದಿನ ಯಾವುದೇ ಚಂಡಮಾರುತದ ಭೀತಿ ಇಲ್ಲ'
           ]
         };
       default: // english
@@ -573,7 +785,7 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
     }
   }
 
-  switch (lang) {
+  switch (normalizedLang) {
     case 'odia': {
       const winterSpeech = isSevereCold
         ? `ବିଶେଷ ଶୀତ ସତର୍କତା: ରାତି ଓ ସକାଳେ ସର୍ବନିମ୍ନ ତାପମାତ୍ରା ${minTemp} ଡିଗ୍ରୀକୁ ଖସିବ। ପ୍ରବଳ ଥଣ୍ଡା ପବନରୁ ରକ୍ଷା ପାଇବା ପାଇଁ ମୋଟା କୋଟ୍ କିମ୍ବା ଭାରୀ ଜ୍ୟାକେଟ୍ ନିଶ୍ଚୟ ପିନ୍ଧନ୍ତୁ।`
@@ -648,6 +860,7 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
       };
     }
     
+    case 'bangla':
     case 'bengali': {
       const winterSpeech = isSevereCold
         ? `শীতকালীন সতর্কতা: রাতে ও ভোরে সর্বনিম্ন তাপমাত্রা ${minTemp} ডিগ্রি সেলসিয়াসে নামবে। তীব্র শৈত্য ও ঠান্ডা হাওয়া থেকে বাঁচতে মোটা কোট (Coat) বা ভারী জ্যাকেট (Jacket) সাথে রাখা বাধ্যতামূলক।`

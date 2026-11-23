@@ -237,6 +237,61 @@ const calmSeaBuoyIcon = L.divIcon({
   iconAnchor: [14, 14]
 });
 
+// Animated Rain & Easterly Wave Icons matching IMD Video animation 1.mp4
+const rainThunderPulseIcon = L.divIcon({
+  className: 'custom-rain-thunder',
+  html: `<div style="position:relative; display:flex; flex-direction:column; align-items:center; cursor:pointer;">
+          <div style="background:rgba(15,23,42,0.92); border:1.5px solid #f59e0b; border-radius:10px; padding:2px 8px; font-size:10px; font-weight:bold; color:#fde68a; box-shadow:0 4px 12px rgba(0,0,0,0.6); display:flex; align-items:center; gap:4px; white-space:nowrap;">
+            <span style="font-size:13px;">⛈️</span>
+            <span>Chennai: 40-50 km/h</span>
+            <span class="lightning-anim" style="color:#fde047; font-weight:900;">⚡</span>
+          </div>
+          <div style="display:flex; gap:3px; font-size:11px; margin-top:1px;">
+            <span class="rain-drop-anim">💧</span>
+            <span class="rain-drop-anim" style="animation-delay:0.3s;">💧</span>
+            <span class="rain-drop-anim" style="animation-delay:0.6s;">💧</span>
+          </div>
+         </div>`,
+  iconSize: [140, 36],
+  iconAnchor: [70, 18]
+});
+
+const rainAreaPulseIcon = (label, wind) => L.divIcon({
+  className: 'custom-rain-area',
+  html: `<div style="position:relative; display:flex; flex-direction:column; align-items:center; cursor:pointer;">
+          <div style="background:rgba(15,23,42,0.92); border:1.5px solid #38bdf8; border-radius:8px; padding:2px 6px; font-size:9px; font-weight:bold; color:#bae6fd; box-shadow:0 3px 8px rgba(0,0,0,0.5); display:flex; align-items:center; gap:3px; white-space:nowrap;">
+            <span>🌧️</span>
+            <span>${label}: ${wind}</span>
+          </div>
+          <div style="display:flex; gap:2px; font-size:10px; margin-top:1px;">
+            <span class="rain-drop-anim">💧</span>
+            <span class="rain-drop-anim" style="animation-delay:0.4s;">💧</span>
+          </div>
+         </div>`,
+  iconSize: [120, 30],
+  iconAnchor: [60, 15]
+});
+
+const denseFogMarkerIcon = (city, vis) => L.divIcon({
+  className: 'custom-fog-marker',
+  html: `<div style="background:rgba(15,23,42,0.9); border:1px solid #94a3b8; border-radius:8px; padding:2px 6px; font-size:9px; font-weight:bold; color:#e2e8f0; box-shadow:0 2px 6px rgba(0,0,0,0.4); display:flex; align-items:center; gap:3px; white-space:nowrap;">
+          <span>🌫️</span>
+          <span>${city}: Fog (${vis})</span>
+         </div>`,
+  iconSize: [110, 24],
+  iconAnchor: [55, 12]
+});
+
+const easterlyWaveVectorTagIcon = L.divIcon({
+  className: 'custom-easterly-tag',
+  html: `<div style="background:rgba(2,132,199,0.88); border:1px solid #38bdf8; border-radius:12px; padding:2px 8px; font-size:9px; font-weight:800; color:white; box-shadow:0 2px 8px rgba(0,0,0,0.5); display:flex; align-items:center; gap:4px; white-space:nowrap;">
+          <span style="font-size:11px;">🌊</span>
+          <span>Easterly Waves ➜ TN (23–27 Nov)</span>
+         </div>`,
+  iconSize: [170, 24],
+  iconAnchor: [85, 12]
+});
+
 // Component to handle smooth pan/fly to coordinates
 function MapRecenterController({ centerCoords, zoomLevel, triggerKey }) {
   const map = useMap();
@@ -289,9 +344,15 @@ export default function CycloneMap({
 
   const liveState = getLiveAkvanState();
   const isNormalDay = liveState.isNormalDay;
+
+  const isSouthIndiaOrMonsoon = userLocation?.state === 'Tamil Nadu' ||
+                               userLocation?.state === 'Puducherry' ||
+                               userLocation?.state === 'Kerala' ||
+                               (userLocation?.state === 'Andhra Pradesh' && (userLocation?.id === 'chennai' || userLocation?.lat < 16));
+
   const [mapMode, setMapMode] = useState(isNormalDay ? 'live' : 'history');
   const [flyTarget, setFlyTarget] = useState(isNormalDay ? [userLocation.lat, userLocation.lon] : [18.90, 83.60]);
-  const [flyZoom, setFlyZoom] = useState(6);
+  const [flyZoom, setFlyZoom] = useState(isSouthIndiaOrMonsoon ? 7 : 6);
   const [flyTrigger, setFlyTrigger] = useState(0);
   const [isLocating, setIsLocating] = useState(false);
   const [justUpdated, setJustUpdated] = useState(false);
@@ -301,8 +362,32 @@ export default function CycloneMap({
   const [timeStepIndex, setTimeStepIndex] = useState(() => getLiveAkvanState().liveIndex); // Real-time active step!
   const [isPlayingTime, setIsPlayingTime] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(false);
-  const [activeWeatherOverlay, setActiveWeatherOverlay] = useState('none'); // 'none' | 'wind' | 'rain' | 'pressure'
+  const [activeWeatherOverlay, setActiveWeatherOverlay] = useState(isSouthIndiaOrMonsoon ? 'easterly-waves' : 'none'); // 'none' | 'wind' | 'rain' | 'pressure' | 'easterly-waves'
   const [isLayerDrawerOpen, setIsLayerDrawerOpen] = useState(false);
+  const [radarPath, setRadarPath] = useState(null);
+
+  // Fetch live global Doppler radar tiles from RainViewer API
+  useEffect(() => {
+    fetch('https://api.rainviewer.com/public/weather-maps.json')
+      .then(res => res.json())
+      .then(data => {
+        const latest = data.radar?.past?.slice(-1)[0]?.path;
+        if (latest) setRadarPath(latest);
+      })
+      .catch(err => console.warn('RainViewer fetch error:', err));
+  }, []);
+
+  // Sync map center and zoom whenever activeLocation changes
+  useEffect(() => {
+    if (userLocation?.lat && userLocation?.lon) {
+      setFlyTarget([userLocation.lat, userLocation.lon]);
+      setFlyZoom(isSouthIndiaOrMonsoon ? 7 : 6);
+      setFlyTrigger(prev => prev + 1);
+      if (isSouthIndiaOrMonsoon) {
+        setActiveWeatherOverlay('easterly-waves');
+      }
+    }
+  }, [userLocation?.lat, userLocation?.lon, userLocation?.state, userLocation?.id, isSouthIndiaOrMonsoon]);
 
   const timelineScrollRef = useRef(null);
   const timeStepButtonRefs = useRef([]);
@@ -1113,6 +1198,105 @@ export default function CycloneMap({
               />
             )}
 
+            {/* Live RainViewer Doppler Weather Radar Tile Layer */}
+            {radarPath && (activeWeatherOverlay === 'rain' || activeWeatherOverlay === 'radar') && (
+              <TileLayer
+                url={`https://tilecache.rainviewer.com${radarPath}/256/{z}/{x}/{y}/2/1_1.png`}
+                opacity={0.65}
+                zIndex={350}
+              />
+            )}
+
+            {/* IMD Northeast Monsoon & Easterly Waves Animated Vector System (23-27 Nov) */}
+            {(activeWeatherOverlay === 'easterly-waves' || activeWeatherOverlay === 'rain' || isSouthIndiaOrMonsoon) && (
+              <>
+                {/* Animated Easterly Waves Streamline Polyline Vectors */}
+                <Polyline
+                  positions={[[13.6, 85.5], [13.3, 82.8], [13.08, 80.27]]}
+                  pathOptions={{ color: '#38bdf8', weight: 3.5, dashArray: '10, 14', className: 'easterly-wave-flow' }}
+                />
+                <Polyline
+                  positions={[[12.2, 85.8], [11.9, 83.0], [11.75, 79.77]]}
+                  pathOptions={{ color: '#38bdf8', weight: 3.5, dashArray: '10, 14', className: 'easterly-wave-flow' }}
+                />
+                <Polyline
+                  positions={[[10.8, 85.2], [10.6, 82.8], [10.76, 79.84]]}
+                  pathOptions={{ color: '#38bdf8', weight: 3.5, dashArray: '10, 14', className: 'easterly-wave-flow' }}
+                />
+                <Polyline
+                  positions={[[9.5, 84.8], [9.2, 82.0], [8.08, 77.54]]}
+                  pathOptions={{ color: '#38bdf8', weight: 3.5, dashArray: '10, 14', className: 'easterly-wave-flow' }}
+                />
+
+                {/* Easterly Wave Tag in SW Bay */}
+                <Marker position={[12.6, 83.2]} icon={easterlyWaveVectorTagIcon}>
+                  <Tooltip direction="top" opacity={0.96} className="custom-map-tooltip">
+                    <div className="text-xs font-bold text-sky-300">IMD Easterly Waves Advisory (23–27 Nov)</div>
+                    <div className="text-[10px] text-white">East-to-West squalls advancing towards Tamil Nadu coast</div>
+                    <div className="text-[10px] text-amber-300 font-semibold">Speed: 40–50 km/h, Gusts: 60 km/h</div>
+                  </Tooltip>
+                </Marker>
+
+                {/* Chennai & North TN Rain Hazard Zone */}
+                <Circle
+                  center={[13.0827, 80.2707]}
+                  radius={50000}
+                  pathOptions={{ color: '#f59e0b', fillColor: '#3b82f6', fillOpacity: 0.25, weight: 2, dashArray: '6, 6' }}
+                />
+                <Marker position={[13.0827, 80.2707]} icon={rainThunderPulseIcon}>
+                  <Tooltip direction="top" opacity={0.96} className="custom-map-tooltip">
+                    <div className="text-xs font-bold text-amber-400">Chennai: Active Rain & Squalls</div>
+                    <div className="text-[10px] text-white">Northeast Monsoon Easterly Wave Convection</div>
+                    <div className="text-[10px] text-sky-300 font-semibold">Wind: 40–50 km/h (Gusts to 60 km/h)</div>
+                  </Tooltip>
+                </Marker>
+
+                {/* Cuddalore / Puducherry Rain Marker */}
+                <Circle
+                  center={[11.75, 79.77]}
+                  radius={45000}
+                  pathOptions={{ color: '#f59e0b', fillColor: '#3b82f6', fillOpacity: 0.25, weight: 2, dashArray: '6, 6' }}
+                />
+                <Marker position={[11.75, 79.77]} icon={rainAreaPulseIcon('Puducherry & Cuddalore', '45 km/h')}>
+                  <Tooltip direction="top" opacity={0.96} className="custom-map-tooltip">
+                    <div className="text-xs font-bold text-amber-400">Puducherry & Cuddalore Heavy Rain</div>
+                    <div className="text-[10px] text-white">Convective downpour window 23-27 Nov</div>
+                  </Tooltip>
+                </Marker>
+
+                {/* Coastal AP / Nellore */}
+                <Marker position={[14.46, 79.98]} icon={rainAreaPulseIcon('Nellore / Coastal AP', '35 km/h')}>
+                  <Tooltip direction="top" opacity={0.96} className="custom-map-tooltip">
+                    <div className="text-xs font-bold text-sky-400">South Coastal AP / Rayalaseema</div>
+                    <div className="text-[10px] text-white">Moderate to heavy showers with squalls</div>
+                  </Tooltip>
+                </Marker>
+
+                {/* Kerala & Mahe */}
+                <Marker position={[10.85, 76.27]} icon={rainAreaPulseIcon('Kerala & Mahe', '35 km/h')}>
+                  <Tooltip direction="top" opacity={0.96} className="custom-map-tooltip">
+                    <div className="text-xs font-bold text-sky-400">Kerala & Mahe: 24–26 Nov Showers</div>
+                    <div className="text-[10px] text-white">Active monsoon rain across central & south Kerala</div>
+                  </Tooltip>
+                </Marker>
+
+                {/* Dense Fog Markers */}
+                <Marker position={[31.63, 74.87]} icon={denseFogMarkerIcon('Amritsar', '100m')}>
+                  <Tooltip direction="top" opacity={0.96} className="custom-map-tooltip">
+                    <div className="text-xs font-bold text-slate-300">Amritsar (Punjab): Dense Fog</div>
+                    <div className="text-[10px] text-white">Morning visibility down to 100 meters</div>
+                  </Tooltip>
+                </Marker>
+
+                <Marker position={[20.29, 85.82]} icon={denseFogMarkerIcon('Bhubaneswar', '50m')}>
+                  <Tooltip direction="top" opacity={0.96} className="custom-map-tooltip">
+                    <div className="text-xs font-bold text-slate-300">Bhubaneswar (Odisha): Dense Fog</div>
+                    <div className="text-[10px] text-white">Morning visibility down to 50 meters</div>
+                  </Tooltip>
+                </Marker>
+              </>
+            )}
+
             {/* Peacetime Calm Basin Marker in Bay of Bengal */}
             {isNormalDay && mapMode === 'live' && (
               <Marker
@@ -1420,15 +1604,41 @@ export default function CycloneMap({
                 </div>
 
                 <div>
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1">Live Overlays</span>
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1">Live Synoptic Overlays</span>
                   <div className="space-y-1">
+                    <button
+                      onClick={() => { setActiveWeatherOverlay('easterly-waves'); setIsLayerDrawerOpen(false); }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center justify-between ${
+                        activeWeatherOverlay === 'easterly-waves' ? 'bg-sky-600 text-white font-bold' : 'hover:bg-slate-800 text-slate-300'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <span>🌊</span>
+                        <span>Easterly Waves & Rain (IMD)</span>
+                      </span>
+                      <span className="text-[9px] font-mono text-sky-200">23–27 Nov</span>
+                    </button>
+
+                    <button
+                      onClick={() => { setActiveWeatherOverlay('rain'); setIsLayerDrawerOpen(false); }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center justify-between ${
+                        activeWeatherOverlay === 'rain' ? 'bg-blue-600 text-white font-bold' : 'hover:bg-slate-800 text-slate-300'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <span>🌧️</span>
+                        <span>Live Doppler Rain Radar</span>
+                      </span>
+                      <span className="text-[9px] font-mono text-blue-200">Real-Time</span>
+                    </button>
+
                     <button
                       onClick={() => { setActiveWeatherOverlay('none'); setIsLayerDrawerOpen(false); }}
                       className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                        activeWeatherOverlay === 'none' ? 'bg-sky-600 text-white font-bold' : 'hover:bg-slate-800 text-slate-300'
+                        activeWeatherOverlay === 'none' ? 'bg-slate-700 text-white font-bold' : 'hover:bg-slate-800 text-slate-300'
                       }`}
                     >
-                      🌀 Track Vector & Cone
+                      🌀 Standard Track Vector
                     </button>
                   </div>
                 </div>
@@ -1447,19 +1657,6 @@ export default function CycloneMap({
                         <span>Wind Speed & Gusts</span>
                       </span>
                       <span className="text-[9px] font-mono text-amber-200">115 km/h</span>
-                    </button>
-
-                    <button
-                      onClick={() => { setActiveWeatherOverlay('rain'); setIsLayerDrawerOpen(false); }}
-                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center justify-between ${
-                        activeWeatherOverlay === 'rain' ? 'bg-blue-600 text-white font-bold' : 'hover:bg-slate-800 text-slate-300'
-                      }`}
-                    >
-                      <span className="flex items-center gap-1.5">
-                        <Waves className="w-3.5 h-3.5 text-blue-400" />
-                        <span>Precipitation Rates</span>
-                      </span>
-                      <span className="text-[9px] font-mono text-blue-200">Heavy</span>
                     </button>
 
                     <button
@@ -1483,6 +1680,16 @@ export default function CycloneMap({
           {/* Top Horizontal Metric Scale Bar (Zoom Earth Style from animation2.mp4) */}
           {activeWeatherOverlay !== 'none' && (
             <div className="absolute top-2.5 left-24 right-28 sm:left-32 sm:right-32 z-[400] bg-slate-950/90 backdrop-blur-md border border-slate-800 rounded-xl px-2.5 py-1 text-center shadow-lg pointer-events-none">
+              {activeWeatherOverlay === 'easterly-waves' && (
+                <div>
+                  <div className="flex items-center justify-between text-[8px] sm:text-[9px] font-mono text-sky-300 font-bold mb-0.5">
+                    <span>SW Bay Streamlines</span>
+                    <span>Tamil Nadu / Puducherry Rain</span>
+                    <span>Squalls 40-50 km/h (Gusts 60)</span>
+                  </div>
+                  <div className="h-1.5 sm:h-2 w-full rounded-full bg-gradient-to-r from-sky-400 via-blue-500 via-amber-400 to-rose-500 shadow-inner"></div>
+                </div>
+              )}
               {activeWeatherOverlay === 'wind' && (
                 <div>
                   <div className="flex items-center justify-between text-[8px] sm:text-[9px] font-mono text-slate-300 font-bold mb-0.5">

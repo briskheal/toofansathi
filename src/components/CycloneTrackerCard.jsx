@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { getTranslation } from '../data/translations';
 import { cleanDistrictDisplay } from '../services/cycloneEngine';
+import { getStateAgroIntelligence } from '../data/agroIntelligence';
 
 export default function CycloneTrackerCard({ bulletin, threat, weatherData, activeLocation, selectedLang = 'english' }) {
   const [showIncoisDetails, setShowIncoisDetails] = useState(false);
@@ -30,7 +31,7 @@ export default function CycloneTrackerCard({ bulletin, threat, weatherData, acti
   const t = getTranslation(selectedLang);
   const localizedArea = cleanDistrictDisplay(activeLocation?.name, selectedLang);
 
-  const isNormalDay = threat?.isNormalDay || threat?.level === 'GREEN';
+  const isNormalDay = threat?.isNormalDay || threat?.level === 'GREEN' || threat?.isEasterlyWaves;
 
   // Live real-time metrics from weather API
   const liveWind = weatherData ? Math.round(weatherData.current.wind_speed_10m) : 14;
@@ -39,6 +40,9 @@ export default function CycloneTrackerCard({ bulletin, threat, weatherData, acti
   const liveHumidity = weatherData?.current?.relative_humidity_2m !== undefined ? Math.round(weatherData.current.relative_humidity_2m) : 62;
   const livePrecip = weatherData?.current?.precipitation !== undefined ? Math.round(weatherData.current.precipitation * 10) / 10 : 0;
   const liveTemp = weatherData?.current?.temperature_2m !== undefined ? Math.round(weatherData.current.temperature_2m) : 28;
+
+  // State-adaptive agro-meteorological intelligence (TNAU for Tamil Nadu, ANGRAU for AP, ICAR-NRRI for Odisha, etc.)
+  const stateAgro = getStateAgroIntelligence(activeLocation?.state || activeLocation?.name, selectedLang, livePrecip, liveWind);
 
   const todayDateStr = new Date().toLocaleDateString('en-IN', {
     weekday: 'long',
@@ -74,8 +78,8 @@ export default function CycloneTrackerCard({ bulletin, threat, weatherData, acti
           </div>
 
           <div className="text-right">
-            <span className="text-[11px] font-mono bg-emerald-950/80 text-emerald-300 border border-emerald-800/80 px-2.5 py-0.5 rounded-full font-bold inline-block">
-              {t.basinCalm}
+            <span className={`text-[11px] font-mono px-2.5 py-0.5 rounded-full font-bold inline-block border ${stateAgro.marineStatusClass}`}>
+              {stateAgro.basinStatus}
             </span>
             <span className="text-[9px] text-slate-400 block mt-0.5">
               {t.target} <strong className="text-slate-200">{localizedArea}</strong>
@@ -94,7 +98,7 @@ export default function CycloneTrackerCard({ bulletin, threat, weatherData, acti
               {liveWind} km/h
             </strong>
             <span className="text-[9px] text-emerald-400 block mt-0.5">
-              {t.gentleWindDesc}
+              {stateAgro.windDesc}
             </span>
           </div>
 
@@ -133,36 +137,41 @@ export default function CycloneTrackerCard({ bulletin, threat, weatherData, acti
               {livePrecip > 0 ? `${livePrecip} mm` : '0.0 mm (Nil)'}
             </strong>
             <span className="text-[9px] text-emerald-400 block mt-0.5">
-              {t.dryWeatherDesc}
+              {stateAgro.rainDesc}
             </span>
           </div>
         </div>
 
-        {/* Actionable Agro-Meteorological Directives (ICAR-NRRI & OUAT Mandate) */}
+        {/* Actionable State-Adaptive Agro-Meteorological Directives */}
         <div className="space-y-2 text-xs bg-slate-950/60 border border-slate-800/80 rounded-xl p-3 mb-3">
-          <div className="flex items-center gap-1.5 pb-2 border-b border-slate-800 text-amber-300 font-bold text-xs">
-            <Sprout className="w-4 h-4 text-emerald-400" />
-            <span>{t.icarTitle}:</span>
+          <div className="pb-2 border-b border-slate-800">
+            <div className="flex items-center gap-1.5 text-amber-300 font-bold text-xs sm:text-sm">
+              <Sprout className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <span>{stateAgro.authorityTitle}</span>
+            </div>
+            <p className="text-[10px] text-slate-400 mt-0.5 pl-5.5">
+              {stateAgro.authoritySubtitle}
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-1">
             <div className="space-y-1">
               <div className="flex items-center gap-1.5 text-slate-200 font-bold text-[11px]">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                <span>{t.paddyHarvestTitle}:</span>
+                <span>{stateAgro.advisory1Title}:</span>
               </div>
               <p className="text-[11px] text-slate-300 leading-relaxed pl-5">
-                {t.paddyHarvestDesc}
+                {stateAgro.advisory1Desc}
               </p>
             </div>
 
             <div className="space-y-1">
               <div className="flex items-center gap-1.5 text-slate-200 font-bold text-[11px]">
                 <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
-                <span>{t.rabiSowingTitle}:</span>
+                <span>{stateAgro.advisory2Title}:</span>
               </div>
               <p className="text-[11px] text-slate-300 leading-relaxed pl-5">
-                {t.rabiSowingDesc}
+                {stateAgro.advisory2Desc}
               </p>
             </div>
           </div>
@@ -182,23 +191,23 @@ export default function CycloneTrackerCard({ bulletin, threat, weatherData, acti
                 </span>
               </div>
             </div>
-            <span className="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/40 text-[10px] font-bold">
-              SAFE FOR NAVIGATION
+            <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold ${stateAgro.marineStatusClass}`}>
+              {stateAgro.marineStatus}
             </span>
           </div>
 
           <div className="mt-2.5 pt-2 border-t border-teal-800/30 flex flex-wrap items-center gap-x-5 gap-y-1 text-[11px] text-slate-300">
             <div>
               <span className="text-slate-400">Significant Wave Height: </span>
-              <strong className="text-white">0.9 m – 1.6 m (Slight)</strong>
+              <strong className="text-white">{stateAgro.waveHeight}</strong>
             </div>
             <div>
               <span className="text-slate-400">Offshore Wind: </span>
-              <strong className="text-white">12–18 knots Northeasterly</strong>
+              <strong className="text-white">{stateAgro.offshoreWind}</strong>
             </div>
             <div>
               <span className="text-slate-400">Fishermen Warning: </span>
-              <strong className="text-emerald-400 font-semibold">{t.marineSafeTitle}</strong>
+              <strong className="text-emerald-400 font-semibold">{stateAgro.fishermenWarning}</strong>
             </div>
           </div>
         </div>

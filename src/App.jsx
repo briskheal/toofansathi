@@ -329,7 +329,7 @@ export default function App() {
   const minTemp = weatherData?.daily?.temperature_2m_min?.[0] !== undefined ? Math.round(weatherData.daily.temperature_2m_min[0]) : 17;
   const humidity = weatherData?.current?.relative_humidity_2m !== undefined ? Math.round(weatherData.current.relative_humidity_2m) : 68;
 
-  const threat = evaluateThreatLevel(distanceKm, currentWind, currentGusts, next3hRain);
+  const threat = evaluateThreatLevel(distanceKm, currentWind, currentGusts, next3hRain, activeStorm, activeLocation);
   const voiceBriefing = generateVoiceBriefing(
     selectedLang,
     threat,

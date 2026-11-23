@@ -51,6 +51,50 @@ html, body {
   }
 }
 
+/* Easterly Waves and Rain Animations matching IMD Video */
+@keyframes flow-dashes {
+  from {
+    stroke-dashoffset: 40;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.easterly-wave-flow {
+  animation: flow-dashes 1.2s linear infinite;
+}
+
+@keyframes rain-drop-fall {
+  0% {
+    transform: translateY(-2px);
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(7px);
+    opacity: 0.2;
+  }
+}
+
+.rain-drop-anim {
+  animation: rain-drop-fall 0.9s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes lightning-flash {
+  0%, 100% { opacity: 0.2; filter: drop-shadow(0 0 0px #facc15); }
+  45% { opacity: 0.3; }
+  50% { opacity: 1; filter: drop-shadow(0 0 6px #facc15); }
+  55% { opacity: 0.4; }
+  60% { opacity: 1; filter: drop-shadow(0 0 8px #fef08a); }
+}
+
+.lightning-anim {
+  animation: lightning-flash 2.5s infinite;
+}
+
 /* 3D Left-to-Right Horizontal Spin / Flip effect on open & channel switch */
 @keyframes spin-flip-y {
   0% {
