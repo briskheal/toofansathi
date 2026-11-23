@@ -36,6 +36,9 @@ export default function LiveTvModal({
   const [playerMode, setPlayerMode] = useState('youtube'); // 'youtube' | 'webtv' | 'audio'
   const [iframeKey, setIframeKey] = useState(0);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
+  const [liveVideoMap, setLiveVideoMap] = useState({});
+  const [isResolvingLive, setIsResolvingLive] = useState(false);
+  const [isLiveSynced, setIsLiveSynced] = useState(false);
 
   // Sync state when activeLocation changes or modal opens
   useEffect(() => {
@@ -50,6 +53,43 @@ export default function LiveTvModal({
 
   const currentRegion = LIVE_NEWS_REGIONS.find((r) => r.state === selectedState) || LIVE_NEWS_REGIONS[0];
   const activeChannel = currentRegion.channels.find((c) => c.id === activeChannelId) || currentRegion.channels[0];
+
+  // Dynamically resolve real-time live video ID from Cloudflare Edge API
+  // This prevents playing past archived bulletins when broadcasters switch sessions
+  useEffect(() => {
+    if (!activeChannelId) return;
+    let isCancelled = false;
+    setIsResolvingLive(true);
+    setIsLiveSynced(false);
+
+    fetch(`/api/live?channel=${activeChannelId}&t=${Date.now()}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Live edge API offline');
+        return res.json();
+      })
+      .then((data) => {
+        if (!isCancelled && data && data.success && data.videoId) {
+          setLiveVideoMap((prev) => ({
+            ...prev,
+            [activeChannelId]: data.videoId
+          }));
+          setIsLiveSynced(true);
+        }
+      })
+      .catch((err) => {
+        // Fallback gracefully to predefined high-availability broadcast ID
+        console.debug('Dynamic live edge sync fallback:', err.message);
+      })
+      .finally(() => {
+        if (!isCancelled) setIsResolvingLive(false);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeChannelId, iframeKey]);
+
+  const currentVideoId = liveVideoMap[activeChannelId] || activeChannel.videoId;
 
   const handleChannelSelect = (id) => {
     setActiveChannelId(id);
@@ -91,13 +131,13 @@ export default function LiveTvModal({
 
         {/* Video / Audio Surface with persistent audio stream and 3D left-to-right spin on switch */}
         <div
-          key={`mini-surface-${iframeKey}-${activeChannel.videoId}`}
+          key={`mini-surface-${iframeKey}-${currentVideoId}`}
           className="relative aspect-video bg-black overflow-hidden animate-spin-flip"
         >
           {/* Real Audio & Video stream (kept alive in background so voice plays) */}
           <iframe
-            key={`mini-${iframeKey}-${activeChannel.videoId}`}
-            src={`https://www.youtube.com/embed/${activeChannel.videoId}?autoplay=1&mute=${isAudioMuted ? 1 : 0}&rel=0&live=1&modestbranding=1`}
+            key={`mini-${iframeKey}-${currentVideoId}`}
+            src={`https://www.youtube.com/embed/${currentVideoId}?autoplay=1&mute=${isAudioMuted ? 1 : 0}&rel=0&live=1&modestbranding=1`}
             title={activeChannel.name}
             className={`w-full h-full border-0 transition-opacity duration-300 ${
               playerMode === 'audio' ? 'opacity-15 blur-sm scale-110 pointer-events-none' : 'opacity-100'
@@ -255,12 +295,27 @@ export default function LiveTvModal({
         </div>
 
         {/* Bulletin Airing Status Badge */}
-        <div className="bg-slate-950/80 px-3 py-1.5 border-b border-slate-800/60 flex items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-2 min-w-0">
+        <div className="bg-slate-950/80 px-3 py-1.5 border-b border-slate-800/60 flex items-center justify-between gap-2 text-xs flex-wrap">
+          <div className="flex items-center gap-2 min-w-0 flex-wrap">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-ping flex-shrink-0"></span>
             <span className="text-[11px] text-slate-300 font-semibold truncate">
               <strong className="text-white">{activeChannel.name}:</strong> {activeChannel.bulletinTitle || 'Live Transmission'}
             </span>
+            {isResolvingLive ? (
+              <span className="flex items-center gap-1 text-[10px] text-sky-400 font-mono font-bold bg-sky-950/70 border border-sky-600/40 px-2 py-0.5 rounded-full">
+                <RefreshCw className="w-2.5 h-2.5 animate-spin" />
+                <span>Syncing Edge...</span>
+              </span>
+            ) : isLiveSynced ? (
+              <span className="flex items-center gap-1 text-[10px] text-emerald-400 font-mono font-bold bg-emerald-950/70 border border-emerald-600/40 px-2 py-0.5 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Active Live Broadcast</span>
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-[10px] text-slate-400 font-mono bg-slate-800/60 border border-slate-700/50 px-2 py-0.5 rounded-full">
+                <span>Direct Feed</span>
+              </span>
+            )}
           </div>
 
           {/* Stream Mode Selector Tabs */}
@@ -303,13 +358,13 @@ export default function LiveTvModal({
         {/* Main Video Surface & Player with 3D Left-to-Right Spin Animation on Open & Channel Switch */}
         <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 bg-slate-950/40">
           <div
-            key={`player-surface-${iframeKey}-${activeChannel.videoId}`}
+            key={`player-surface-${iframeKey}-${currentVideoId}`}
             className="relative rounded-2xl overflow-hidden bg-black border border-slate-800 shadow-2xl aspect-video w-full max-h-[460px] animate-spin-flip"
           >
             {/* The Live Video & Audio Stream (ALWAYS active in the background so audio never cuts out) */}
             <iframe
-              key={`main-${iframeKey}-${activeChannel.videoId}`}
-              src={`https://www.youtube.com/embed/${activeChannel.videoId}?autoplay=1&mute=${isAudioMuted ? 1 : 0}&rel=0&live=1&modestbranding=1`}
+              key={`main-${iframeKey}-${currentVideoId}`}
+              src={`https://www.youtube.com/embed/${currentVideoId}?autoplay=1&mute=${isAudioMuted ? 1 : 0}&rel=0&live=1&modestbranding=1`}
               title={activeChannel.name}
               className={`w-full h-full border-0 transition-opacity duration-300 ${
                 playerMode === 'audio' ? 'opacity-20 blur-sm scale-105' : (playerMode === 'webtv' ? 'hidden' : 'opacity-100')

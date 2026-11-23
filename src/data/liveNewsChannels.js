@@ -12,12 +12,12 @@ export const LIVE_NEWS_REGIONS = [
         lang: 'Odia',
         category: 'Regional 24x7 News',
         badge: 'Top Odia News',
-        videoId: '6I2VrHWq7kU',
+        videoId: 'zB4lV75UeNA',
         channelHandle: '@otvodisha',
-        bulletinTitle: 'Pratidin Prime Time Live Bulletin',
+        bulletinTitle: 'OTV 24x7 Live Stream',
         directLiveUrl: 'https://www.youtube.com/@otvodisha/live',
         webTvUrl: 'https://odishatv.in/live-tv',
-        embedUrl: 'https://www.youtube.com/embed/6I2VrHWq7kU?autoplay=1&mute=0&rel=0&live=1',
+        embedUrl: 'https://www.youtube.com/embed/zB4lV75UeNA?autoplay=1&mute=0&rel=0&live=1',
         description: "Odisha's premier 24x7 satellite news broadcaster with live ground coverage of weather and coastal alerts."
       },
       {
@@ -27,12 +27,12 @@ export const LIVE_NEWS_REGIONS = [
         lang: 'Odia',
         category: 'Regional 24x7 News',
         badge: 'Live Bulletin',
-        videoId: '2pzRtxUqUXY',
+        videoId: 'TPVp9yhx7fo',
         channelHandle: '@KanakNewsOdisha',
-        bulletinTitle: 'Odisha Prime Time 7PM News Live',
+        bulletinTitle: 'Kanak News 24x7 Live Stream',
         directLiveUrl: 'https://www.youtube.com/@KanakNewsOdisha/live',
         webTvUrl: 'https://kanaknews.com/',
-        embedUrl: 'https://www.youtube.com/embed/2pzRtxUqUXY?autoplay=1&mute=0&rel=0&live=1',
+        embedUrl: 'https://www.youtube.com/embed/TPVp9yhx7fo?autoplay=1&mute=0&rel=0&live=1',
         description: 'Real-time coastal and district-level weather updates, relief efforts and field reports.'
       },
       {
@@ -42,12 +42,12 @@ export const LIVE_NEWS_REGIONS = [
         lang: 'Odia',
         category: 'Regional News',
         badge: 'Disaster Coverage',
-        videoId: 'Rf69J3ARr2I',
+        videoId: 'fhC5OsxkW8Q',
         channelHandle: '@Kalingatv24x7',
-        bulletinTitle: 'Ajira Khabar 7PM Live Bulletin',
+        bulletinTitle: 'Kalinga TV 24x7 Live Transmission',
         directLiveUrl: 'https://www.youtube.com/@Kalingatv24x7/live',
         webTvUrl: 'https://kalingatv.com/',
-        embedUrl: 'https://www.youtube.com/embed/Rf69J3ARr2I?autoplay=1&mute=0&rel=0&live=1',
+        embedUrl: 'https://www.youtube.com/embed/fhC5OsxkW8Q?autoplay=1&mute=0&rel=0&live=1',
         description: '24x7 Odia news coverage with special bulletins on coastal situations and district warnings.'
       },
       {
@@ -79,12 +79,12 @@ export const LIVE_NEWS_REGIONS = [
         lang: 'Bengali',
         category: 'Regional 24x7 News',
         badge: 'Top Bangla News',
-        videoId: 'jvgxa0fCnOw',
+        videoId: 'FqUILkXfF38',
         channelHandle: '@abpanandatv',
-        bulletinTitle: '7Tay Bangla Prime Time Live',
+        bulletinTitle: 'ABP Ananda 24x7 Live Stream',
         directLiveUrl: 'https://www.youtube.com/@abpanandatv/live',
         webTvUrl: 'https://bengali.abplive.com/live-tv',
-        embedUrl: 'https://www.youtube.com/embed/jvgxa0fCnOw?autoplay=1&mute=0&rel=0&live=1',
+        embedUrl: 'https://www.youtube.com/embed/FqUILkXfF38?autoplay=1&mute=0&rel=0&live=1',
         description: 'Leading Bengali news broadcaster tracking Bay of Bengal storms and Gangetic WB rain.'
       },
       {
@@ -94,12 +94,12 @@ export const LIVE_NEWS_REGIONS = [
         lang: 'Bengali',
         category: 'Regional 24x7 News',
         badge: 'Live Bulletin',
-        videoId: 'JEP7UjqIZ8I',
+        videoId: 'HHsH_ZiQCHo',
         channelHandle: '@zee24ghanta',
-        bulletinTitle: 'Point Blank Live Prime Time Show',
+        bulletinTitle: 'Zee 24 Ghanta 24x7 Live Stream',
         directLiveUrl: 'https://www.youtube.com/@zee24ghanta/live',
         webTvUrl: 'https://zeenews.india.com/bengali/live-tv',
-        embedUrl: 'https://www.youtube.com/embed/JEP7UjqIZ8I?autoplay=1&mute=0&rel=0&live=1',
+        embedUrl: 'https://www.youtube.com/embed/HHsH_ZiQCHo?autoplay=1&mute=0&rel=0&live=1',
         description: 'Live field reporting from Digha, Sundarbans, Kolkata, and South Bengal coastal districts.'
       },
       {
@@ -131,12 +131,12 @@ export const LIVE_NEWS_REGIONS = [
         lang: 'Telugu',
         category: 'Regional 24x7 News',
         badge: 'Top Telugu News',
-        videoId: 'SpvI5pQoXjg',
+        videoId: 'O8VZ3aC4LN4',
         channelHandle: '@tv9telugulive',
         bulletinTitle: 'TV9 Telugu 24x7 Live Stream',
         directLiveUrl: 'https://www.youtube.com/@tv9telugulive/live',
         webTvUrl: 'https://tv9telugu.com/live-tv',
-        embedUrl: 'https://www.youtube.com/embed/SpvI5pQoXjg?autoplay=1&mute=0&rel=0&live=1',
+        embedUrl: 'https://www.youtube.com/embed/O8VZ3aC4LN4?autoplay=1&mute=0&rel=0&live=1',
         description: 'Live coverage from Visakhapatnam, Srikakulam, Kakinada, and coastal Andhra.'
       },
       {
@@ -235,12 +235,12 @@ export const LIVE_NEWS_REGIONS = [
         lang: 'Tamil',
         category: 'Regional 24x7 News',
         badge: 'Top Tamil News',
-        videoId: 'b_eIzGqkiVw',
+        videoId: '8RV7zGInro4',
         channelHandle: '@polimernews',
         bulletinTitle: 'Polimer News Prime Time Live',
         directLiveUrl: 'https://www.youtube.com/@polimernews/live',
         webTvUrl: 'https://www.polimernews.com/live',
-        embedUrl: 'https://www.youtube.com/embed/b_eIzGqkiVw?autoplay=1&mute=0&rel=0&live=1',
+        embedUrl: 'https://www.youtube.com/embed/8RV7zGInro4?autoplay=1&mute=0&rel=0&live=1',
         description: 'Chennai, Nagapattinam & Cuddalore coastal rainfall and storm surge reports.'
       },
       {
@@ -250,12 +250,12 @@ export const LIVE_NEWS_REGIONS = [
         lang: 'Tamil',
         category: 'Regional News',
         badge: 'Live Bulletin',
-        videoId: '8a6bWQM-OAo',
+        videoId: 'Z1FDM3tkiro',
         channelHandle: '@thanthitv',
         bulletinTitle: 'Thanthi TV Tamil Weather & News Live',
         directLiveUrl: 'https://www.youtube.com/@thanthitv/live',
         webTvUrl: 'https://www.thanthitv.com/live',
-        embedUrl: 'https://www.youtube.com/embed/8a6bWQM-OAo?autoplay=1&mute=0&rel=0&live=1',
+        embedUrl: 'https://www.youtube.com/embed/Z1FDM3tkiro?autoplay=1&mute=0&rel=0&live=1',
         description: 'Tamil Nadu coastal disaster warnings, port signals, and relief center locations.'
       },
       {
@@ -317,12 +317,12 @@ export const LIVE_NEWS_REGIONS = [
         lang: 'Hindi',
         category: 'National 24x7 News',
         badge: 'Top Hindi News',
-        videoId: 'W559AdQWBtM',
+        videoId: 'RrnEjvM-A7Y',
         channelHandle: '@aajtak',
         bulletinTitle: 'Aaj Tak Live 24x7 Broadcast',
         directLiveUrl: 'https://www.youtube.com/@aajtak/live',
         webTvUrl: 'https://www.aajtak.in/livetv',
-        embedUrl: 'https://www.youtube.com/embed/W559AdQWBtM?autoplay=1&mute=0&rel=0&live=1',
+        embedUrl: 'https://www.youtube.com/embed/RrnEjvM-A7Y?autoplay=1&mute=0&rel=0&live=1',
         description: '24x7 pan-India coverage of major storms, rainfall, and weather advisories.'
       }
     ]
