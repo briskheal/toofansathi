@@ -1,14 +1,315 @@
-// Authoritative State-Adaptive Coastal Agro-Meteorological & Marine Intelligence
-// Supporting TNAU (Tamil Nadu), ANGRAU (Andhra Pradesh), KAU (Kerala), BCKV (West Bengal), AAU (Gujarat), and ICAR-NRRI (Odisha / National).
+// ==============================================================================
+// Authoritative State-Adaptive Agro-Climatic Intelligence Engine
+// Dynamically classifies all 28 Indian States & 8 UTs into 5 Master Agro-Climatic Zones:
+// 1. HIMALAYAN ZONE (J&K, Ladakh, Himachal Pradesh, Uttarakhand, Sikkim, Arunachal)
+// 2. NORTHERN PLAINS ZONE (Punjab, Haryana, Delhi NCR, Uttar Pradesh, Bihar)
+// 3. CENTRAL PLATEAU ZONE (Rajasthan, Madhya Pradesh, Chhattisgarh, Jharkhand)
+// 4. PENINSULAR & WESTERN COAST (Tamil Nadu, Kerala, Karnataka, Goa, Maharashtra, Gujarat)
+// 5. EASTERN COAST & DELTA (Odisha, Andhra Pradesh, West Bengal)
+// ==============================================================================
 
-export function getStateAgroIntelligence(stateName = 'Odisha', selectedLang = 'english', livePrecip = 0, liveWind = 14) {
-  const state = (stateName || '').toLowerCase();
+export function detectAgroClimaticZone(stateName = '', locationName = '') {
+  const s = `${stateName} ${locationName}`.toLowerCase();
+
+  // 1. Himalayan Zone (High Altitude, Sub-Zero, Western Disturbances, Snowfall, Orchards)
+  if (
+    s.includes('jammu') || s.includes('kashmir') || s.includes('ladakh') || s.includes('leh') ||
+    s.includes('srinagar') || s.includes('himachal') || s.includes('shimla') || s.includes('manali') ||
+    s.includes('kullu') || s.includes('solan') || s.includes('dharamshala') ||
+    s.includes('uttarakhand') || s.includes('dehradun') || s.includes('haridwar') || s.includes('haldwani') ||
+    s.includes('nainital') || s.includes('almora') || s.includes('kumaon') || s.includes('garhwal') ||
+    s.includes('sikkim') || s.includes('arunachal')
+  ) {
+    return 'HIMALAYAN';
+  }
+
+  // 2. Northern Plains / Indo-Gangetic Plain (Wheat Granary, Dense Fog Belt, Winter Cold Wave)
+  if (
+    s.includes('punjab') || s.includes('haryana') || s.includes('delhi') || s.includes('chandigarh') ||
+    s.includes('amritsar') || s.includes('ludhiana') || s.includes('jalandhar') || s.includes('patiala') ||
+    s.includes('karnal') || s.includes('panipat') || s.includes('ambala') || s.includes('hisar') ||
+    s.includes('uttar pradesh') || s.includes('lucknow') || s.includes('kanpur') || s.includes('meerut') ||
+    s.includes('ghaziabad') || s.includes('noida') || s.includes('agra') || s.includes('varanasi') ||
+    s.includes('bareilly') || s.includes('moradabad') || s.includes('muzaffarnagar') || s.includes('saharanpur') ||
+    s.includes('bihar') || s.includes('patna') || s.includes('gaya') || s.includes('muzaffarpur') || s.includes('bhagalpur')
+  ) {
+    return 'NORTH_PLAINS';
+  }
+
+  // 3. Central & Arid Plateau (Rajasthan, MP, Chhattisgarh, Jharkhand)
+  if (
+    s.includes('rajasthan') || s.includes('jaipur') || s.includes('jodhpur') || s.includes('udaipur') || s.includes('kota') ||
+    s.includes('madhya pradesh') || s.includes('bhopal') || s.includes('indore') || s.includes('gwalior') || s.includes('jabalpur') || s.includes('ujjain') ||
+    s.includes('chhattisgarh') || s.includes('raipur') || s.includes('bilaspur') ||
+    s.includes('jharkhand') || s.includes('ranchi') || s.includes('jamshedpur') || s.includes('dhanbad')
+  ) {
+    return 'CENTRAL_PLATEAU';
+  }
+
+  // 4. Tamil Nadu & Puducherry (Northeast Monsoon & Easterly Waves Season)
+  if (s.includes('tamil nadu') || s.includes('puducherry') || s.includes('pondicherry') || s.includes('chennai') || s.includes('coimbatore') || s.includes('madurai')) {
+    return 'COASTAL_SOUTH';
+  }
+
+  // 5. Kerala & Mahe (Southwest Coast)
+  if (s.includes('kerala') || s.includes('kochi') || s.includes('thiruvananthapuram') || s.includes('calicut') || s.includes('kozhikode') || s.includes('mahe')) {
+    return 'COASTAL_KERALA';
+  }
+
+  // 6. Andhra Pradesh & Telangana
+  if (s.includes('andhra') || s.includes('visakhapatnam') || s.includes('vizag') || s.includes('vijayawada') || s.includes('guntur') || s.includes('tirupati') || s.includes('telangana') || s.includes('hyderabad')) {
+    return 'COASTAL_ANDHRA';
+  }
+
+  // 7. West Bengal
+  if (s.includes('bengal') || s.includes('kolkata') || s.includes('digha') || s.includes('howrah') || s.includes('sundarbans')) {
+    return 'COASTAL_BENGAL';
+  }
+
+  // 8. Gujarat & Coastal Maharashtra / Goa / Karnataka
+  if (s.includes('gujarat') || s.includes('ahmedabad') || s.includes('surat') || s.includes('porbandar') || s.includes('maharashtra') || s.includes('mumbai') || s.includes('goa') || s.includes('karnataka') || s.includes('bengaluru') || s.includes('mangalore')) {
+    return 'COASTAL_WEST';
+  }
+
+  // 9. Odisha & Default Coastal East
+  return 'COASTAL_EAST';
+}
+
+export function getStateAgroIntelligence(stateName = 'Odisha', selectedLang = 'english', livePrecip = 0, liveWind = 14, locationName = '') {
+  const zone = detectAgroClimaticZone(stateName, locationName);
   const lang = (selectedLang || 'english').toLowerCase();
 
-  // 1. TAMIL NADU & PUDUCHERRY (Northeast Monsoon & Easterly Waves Season, Nov 23-27)
-  if (state.includes('tamil nadu') || state.includes('puducherry') || state.includes('pondicherry') || state.includes('chennai')) {
+  // ==========================================================================
+  // ZONE 1: HIMALAYAN ZONE (Jammu & Kashmir, Ladakh, Himachal, Uttarakhand)
+  // Non-Coastal: Mountain Weather, Orchards, Frost, Saffron, Snow, Passes
+  // ==========================================================================
+  if (zone === 'HIMALAYAN') {
+    const isOdia = lang === 'odia';
+    const isHindi = lang === 'hindi';
+    const isTamil = lang === 'tamil';
+
+    return {
+      zone: 'HIMALAYAN',
+      isCoastal: false,
+      zoneTitle: isOdia
+        ? 'ହିମାଳୟ କୃଷି-ପାଣିପାଗ ଓ ପାର୍ବତ୍ୟ ସୂଚନା'
+        : isHindi
+        ? 'हिमालयी कृषि-मौसम व पर्वतीय सुरक्षा निगरानी'
+        : isTamil
+        ? 'இமயமலை வேளாண்-வானிலை & மலைசார் தகவல்'
+        : 'Himalayan Agro-Meteorological & Mountain Intelligence',
+      basinStatus: isOdia ? '🏔️ ପାର୍ବତ୍ୟ ଅଞ୍ଚଳ: ଥଣ୍ଡା ଓ କାକର ସତର୍କତା' : isHindi ? '🏔️ उच्च पर्वतीय क्षेत्र: ठंड व पाला निगरानी' : '🏔️ High Altitudes: Sub-Zero Dip & Frost Watch',
+      windDesc: isOdia ? '✓ ପାର୍ବତ୍ୟ ପବନ • ଫସଲ ପ୍ରୁନିଂ ପାଇଁ ଅନୁକୂଳ' : isHindi ? '✓ मंद पर्वतीय हवा • बागवानी कटाई हेतु उपयुक्त' : '✓ Mountain Breeze • Valley Clear for Pruning',
+      rainDesc: livePrecip > 0
+        ? (isOdia ? `🌨️ ${livePrecip} ମି.ମି ତୁଷାରପାତ/ବର୍ଷା` : `🌨️ ${livePrecip} mm Sleet / Cold Rain`)
+        : (isOdia ? '❄️ ଶୁଷ୍କ ଥଣ୍ଡା ପାଗ • ରାତିରେ ମାଇନସ୍ ଡିପ୍' : '❄️ Dry Cold Weather • Sub-Zero Night Chill'),
+      authorityTitle: isOdia
+        ? 'SKUAST କାଶ୍ମୀର ଓ ଜାମ୍ମୁ: ଉଦ୍ୟାନ କୃଷି ଓ ଶୀତ ସତର୍କତା ନିର୍ଦ୍ଦେଶାବଳୀ'
+        : isHindi
+        ? 'शेरे-कश्मीर कृषि विश्वविद्यालय (SKUAST): घाटी बागवानी व शीतकालीन निर्देश'
+        : 'SKUAST-Kashmir & SKUAST-Jammu: Valley Horticulture & Cold Weather Directives',
+      authoritySubtitle: isOdia
+        ? 'ସେଓ ବଗିଚା, କେଶର କିଆରି ଓ ଶୀତକାଳୀନ ପଲିହାଉସ୍ ସୁରକ୍ଷା ପାଇଁ SKUAST ସରକାରୀ ନିର୍ଦ୍ଦେଶାବଳୀ'
+        : 'Official SKUAST agro-meteorological advisory for temperate apple orchards, saffron beds and winter freeze protection',
+      advisory1Title: isOdia
+        ? 'ସେଓ ଓ ଫଳ ବଗିଚା ଶୀତକାଳୀନ ଯତ୍ନ ଓ ପ୍ରୁନିଂ'
+        : isHindi
+        ? 'सेब व फलदार बागों में कटाई-छंटाई एवं तना लेपन'
+        : 'Apple & Fruit Orchard Winter Basin Care & Trunk Pruning',
+      advisory1Desc: isOdia
+        ? 'ରାତି ତାପମାତ୍ରା ଶୂନ ଡିଗ୍ରୀ ନିକଟତର। ସେଓ ଓ ବାଦାମ ଗଛର ପ୍ରୁନିଂ ଶେଷ କରନ୍ତୁ ଏବଂ କଟା ଅଂଶରେ ବୋର୍ଡୋ ପେଷ୍ଟ ଲଗାଇ ଗଣ୍ଡି ଫାଟିବା ଓ କବକ ରୋଗରୁ ରକ୍ଷା କରନ୍ତୁ।'
+        : isHindi
+        ? 'रात का तापमान शून्य के करीब पहुंच रहा है। सेब, अखरोट व नाशपाती में कटाई-छंटाई पूरी कर कटे सिरों पर बोर्डो लेप लगाएं ताकि तना फटने व फफूंद से बचाव हो सके।'
+        : 'Dip in night temperatures approaching near-freezing. Complete pruning of apple, walnut and pear trees; apply Bordeaux paste / lime sulfur to cut surfaces and trunks to prevent fungal infection and sun-scald. Prepare winter basin mulch.',
+      advisory2Title: isOdia
+        ? 'ପ୍ରବଳ ଶୀତ ଓ କାକରରୁ ପଲିହାଉସ୍ ଓ କେଶର ସୁରକ୍ଷା'
+        : isHindi
+        ? 'पाला व शीतलहर से पॉलीहाउस व फसलों का बचाव'
+        : 'Sub-Zero Frost & Greenhouse Polyhouse Protection',
+      advisory2Desc: isOdia
+        ? 'କେଶର କିଆରି ଓ ନର୍ସରୀରେ ନଡ଼ା କିମ୍ବା ପଲିଥିନ୍ ଆଚ୍ଛାଦନ ଦିଅନ୍ତୁ। ପଲିହାଉସ୍ ଧାରକୁ ଉତ୍ତରୀ ଥଣ୍ଡା ପବନରୁ ସୁରକ୍ଷିତ ରଖନ୍ତୁ ଏବଂ ପାଇପ୍ ଫାଟିବା ଏଡ଼ାଇବାକୁ ଜଳ ନିଷ୍କାସନ କରନ୍ତୁ।'
+        : isHindi
+        ? 'केसर क्यारियों व नर्सरी पौध पर पुआल/प्लास्टिक की मल्चिंग बिछाएं। पॉलीहाउस के किनारों को बंद रखें तथा सिंचाई पाइपों को जमने से बचाने के लिए अतिरिक्त पानी निकाल दें।'
+        : 'Ensure frost covers or organic mulch over saffron corm beds and nursery seedbeds. Insulate polyhouse borders against icy northern winds; drain exposed irrigation lines to prevent pipe cracking from freezing water.',
+      safetyTitle: isOdia
+        ? '🏔️ ପାର୍ବତ୍ୟ ରାଜପଥ, ଘାଟି ପାସ୍ ଓ ତୁଷାରପାତ ସୁରକ୍ଷା'
+        : isHindi
+        ? '🏔️ पर्वतीय राजमार्ग, घाटी दर्रा व पाला/हिमपात सुरक्षा'
+        : '🏔️ Mountain Highway, Valley Pass & Snow/Frost Safety',
+      safetySubtitle: isOdia
+        ? 'ଜାମ୍ମୁ-ଶ୍ରୀନଗର NH-44, ମୋଗଲ ରୋଡ୍ ଏବଂ ଘାଟି ପାସ୍ ଟ୍ରାଫିକ୍ ସୂଚନା'
+        : 'NH-44 Jammu-Srinagar Highway, Mughal Road & Mountain Pass Transit Advisory',
+      safetyStatus: isOdia ? 'ସତର୍କତା ସହ ଖୋଲା' : isHindi ? 'सतर्कता के साथ खुला' : 'OPEN WITH WINTER CAUTION',
+      safetyStatusClass: 'bg-sky-950/80 text-sky-300 border-sky-800',
+      metric1Label: 'NH-44 & Passes: ',
+      metric1Value: 'Open (Watch Morning Black Ice)',
+      metric2Label: 'Night Lows: ',
+      metric2Value: 'Sub-Zero Dip (1°C to -4°C in Valleys)',
+      metric3Label: 'Travel Safety: ',
+      metric3Value: 'Carry Anti-Skid Chains on High Passes',
+      point2Header: '2. Mountain Highway & Frost',
+      waveHeight: 'NH-44 & Passes: Navigable',
+      offshoreWind: 'Valley Inflow: Mountain Breeze',
+      marineStatus: 'VALLEY PASSES OPEN (CAUTION)',
+      marineStatusClass: 'bg-sky-950/80 text-sky-300 border-sky-800',
+      fishermenWarning: 'Safe for Valley Highway & Inter-District Transit'
+    };
+  }
+
+  // ==========================================================================
+  // ZONE 2: NORTHERN PLAINS ZONE (Punjab, Haryana, Delhi NCR, UP, Bihar)
+  // Non-Coastal: Indo-Gangetic Wheat, Dense Fog, Highway Safety, Potato Blight
+  // ==========================================================================
+  if (zone === 'NORTH_PLAINS') {
+    const isOdia = lang === 'odia';
+    const isHindi = lang === 'hindi';
+
+    return {
+      zone: 'NORTH_PLAINS',
+      isCoastal: false,
+      zoneTitle: isOdia
+        ? 'ଉତ୍ତର ସମତଳ କୃଷି-ପାଣିପାଗ ଓ ରବି ଫସଲ ସୂଚନା'
+        : isHindi
+        ? 'उत्तरी मैदानी कृषि-मौसम व रबी फसल परामर्श'
+        : 'Northern Plains Agro-Meteorological & Rabi Crop Intelligence',
+      basinStatus: isOdia ? '🌫️ ସମତଳ ଅଞ୍ଚଳ: ଘନ କୁହୁଡ଼ି ଓ ସକାଳ ଶୀତ' : isHindi ? '🌫️ उत्तरी मैदान: विकिरण कोहरा व शीत लहर' : '🌫️ Indo-Gangetic Plains: Radiation Fog & Morning Chill',
+      windDesc: isOdia ? '✓ ମୃଦୁ ପବନ ୫-୧୦ କିମି/ଘଂ • ବୁଣିବା ପାଇଁ ଅନୁକୂଳ' : '✓ Calm Northwesterly 5–10 km/h • Safe for Sowing',
+      rainDesc: isOdia ? '✓ ଶୁଖିଲା ପାଗ • ବର୍ଷା ଆଶଙ୍କା ନାହିଁ' : '✓ Dry Season • Zero Rain Threat across Plains',
+      authorityTitle: isOdia
+        ? 'PAU ଲୁଧିଆନା ଓ IARI ପୁସା: ଉତ୍ତର ଭାରତ ରବି ନିର୍ଦ୍ଦେଶାବଳୀ'
+        : isHindi
+        ? 'पीएयू लुधियाना व आईएआरआई पूसा: उत्तर भारतीय रबी बुलेटिन'
+        : 'PAU Ludhiana & IARI Pusa: Northern Plains Rabi Directives',
+      authoritySubtitle: isOdia
+        ? 'ରବି ଗହମ ବୁଣା, ଆଳୁ ଫସଲ ରକ୍ଷଣାବେକ୍ଷଣ ଓ କୁହୁଡ଼ି ସତର୍କତା'
+        : 'Agro-meteorological advisory for rabi wheat sowing, mustard protection and potato winter management',
+      advisory1Title: isOdia
+        ? 'ରବି ଗହମ ବୁଣା ଓ ପ୍ରଥମ ଜଳସେଚନ (CRI ପର୍ଯ୍ୟାୟ)'
+        : isHindi
+        ? 'रबी गेहूं की समय पर बुवाई एवं प्रथम सिंचाई (CRI अवस्था)'
+        : 'Timely Wheat Sowing & First Crown Root Irrigation (CRI)',
+      advisory1Desc: isOdia
+        ? 'ଉନ୍ନତ କିସମର ଗହମ (HD-2967, PBW-550) ବୁଣାବୁଣି ଶେଷ କରନ୍ତୁ। ବୁଣିବାର ୨୦-୨୫ ଦିନ ମଧ୍ୟରେ ପ୍ରଥମ ଜଳସେଚନ (CRI ପର୍ଯ୍ୟାୟ) ନାଇଟ୍ରୋଜେନ ସହ ପ୍ରୟୋଗ କରନ୍ତୁ।'
+        : isHindi
+        ? 'गेहूं की समय पर बुवाई (HD-2967/PBW-550) पूरी करें। बुवाई के 20-25 दिन बाद सीआरआई (Crown Root) अवस्था पर पहली सिंचाई व अनुशंसित यूरिया का प्रयोग करें।'
+        : 'Complete sowing of timely wheat varieties (HD-2967, PBW-550). Apply first irrigation at 20-25 days after sowing (Crown Root Initiation stage) along with recommended nitrogen dose.',
+      advisory2Title: isOdia
+        ? 'ସକାଳେ ଘନ କୁହୁଡ଼ି ଓ ଆଳୁ ଫସଲ ରୋଗ ସତର୍କତା'
+        : isHindi
+        ? 'घने कोहरे में आलू झुलसा व सरसों माहू निगरानी'
+        : 'Dense Morning Fog & Potato Late Blight Watch',
+      advisory2Desc: isOdia
+        ? 'ସକାଳର ଉଚ୍ଚ ଆର୍ଦ୍ରତା ଓ କୁହୁଡ଼ି ଯୋଗୁଁ ଆଳୁରେ ଝାଉଁଳା ରୋଗ ଓ ସୋରିଷରେ ଜଉପୋକ ଆକ୍ରମଣ ହୋଇପାରେ। ସନ୍ଧ୍ୟାବେଳେ ହାଲୁକା ଜଳସେଚନ ଦେଇ କାକର ଆଘାତରୁ ଫସଲକୁ ରକ୍ଷା କରନ୍ତୁ।'
+        : isHindi
+        ? 'सुबह के कोहरे व अधिक नमी से आलू में पछेती झुलसा व सरसों में चेपा (माहू) का खतरा रहता है। नियमित निगरानी करें तथा पाला पड़ने की आशंका पर हल्की सिंचाई दें।'
+        : 'High morning humidity and fog favor late blight in potato and aphids in mustard. Inspect crops; give light evening irrigation if ground frost is anticipated during temperature dips.',
+      safetyTitle: isOdia
+        ? '🌫️ ଜାତୀୟ ରାଜପଥ କୁହୁଡ଼ି ଓ ପରିବହନ ସୁରକ୍ଷା'
+        : isHindi
+        ? '🌫️ राष्ट्रीय राजमार्ग कोहरा व यातायात सुरक्षा'
+        : '🌫️ National Highway Fog & Transportation Safety',
+      safetySubtitle: isOdia
+        ? 'GT ରୋଡ୍ NH-44, ଯମୁନା ଏବଂ ପୂର୍ବାଞ୍ଚଳ ଏକ୍ସପ୍ରେସୱେ କୁହୁଡ଼ି ସତର୍କତା'
+        : 'GT Road NH-44, Yamuna & Purvanchal Expressway Visibility Advisory',
+      safetyStatus: isOdia ? 'ଘନ କୁହୁଡ଼ି ସତର୍କତା' : isHindi ? 'घना कोहरा परामर्श' : 'DENSE FOG ADVISORY',
+      safetyStatusClass: 'bg-amber-950/80 text-amber-300 border-amber-800',
+      metric1Label: 'Morning Visibility: ',
+      metric1Value: '50 m – 200 m (Dense Fog 05:00–08:30 IST)',
+      metric2Label: 'Expressway Transit: ',
+      metric2Value: 'Low Beam & Fog Lights Mandatory',
+      metric3Label: 'Mandi Transport: ',
+      metric3Value: 'Safe Daytime Transit After 09:30 AM',
+      point2Header: '2. Highway Fog & Visibility',
+      waveHeight: 'Morning Fog: 50–200m Vis',
+      offshoreWind: 'Surface Wind: Calm 4–8 km/h',
+      marineStatus: 'HIGHWAY FOG WATCH (MORNING)',
+      marineStatusClass: 'bg-amber-950/80 text-amber-300 border-amber-800',
+      fishermenWarning: 'Drive with Low Beam; Afternoon Travel Safe'
+    };
+  }
+
+  // ==========================================================================
+  // ZONE 3: CENTRAL PLATEAU ZONE (Rajasthan, MP, Chhattisgarh, Jharkhand)
+  // Non-Coastal: Plateau Diurnal Gap, Mandi Storage, Gram/Mustard Irrigations
+  // ==========================================================================
+  if (zone === 'CENTRAL_PLATEAU') {
+    const isOdia = lang === 'odia';
+    const isHindi = lang === 'hindi';
+
+    return {
+      zone: 'CENTRAL_PLATEAU',
+      isCoastal: false,
+      zoneTitle: isOdia
+        ? 'ମଧ୍ୟ ମାଳଭୂମି କୃଷି-ପାଣିପାଗ ଓ ରବି ଫସଲ ସୂଚନା'
+        : isHindi
+        ? 'मध्य पठारी कृषि-मौसम व रबी फसल बुलेटिन'
+        : 'Central Plateau Agro-Meteorological & Rabi Intelligence',
+      basinStatus: isOdia ? '🌾 ମଧ୍ୟ ଭାରତ: ସ୍ଥିର ପାଗ ଓ ତାପମାତ୍ରା ବ୍ୟବଧାନ' : isHindi ? '🌾 मध्य भारत: स्थिर मौसम व दिन-रात तापांतर' : '🌾 Central India: Stable Skies & Diurnal Temperature Gap',
+      windDesc: isOdia ? '✓ ମୃଦୁ ଥଣ୍ଡା ପବନ ୬-୧୨ କିମି/ଘଂ' : '✓ Gentle Northerly Breeze 6–12 km/h',
+      rainDesc: isOdia ? '✓ ସମ୍ପୂର୍ଣ୍ଣ ଶୁଖିଲା ପାଗ' : '✓ Clear Dry Weather • Nil Rain Risk',
+      authorityTitle: isOdia
+        ? 'JNKVV ଜବଲପୁର ଓ SKNAU: ମାଳଭୂମି କୃଷି ନିର୍ଦ୍ଦେଶାବଳୀ'
+        : isHindi
+        ? 'जनेकृविवि जबलपुर व एसकेएनएयू जोबनेर: पठारी कृषि निर्देश'
+        : 'JNKVV Jabalpur & SKNAU: Central Plateau Agro Directives',
+      authoritySubtitle: isOdia
+        ? 'ବୁଟ, ସୋରିଷ ଜଳସେଚନ ଓ ଖଳାବାଡ଼ି ଶସ୍ୟ ସଂରକ୍ଷଣ ପରାମର୍ଶ'
+        : 'Agro advisory for chickpea, mustard irrigation and open mandi produce protection',
+      advisory1Title: isOdia
+        ? 'ଚଣା, ସୋରିଷ ଓ ଗହମ ଜଳସେଚନ ପରିଚାଳନା'
+        : isHindi
+        ? 'चना, सरसों व गेहूं में सिंचाई प्रबंधन'
+        : 'Gram (Chickpea), Mustard & Wheat Irrigation Scheduling',
+      advisory1Desc: isOdia
+        ? 'ଶୁଖିଲା ଖରାଟିଆ ପାଗ ଜାରି ରହିଛି। ଚଣା ଓ ସୋରିଷ ଫସଲରେ ଆବଶ୍ୟକ ମୁତାବକ ଜଳସେଚନ ଦିଅନ୍ତୁ ଏବଂ କୋଡ଼ାଖୁସା କରି ଜମିର ଆର୍ଦ୍ରତା ସଂରକ୍ଷଣ କରନ୍ତୁ।'
+        : isHindi
+        ? 'शुष्क व धूप वाला मौसम बना हुआ है। चना व सरसों में आवश्यकतानुसार सिंचाई करें तथा हल्की निराई-गुड़ाई कर खेत की नमी को संरक्षित रखें।'
+        : 'Dry sunny weather prevailing. Apply pre-sowing irrigation for chickpea and mustard; ensure soil moisture conservation through shallow intercultural weeding.',
+      advisory2Title: isOdia
+        ? 'ଦିନ-ରାତି ତାପମାତ୍ରା ବ୍ୟବଧାନ ଓ ମଣ୍ଡି ଶସ୍ୟ ସୁରକ୍ଷା'
+        : isHindi
+        ? 'तापांतर से फसल बचाव व मंडी में अनाज सुरक्षा'
+        : 'Diurnal Temperature Gap & Mandi Grain Storage',
+      advisory2Desc: isOdia
+        ? 'ଦିନ ତାପମାତ୍ରା ୨୮-୩୦°C ଏବଂ ରାତିରେ ୧୦-୧୨°C (୧୬-୧୮°C ବ୍ୟବଧାନ)। ଖଳା ଓ ମଣ୍ଡିରେ ଥିବା ଅମଳ ଶସ୍ୟକୁ ରାତ୍ରିକାଳୀନ କାକରରୁ ସୁରକ୍ଷିତ ଘୋଡ଼ାଇ ରଖନ୍ତୁ।'
+        : isHindi
+        ? 'दिन का तापमान 28-30°C तथा रात में 10-12°C तक गिर रहा है। मंडियों व खलिहानों में रखे खुले अनाज को रात की ओस व नमी से बचाने हेतु तिरपाल से ढकें।'
+        : 'Day temperatures reaching 28-30°C with night lows near 10-12°C. Protect harvested kharif grain in covered godowns against night dew condensation.',
+      safetyTitle: isOdia
+        ? '🌾 ମାଳଭୂମି ତାପମାତ୍ରା ଓ ମଣ୍ଡି ସୁରକ୍ଷା ନିରୀକ୍ଷଣ'
+        : isHindi
+        ? '🌾 पठारी तापांतर व मंडी अनाज सुरक्षा निगरानी'
+        : '🌾 Plateau Temperature Diurnal Range & Mandi Safety',
+      safetySubtitle: isOdia
+        ? 'ମଣ୍ଡି ଶସ୍ୟ ସଂରକ୍ଷଣ ଓ ଖୋଲା ପଡ଼ିଆ କୃଷି ସୂଚନା'
+        : 'Mandi Grain Storage & Open Yard Agriculture Monitoring',
+      safetyStatus: isOdia ? 'ସ୍ୱାଭାବିକ ପାଗ ରୁଟିନ୍' : isHindi ? 'अनुकूल शुष्क मौसम' : 'FAIR WEATHER ROUTINE',
+      safetyStatusClass: 'bg-emerald-950/80 text-emerald-300 border-emerald-800',
+      metric1Label: 'Diurnal Temp Gap: ',
+      metric1Value: '16°C – 18°C Day/Night Contrast',
+      metric2Label: 'Storage Precaution: ',
+      metric2Value: 'Cover Mandi Grain Yards from Dew',
+      metric3Label: 'Irrigation Window: ',
+      metric3Value: 'Evening Drip & Sprinkler Ideal',
+      point2Header: '2. Inland Plateau State',
+      waveHeight: 'Stable Inland Plateau',
+      offshoreWind: 'Gentle Breeze: 6–12 km/h',
+      marineStatus: 'STABLE INLAND WEATHER',
+      marineStatusClass: 'bg-emerald-950/80 text-emerald-300 border-emerald-800',
+      fishermenWarning: 'Safe for All Agro & Transport Activities'
+    };
+  }
+
+  // ==========================================================================
+  // ZONE 4: COASTAL SOUTH - TAMIL NADU & PUDUCHERRY
+  // Coastal: Northeast Monsoon & Easterly Waves (Nov 23-27)
+  // ==========================================================================
+  if (zone === 'COASTAL_SOUTH') {
     if (lang === 'tamil') {
       return {
+        zone: 'COASTAL_SOUTH',
+        isCoastal: true,
+        zoneTitle: 'கடலோர வேளாண்-வானிலை மற்றும் கடல்சார் தகவல்',
         basinStatus: '🌊 தென்மேற்கு வங்கக்கடல்: தீவிர கிழக்கு அலைகள்',
         windDesc: '⚠️ மணிக்கு 40-50 கி.மீ வேகத்தில் பலத்த காற்று & ଝଟକା',
         rainDesc: livePrecip > 0 ? `🌧️ ${livePrecip} மி.மீ மழை • வயல்களில் உடனடி வடிகால்` : '🌧️ வடகிழக்கு பருவமழை இடைவிடாத தூறல்',
@@ -25,8 +326,10 @@ export function getStateAgroIntelligence(stateName = 'Odisha', selectedLang = 'e
         fishermenWarning: 'எச்சரிக்கை: தென்மேற்கு வங்கக்கடல் & மன்னார் வளைகுடா கொந்தளிப்பு'
       };
     }
-    // Default English for Tamil Nadu
     return {
+      zone: 'COASTAL_SOUTH',
+      isCoastal: true,
+      zoneTitle: 'Coastal Agro-Meteorological & Marine Intelligence',
       basinStatus: '🌊 SW Bay: Active Easterly Waves',
       windDesc: '⚠️ Squally Winds 40–50 km/h (Gusts to 60 km/h)',
       rainDesc: livePrecip > 0 ? `🌧️ ${livePrecip} mm Rain • Maintain Field Drainage` : '🌧️ Northeast Monsoon Active Rain Window',
@@ -44,10 +347,15 @@ export function getStateAgroIntelligence(stateName = 'Odisha', selectedLang = 'e
     };
   }
 
-  // 2. ANDHRA PRADESH & TELANGANA (Rayalaseema & Coastal AP Showers)
-  if (state.includes('andhra') || state.includes('telangana')) {
+  // ==========================================================================
+  // ZONE 5: COASTAL ANDHRA PRADESH & TELANGANA
+  // ==========================================================================
+  if (zone === 'COASTAL_ANDHRA') {
     if (lang === 'telugu') {
       return {
+        zone: 'COASTAL_ANDHRA',
+        isCoastal: true,
+        zoneTitle: 'తీరప్రాంత వ్యవసాయ-వాతావరణ & సముద్ర సమాచార కేంద్రం',
         basinStatus: '🌊 దక్షిణ కోస్తా: ఈస్టర్లీ వేవ్స్ వర్షాలు',
         windDesc: '⚠️ ఈదురుగాలులు గంటకు 35–45 కి.మీ',
         rainDesc: livePrecip > 0 ? `🌧️ ${livePrecip} మి.మీ వర్షం • డ్రైనేజీ చూడండి` : '🌧️ ఈశాన్య రుతుపవనాల జల్లులు',
@@ -65,6 +373,9 @@ export function getStateAgroIntelligence(stateName = 'Odisha', selectedLang = 'e
       };
     }
     return {
+      zone: 'COASTAL_ANDHRA',
+      isCoastal: true,
+      zoneTitle: 'Coastal Agro-Meteorological & Marine Intelligence',
       basinStatus: '🌊 South AP: Easterly Wave Showers',
       windDesc: '⚠️ Gusty Winds 35–45 km/h',
       rainDesc: livePrecip > 0 ? `🌧️ ${livePrecip} mm Rain • Ensure Drainage` : '🌧️ NE Monsoon Showers Active',
@@ -82,10 +393,15 @@ export function getStateAgroIntelligence(stateName = 'Odisha', selectedLang = 'e
     };
   }
 
-  // 3. KERALA & MAHE (Monsoon Showers 24-26 Nov)
-  if (state.includes('kerala')) {
+  // ==========================================================================
+  // ZONE 6: COASTAL KERALA & MAHE
+  // ==========================================================================
+  if (zone === 'COASTAL_KERALA') {
     if (lang === 'malayalam') {
       return {
+        zone: 'COASTAL_KERALA',
+        isCoastal: true,
+        zoneTitle: 'തീരദേശ കാർഷിക-കാലാവസ്ഥാ വിവരങ്ങൾ',
         basinStatus: '🌧️ തുലാവർഷം: തെക്കൻ തീരത്ത് മഴ',
         windDesc: '⚠️ കാറ്റിന്റെ വേഗത 30-40 കി.മീ/മണിക്കൂർ',
         rainDesc: livePrecip > 0 ? `🌧️ ${livePrecip} മി.മീ മഴ • തോട്ടങ്ങളിൽ നീർവാർച്ച` : '🌧️ മഴ പെയ്യാൻ സാധ്യത',
@@ -103,6 +419,9 @@ export function getStateAgroIntelligence(stateName = 'Odisha', selectedLang = 'e
       };
     }
     return {
+      zone: 'COASTAL_KERALA',
+      isCoastal: true,
+      zoneTitle: 'Coastal Agro-Meteorological & Marine Intelligence',
       basinStatus: '🌧️ South Coast: NE Monsoon Showers',
       windDesc: '⚠️ Coastal Breeze 30–40 km/h',
       rainDesc: livePrecip > 0 ? `🌧️ ${livePrecip} mm Rain • Ensure Drainage` : '🌧️ Convective Showers Expected',
@@ -120,10 +439,15 @@ export function getStateAgroIntelligence(stateName = 'Odisha', selectedLang = 'e
     };
   }
 
-  // 4. WEST BENGAL (Aman Harvest & Early Potato Sowing Window)
-  if (state.includes('bengal') || state.includes('kolkata')) {
+  // ==========================================================================
+  // ZONE 7: COASTAL WEST BENGAL
+  // ==========================================================================
+  if (zone === 'COASTAL_BENGAL') {
     if (lang === 'bengali' || lang === 'bangla') {
       return {
+        zone: 'COASTAL_BENGAL',
+        isCoastal: true,
+        zoneTitle: 'উপকূলীয় কৃষি-আবহাওয়া ও সামুদ্রিক তথ্য কেন্দ্র',
         basinStatus: '🟢 বঙ্গোপসাগর: শান্ত ও অনুকূল আবহাওয়া',
         windDesc: '✓ শান্ত হাওয়া • ধান শুকানো ও মাঠের জন্য উপযুক্ত',
         rainDesc: '✓ শুষ্ক আবহাওয়া • বৃষ্টিপাতের আশঙ্কা নেই',
@@ -141,6 +465,9 @@ export function getStateAgroIntelligence(stateName = 'Odisha', selectedLang = 'e
       };
     }
     return {
+      zone: 'COASTAL_BENGAL',
+      isCoastal: true,
+      zoneTitle: 'Coastal Agro-Meteorological & Marine Intelligence',
       basinStatus: '🟢 North Bay: Completely Calm',
       windDesc: '✓ Gentle Breeze • Ideal for Harvest & Spraying',
       rainDesc: '✓ Dry Fair Weather • No Rain Threat',
@@ -158,10 +485,15 @@ export function getStateAgroIntelligence(stateName = 'Odisha', selectedLang = 'e
     };
   }
 
-  // 5. GUJARAT & MAHARASHTRA (Saurashtra Cotton, Groundnut & Wheat Window)
-  if (state.includes('gujarat') || state.includes('maharashtra') || state.includes('mumbai')) {
+  // ==========================================================================
+  // ZONE 8: COASTAL GUJARAT, MAHARASHTRA & GOA
+  // ==========================================================================
+  if (zone === 'COASTAL_WEST') {
     if (lang === 'gujarati') {
       return {
+        zone: 'COASTAL_WEST',
+        isCoastal: true,
+        zoneTitle: 'દરિયાકાંઠા કૃષિ-હવામાન અને સાગરીય ગુપ્તચર',
         basinStatus: '🟢 અરબી સમુદ્ર: શાંત અને અનુકૂળ સ્થિતિ',
         windDesc: '✓ હળવો પવન • કપાસ વીણવા અને સુકવણી માટે ઉત્તમ',
         rainDesc: '✓ સૂકું હવામાન • વરસાદની કોઈ શક્યતા નથી',
@@ -179,6 +511,9 @@ export function getStateAgroIntelligence(stateName = 'Odisha', selectedLang = 'e
       };
     }
     return {
+      zone: 'COASTAL_WEST',
+      isCoastal: true,
+      zoneTitle: 'Coastal Agro-Meteorological & Marine Intelligence',
       basinStatus: '🟢 Arabian Sea: Calm & Favorable',
       windDesc: '✓ Gentle Breeze • Safe for Picking & Sowing',
       rainDesc: '✓ Clear Dry Weather • Nil Rain Risk',
@@ -196,9 +531,14 @@ export function getStateAgroIntelligence(stateName = 'Odisha', selectedLang = 'e
     };
   }
 
-  // 6. ODISHA & NATIONAL DEFAULT (ICAR-NRRI Cuttack & OUAT Mandate)
+  // ==========================================================================
+  // ZONE 9: ODISHA & COASTAL EAST DEFAULT (ICAR-NRRI Cuttack & OUAT Mandate)
+  // ==========================================================================
   if (lang === 'odia') {
     return {
+      zone: 'COASTAL_EAST',
+      isCoastal: true,
+      zoneTitle: 'ଉପକୂଳ କୃଷି-ପାଣିପାଗ ଓ ସାମୁଦ୍ରିକ ସୂଚନା କେନ୍ଦ୍ର',
       basinStatus: '🟢 ସମୁଦ୍ର ଶାନ୍ତ • ବିପଦମୁକ୍ତ',
       windDesc: '✓ ମୃଦୁ ପବନ • ଅମଳ ଓ ଖଳା କାମ ପାଇଁ ଅନୁକୂଳ',
       rainDesc: '✓ ଶୁଖିଲା ପାଗ • ବର୍ଷା ଆଶଙ୍କା ନାହିଁ',
@@ -218,6 +558,9 @@ export function getStateAgroIntelligence(stateName = 'Odisha', selectedLang = 'e
 
   if (lang === 'hindi') {
     return {
+      zone: 'COASTAL_EAST',
+      isCoastal: true,
+      zoneTitle: 'तटीय कृषि-मौसम व समुद्री सुरक्षा केंद्र',
       basinStatus: '🟢 बंगाल की खाड़ी: शांत व सुरक्षित',
       windDesc: '✓ मंद हवा • कटाई व सुखाने हेतु उत्तम',
       rainDesc: '✓ शुष्क मौसम • खुले खेतों के लिए सुरक्षित',
@@ -235,8 +578,11 @@ export function getStateAgroIntelligence(stateName = 'Odisha', selectedLang = 'e
     };
   }
 
-  // English Default
+  // English Default Coastal
   return {
+    zone: 'COASTAL_EAST',
+    isCoastal: true,
+    zoneTitle: 'Coastal Agro-Meteorological & Marine Intelligence',
     basinStatus: '🟢 Basin-Wide Calm',
     windDesc: '✓ Gentle • Safe for Spraying & Drying',
     rainDesc: '✓ Dry Weather • Safe for Open Fields',

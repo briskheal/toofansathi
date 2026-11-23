@@ -19,7 +19,8 @@ import {
   Calendar,
   CheckCircle2,
   Anchor,
-  History
+  History,
+  Mountain
 } from 'lucide-react';
 import { getTranslation } from '../data/translations';
 import { cleanDistrictDisplay } from '../services/cycloneEngine';
@@ -41,8 +42,8 @@ export default function CycloneTrackerCard({ bulletin, threat, weatherData, acti
   const livePrecip = weatherData?.current?.precipitation !== undefined ? Math.round(weatherData.current.precipitation * 10) / 10 : 0;
   const liveTemp = weatherData?.current?.temperature_2m !== undefined ? Math.round(weatherData.current.temperature_2m) : 28;
 
-  // State-adaptive agro-meteorological intelligence (TNAU for Tamil Nadu, ANGRAU for AP, ICAR-NRRI for Odisha, etc.)
-  const stateAgro = getStateAgroIntelligence(activeLocation?.state || activeLocation?.name, selectedLang, livePrecip, liveWind);
+  // State-adaptive agro-meteorological intelligence (SKUAST for J&K, PAU for Punjab, TNAU for Tamil Nadu, etc.)
+  const stateAgro = getStateAgroIntelligence(activeLocation?.state || activeLocation?.name, selectedLang, livePrecip, liveWind, activeLocation?.name);
 
   const todayDateStr = new Date().toLocaleDateString('en-IN', {
     weekday: 'long',
@@ -51,7 +52,7 @@ export default function CycloneTrackerCard({ bulletin, threat, weatherData, acti
     year: 'numeric'
   });
 
-  // If Normal Peacetime Day, render the Coastal Agro-Meteorological & Marine Intelligence Portal
+  // If Normal Peacetime Day, render the State-Adaptive Agro-Meteorological & Regional Intelligence Portal
   if (isNormalDay) {
     return (
       <div className="bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border border-emerald-500/30 rounded-2xl p-4 sm:p-5 shadow-xl transition-all">
@@ -72,13 +73,13 @@ export default function CycloneTrackerCard({ bulletin, threat, weatherData, acti
                 </span>
               </div>
               <h2 className="text-sm sm:text-base font-extrabold text-white tracking-wide mt-0.5">
-                {t.agroHeader}
+                {stateAgro.zoneTitle || t.agroHeader}
               </h2>
             </div>
           </div>
 
           <div className="text-right">
-            <span className={`text-[11px] font-mono px-2.5 py-0.5 rounded-full font-bold inline-block border ${stateAgro.marineStatusClass}`}>
+            <span className={`text-[11px] font-mono px-2.5 py-0.5 rounded-full font-bold inline-block border ${stateAgro.marineStatusClass || stateAgro.safetyStatusClass}`}>
               {stateAgro.basinStatus}
             </span>
             <span className="text-[9px] text-slate-400 block mt-0.5">
@@ -177,40 +178,76 @@ export default function CycloneTrackerCard({ bulletin, threat, weatherData, acti
           </div>
         </div>
 
-        {/* INCOIS Marine & Fishermen Safety Status */}
-        <div className="bg-gradient-to-r from-teal-950/50 via-slate-950 to-teal-950/40 border border-teal-800/40 rounded-xl p-3 text-xs mb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Anchor className="w-4 h-4 text-teal-400" />
+        {/* Marine or Terrestrial Highway/Valley Safety Status */}
+        {stateAgro.isCoastal ? (
+          <div className="bg-gradient-to-r from-teal-950/50 via-slate-950 to-teal-950/40 border border-teal-800/40 rounded-xl p-3 text-xs mb-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Anchor className="w-4 h-4 text-teal-400" />
+                <div>
+                  <span className="font-bold text-teal-200 text-xs sm:text-sm">
+                    {t.incoisTitle}
+                  </span>
+                  <span className="text-[10px] text-slate-400 block">
+                    {t.incoisSubtitle}
+                  </span>
+                </div>
+              </div>
+              <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold ${stateAgro.marineStatusClass}`}>
+                {stateAgro.marineStatus}
+              </span>
+            </div>
+
+            <div className="mt-2.5 pt-2 border-t border-teal-800/30 flex flex-wrap items-center gap-x-5 gap-y-1 text-[11px] text-slate-300">
               <div>
-                <span className="font-bold text-teal-200 text-xs sm:text-sm">
-                  {t.incoisTitle}
-                </span>
-                <span className="text-[10px] text-slate-400 block">
-                  {t.incoisSubtitle}
-                </span>
+                <span className="text-slate-400">Significant Wave Height: </span>
+                <strong className="text-white">{stateAgro.waveHeight}</strong>
+              </div>
+              <div>
+                <span className="text-slate-400">Offshore Wind: </span>
+                <strong className="text-white">{stateAgro.offshoreWind}</strong>
+              </div>
+              <div>
+                <span className="text-slate-400">Fishermen Warning: </span>
+                <strong className="text-emerald-400 font-semibold">{stateAgro.fishermenWarning}</strong>
               </div>
             </div>
-            <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold ${stateAgro.marineStatusClass}`}>
-              {stateAgro.marineStatus}
-            </span>
           </div>
+        ) : (
+          <div className="bg-gradient-to-r from-slate-900 via-slate-950 to-sky-950/40 border border-slate-800 rounded-xl p-3 text-xs mb-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Mountain className="w-4 h-4 text-sky-400" />
+                <div>
+                  <span className="font-bold text-sky-200 text-xs sm:text-sm">
+                    {stateAgro.safetyTitle}
+                  </span>
+                  <span className="text-[10px] text-slate-400 block">
+                    {stateAgro.safetySubtitle}
+                  </span>
+                </div>
+              </div>
+              <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold ${stateAgro.safetyStatusClass}`}>
+                {stateAgro.safetyStatus}
+              </span>
+            </div>
 
-          <div className="mt-2.5 pt-2 border-t border-teal-800/30 flex flex-wrap items-center gap-x-5 gap-y-1 text-[11px] text-slate-300">
-            <div>
-              <span className="text-slate-400">Significant Wave Height: </span>
-              <strong className="text-white">{stateAgro.waveHeight}</strong>
-            </div>
-            <div>
-              <span className="text-slate-400">Offshore Wind: </span>
-              <strong className="text-white">{stateAgro.offshoreWind}</strong>
-            </div>
-            <div>
-              <span className="text-slate-400">Fishermen Warning: </span>
-              <strong className="text-emerald-400 font-semibold">{stateAgro.fishermenWarning}</strong>
+            <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex flex-wrap items-center gap-x-5 gap-y-1 text-[11px] text-slate-300">
+              <div>
+                <span className="text-slate-400">{stateAgro.metric1Label}</span>
+                <strong className="text-white">{stateAgro.metric1Value}</strong>
+              </div>
+              <div>
+                <span className="text-slate-400">{stateAgro.metric2Label}</span>
+                <strong className="text-white">{stateAgro.metric2Value}</strong>
+              </div>
+              <div>
+                <span className="text-slate-400">{stateAgro.metric3Label}</span>
+                <strong className="text-emerald-400 font-semibold">{stateAgro.metric3Value}</strong>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* 7-Day Basin Cyclogenesis Watch (IMD & ECMWF Global Model Outlook) */}
         <div className="bg-slate-950/60 border border-slate-800/70 rounded-xl p-2.5 flex items-center justify-between text-xs text-slate-300">

@@ -28,7 +28,8 @@ import {
   History,
   Sun,
   Sprout,
-  CheckCircle2
+  CheckCircle2,
+  Mountain
 } from 'lucide-react';
 import { calculateDistanceKm } from '../services/cycloneEngine';
 import { getStateAgroIntelligence } from '../data/agroIntelligence';
@@ -323,7 +324,7 @@ export default function CycloneMap({
   const livePrecip = weatherData?.current?.precipitation !== undefined ? Math.round(weatherData.current.precipitation * 10) / 10 : 0.1;
   const liveTemp = weatherData?.current?.temperature_2m !== undefined ? Math.round(weatherData.current.temperature_2m) : 26;
 
-  const stateAgro = getStateAgroIntelligence(userLocation?.state || userLocation?.name, selectedLang, livePrecip, liveWind);
+  const stateAgro = getStateAgroIntelligence(userLocation?.state || userLocation?.name, selectedLang, livePrecip, liveWind, userLocation?.name);
 
   const [activeTab, setActiveTab] = useState('trajectory'); // 'trajectory' | 'radar' | 'satellite' | 'global' | 'zoomearth'
   const [mapViewMode, setMapViewMode] = useState('bay-of-bengal'); // Focus on active Severe Cyclone by default
@@ -900,18 +901,24 @@ export default function CycloneMap({
                   </div>
                 </div>
 
-                {/* Point 2: Sea State & Waves */}
+                {/* Point 2: Sea State & Waves / Terrestrial Regional Safety */}
                 <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm min-w-0 overflow-hidden">
-                  <Waves className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
+                  {stateAgro.isCoastal ? (
+                    <Waves className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <Mountain className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
+                  )}
                   <div className="min-w-0 flex-1 overflow-hidden">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">2. INCOIS Ocean State</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">
+                      {stateAgro.isCoastal ? '2. INCOIS Ocean State' : (stateAgro.point2Header || '2. Terrain & Transit Safety')}
+                    </span>
                     <strong className="text-cyan-300 text-xs block truncate" title={stateAgro.waveHeight}>
-                      Waves: {stateAgro.waveHeight}
+                      {stateAgro.isCoastal ? `Waves: ${stateAgro.waveHeight}` : stateAgro.waveHeight}
                     </strong>
                     <span className="text-[10px] text-slate-300 block truncate" title={stateAgro.offshoreWind}>
-                      Offshore: {stateAgro.offshoreWind}
+                      {stateAgro.isCoastal ? `Offshore: ${stateAgro.offshoreWind}` : stateAgro.offshoreWind}
                     </span>
-                    <span className={`text-[9px] block font-semibold truncate ${stateAgro.marineStatusClass.includes('amber') ? 'text-amber-400' : 'text-emerald-400'}`} title={stateAgro.fishermenWarning}>
+                    <span className={`text-[9px] block font-semibold truncate ${stateAgro.marineStatusClass?.includes('amber') ? 'text-amber-400' : 'text-emerald-400'}`} title={stateAgro.fishermenWarning}>
                       {stateAgro.marineStatus}
                     </span>
                   </div>
