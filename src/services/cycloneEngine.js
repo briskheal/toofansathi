@@ -279,6 +279,33 @@ export function calculateBearingDirection(userLat, userLon, stormLat, stormLon) 
 
 // Determine Threat Level based on Distance, Local Wind, Gusts, Rain, and Storm Stage
 export function evaluateThreatLevel(distanceKm, localWindKmph, localGustsKmph, rainMm3h, storm = ALL_INDIA_ACTIVE_STORMS[0]) {
+  const now = new Date();
+  // If post-storm date (Nov 22 or later), default to peaceful peacetime weather intelligence
+  const isNormalDay = (now.getDate() >= 22 && now.getMonth() >= 10) || now.getFullYear() > 2026;
+
+  if (isNormalDay) {
+    if (localWindKmph >= 65 || localGustsKmph >= 80 || rainMm3h >= 60) {
+      return {
+        level: 'ORANGE',
+        color: 'bg-amber-600 text-white',
+        badge: 'border-amber-500 text-amber-400 bg-amber-950/60',
+        title: 'ORANGE ALERT: Localized Thunderstorm Watch',
+        summary: 'LOCALIZED THUNDERSTORM & SQUALL WATCH',
+        action: 'Watch for localized rain intervals and gusty winds. Avoid seeking shelter under isolated trees.',
+        isNormalDay: true
+      };
+    }
+    return {
+      level: 'GREEN',
+      color: 'bg-emerald-600 text-white',
+      badge: 'border-emerald-500 text-emerald-400 bg-emerald-950/60',
+      title: 'GREEN: Normal / All Clear',
+      summary: 'NORMAL WEATHER ROUTINE • NO ACTIVE CYCLONE',
+      action: 'All cyclone warnings withdrawn. Routine agricultural harvesting, grain sun-drying, and coastal marine fishing operations permitted.',
+      isNormalDay: true
+    };
+  }
+
   const isWeakenedRemnant = storm?.status?.toLowerCase().includes('low pressure') || 
                             storm?.landfall?.status?.includes('Completed') ||
                             (storm?.maxSustainedWindKmph && storm.maxSustainedWindKmph <= 45);
@@ -371,6 +398,83 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
   const isChillyWinter = minTemp > 10 && minTemp <= 16;
   const isMildWinter = minTemp > 16 && minTemp <= 20;
 
+  // Peacetime / Normal Day Weather Pulse (When no active cyclone is threatening the region)
+  if (threat.isNormalDay) {
+    const winterTextEn = isSevereCold
+      ? `Winter advisory: Minimum temperature dropping to ${minTemp}°C. Heavy coat or jacket recommended.`
+      : isChillyWinter
+      ? `Winter advisory: Mild chill with minimum temperature around ${minTemp}°C. Light jacket or warm clothes advised.`
+      : '';
+    const winterActionEn = isSevereCold
+      ? `Wear Heavy Coat / Jacket (${minTemp}°C)`
+      : isChillyWinter
+      ? `Keep Jacket / Coat handy (${minTemp}°C)`
+      : 'Fair Weather Routine';
+
+    switch (lang) {
+      case 'odia':
+        return {
+          headline: `ତୁଫାନ ସାଥୀ ଦୈନିକ ପାଣିପାଗ ସୂଚନା: ସ୍ୱାଭାବିକ ପାଗ • ${districtName}`,
+          speech: `ଶୁଭ ସକାଳ। ଆଜି ${districtName} ଅଞ୍ଚଳରେ ପାଗ ସମ୍ପୂର୍ଣ୍ଣ ସ୍ୱାଭାବିକ ଓ ଅନୁକୂଳ ରହିଛି। ସର୍ବନିମ୍ନ ତାପମାତ୍ରା ${minTemp} ଡିଗ୍ରୀ ଏବଂ ସର୍ବୋଚ୍ଚ ${maxTemp} ଡିଗ୍ରୀ ରହିବ। ପବନର ବେଗ ଘଣ୍ଟା ପ୍ରତି ${windSpeed} କିଲୋମିଟର। ବଙ୍ଗୋପସାଗରରେ କୌଣସି ବାତ୍ୟା କିମ୍ବା ଲଘୁଚାପ ଆଶଙ୍କା ନାହିଁ। ଚାଷୀ ଭାଇମାନେ ନିର୍ଭୟରେ ଧାନ ଅମଳ, ଖଳାବାଡ଼ି କାର୍ଯ୍ୟ ଏବଂ ରବି ଫସଲ ବୁଣାବୁଣି କରିପାରିବେ। ସମୁଦ୍ର ଶାନ୍ତ ରହିଥିବାରୁ ମତ୍ସ୍ୟଜୀବୀମାନେ ମାଛ ଧରିବାକୁ ଯାଇପାରିବେ।`,
+          phoneticSpeech: `Subha sakala. Aji ${districtName} anchalare paga sampurna swabhabika achhi. Sarbanimna tapamatra ${minTemp} degree o sarbochha ${maxTemp} degree. Pabana beg ${windSpeed} km/h. Bangopasagarare kounasi batya asanka nahin. Chasi bhai mane nischintare amala o rabi fasala kama karantu.`,
+          actionSteps: [
+            'ପାଗ ସ୍ୱାଭାବିକ: ନିର୍ଭୟରେ ଚାଷ କାମ କରନ୍ତୁ',
+            'ଅମଳ ଧାନ ଶୁଖାଇବା ଓ ରବି ବୁଣିବା ଅନୁକୂଳ',
+            'ମତ୍ସ୍ୟଜୀବୀଙ୍କ ପାଇଁ ସମୁଦ୍ର ଯାତ୍ରା ସୁରକ୍ଷିତ',
+            'ଆଗାମୀ ୭ ଦିନ ବାତ୍ୟା ଆଶଙ୍କା ନାହିଁ'
+          ]
+        };
+      case 'hindi':
+        return {
+          headline: `तूफानसाथी दैनिक मौसम: सामान्य व शांत मौसम • ${districtName}`,
+          speech: `सुप्रभात। आज ${districtName} क्षेत्र में मौसम पूरी तरह सामान्य और शांत है। न्यूनतम तापमान ${minTemp} डिग्री और अधिकतम ${maxTemp} डिग्री रहेगा। हवा की गति ${windSpeed} किमी/घंटा है। बंगाल की खाड़ी में कोई भी चक्रवात या अवदाब सक्रिय नहीं है। किसान भाई धान की कटाई, सुखाने और रबी बुवाई का कार्य सुचारू रूप से करें। समुद्र शांत है, मछुआरों के लिए तट सुरक्षित है।`,
+          phoneticSpeech: `Suprabhat. Aaj ${districtName} mein mausam poori tarah samanya hai. Koi chakrawat sakriya nahi hai. Kheti-bari aur fasal katai ka kam sucharu karein.`,
+          actionSteps: [
+            'मौसम सामान्य: कृषि कार्य जारी रखें',
+            'धान सुखाने व रबी बुवाई के लिए उत्तम समय',
+            'मछुआरों के लिए समुद्र पूरी तरह सुरक्षित',
+            'आगामी 7 दिनों तक कोई चक्रवात नहीं'
+          ]
+        };
+      case 'bangla':
+        return {
+          headline: `তুফানসাথী দৈনিক আবহাওয়া: শান্ত ও স্বাভাবিক • ${districtName}`,
+          speech: `সুপ্রভাত। আজ ${districtName} এলাকায় আবহাওয়া সম্পূর্ণ স্বাভাবিক ও শান্ত। বঙ্গোপসাগরে কোনো ঘূর্ণিঝড় বা নিম্নচাপ নেই। কৃষকরা নিশ্চিন্তে ধান কাটা ও রবি ফসলের কাজ করতে পারেন। সমুদ্রে মাছ ধরার জন্য পরিস্থিতি অনুকূল।`,
+          phoneticSpeech: `Suprabhat. Aaj ${districtName} elakay abahawa shanto o swabhabik. Kono cyclone nei. Krishi kaj cholche.`,
+          actionSteps: [
+            'আবহাওয়া শান্ত: কৃষি কাজ স্বাভাবিক',
+            'ধান শুকানো ও রবি ফসলের উপযুক্ত সময়',
+            'জেলেদের জন্য সমুদ্র নিরাপদ',
+            'আগামী ৭ দিনে কোনো ঝড়ের আশঙ্কা নেই'
+          ]
+        };
+      case 'telugu':
+        return {
+          headline: `తుఫాన్ సాథీ రోజువారీ వాతావరణం: సాధారణ వాతావరణం • ${districtName}`,
+          speech: `శుభోదయం. నేడు ${districtName} ప్రాంతంలో వాతావరణం సాధారణంగా మరియు ప్రశాంతంగా ఉంది. బంగాళాఖాతంలో ఎటువంటి తుఫాను ముప్పు లేదు. రైతులు కోత పనులు మరియు రబీ సాగును నిరభ్యంతరంగా చేసుకోవచ్చు. మత్స్యకారులకు సముద్రం అనుకూలంగా ఉంది.`,
+          phoneticSpeech: `Subhodayam. Nedu ${districtName} pranthamulo vathavaranam prashanthamga undi. Ee vidhamaina cyclone ledu.`,
+          actionSteps: [
+            'వాతావరణం ప్రశాంతం: వ్యవసాయ పనులు కొనసాగించండి',
+            'రబీ విత్తనాలు వేయడానికి అనుకూల సమయం',
+            'మత్స్యకారులకు సముద్రం సురక్షితం',
+            'రాబోయే 7 రోజుల్లో తుఫాను ముప్పు లేదు'
+          ]
+        };
+      default: // english
+        return {
+          headline: `ToofanSathi Daily Weather Pulse: Fair & Normal Weather • ${districtName}`,
+          speech: `Good morning! Today in ${districtName}, weather conditions are fair and completely normal with temperatures between ${minTemp} and ${maxTemp} degrees Celsius and gentle winds of ${windSpeed} km/h. There are no tropical cyclones or depressions active in the Bay of Bengal. Farmers can carry out kharif harvesting, grain sun drying, and rabi sowing with confidence. Sea conditions are safe for coastal marine fishing. ${winterTextEn}`,
+          phoneticSpeech: `Good morning. Today in ${districtName}, weather conditions are fair and normal with no cyclone activity in the Bay of Bengal. Normal farming and fishing operations permitted.`,
+          actionSteps: [
+            'Fair Weather Routine: All Clear',
+            'Ideal for Paddy Drying & Rabi Sowing',
+            winterActionEn,
+            'Marine Fishing Safe & Permitted'
+          ]
+        };
+    }
+  }
+
   switch (lang) {
     case 'odia': {
       const winterSpeech = isSevereCold
@@ -394,6 +498,20 @@ export function generateVoiceBriefing(lang, threat, districtName, distanceKm, wi
         : isMildWinter
         ? `ହାଲୁକା ଜ୍ୟାକେଟ୍ ନିଅନ୍ତୁ (${minTemp}°C)`
         : 'ପାଗ ଅନୁଯାୟୀ ସତର୍କ ରୁହନ୍ତୁ';
+
+      if (threat.isNormalDay) {
+        return {
+          headline: `ତୁଫାନ ସାଥୀ ଦୈନିକ ପାଣିପାଗ ସୂଚନା: ସ୍ୱାଭାବିକ ପାଗ • ${districtName}`,
+          speech: `ଶୁଭ ସକାଳ। ଆଜି ${districtName} ଅଞ୍ଚଳରେ ପାଗ ସମ୍ପୂର୍ଣ୍ଣ ସ୍ୱାଭାବିକ ଓ ଅନୁକୂଳ ରହିଛି। ସର୍ବନିମ୍ନ ତାପମାତ୍ରା ${minTemp} ଡିଗ୍ରୀ ଏବଂ ସର୍ବୋଚ୍ଚ ${maxTemp} ଡିଗ୍ରୀ ରହିବ। ପବନର ବେଗ ଘଣ୍ଟା ପ୍ରତି ${windSpeed} କିଲୋମିଟର। ବଙ୍ଗୋପସାଗରରେ କୌଣସି ବାତ୍ୟା କିମ୍ବା ଲଘୁଚାପର ଆଶଙ୍କା ନାହିଁ। ଚାଷୀ ଭାଇମାନେ ନିର୍ଭୟରେ ଧାନ ଅମଳ, ଖଳାବାଡ଼ି କାର୍ଯ୍ୟ ଏବଂ ରବି ଫସଲ ବୁଣାବୁଣି କରିପାରିବେ। ସମୁଦ୍ର ଶାନ୍ତ ରହିଥିବାରୁ ମତ୍ସ୍ୟଜୀବୀମାନେ ନିର୍ଭୟରେ ମାଛ ଧରିବାକୁ ଯାଇପାରିବେ। ${winterSpeech}`,
+          phoneticSpeech: `Subha sakala. Aji ${districtName} anchalare paga sampurna swabhabika achhi. Sarbanimna tapamatra ${minTemp} degree o sarbochha ${maxTemp} degree. Pabana beg ${windSpeed} km/h. Bangopasagarare kounasi batya asanka nahin. Chasi bhai mane nischintare amala o rabi fasala kama karantu. ${winterPhonetic}`,
+          actionSteps: [
+            'ପାଗ ସ୍ୱାଭାବିକ: ନିର୍ଭୟରେ ଚାଷ କାମ କରନ୍ତୁ',
+            'ଅମଳ ଧାନ ଶୁଖାଇବା ଓ ରବି ବୁଣିବା ଅନୁକୂଳ',
+            winterAction,
+            'ମତ୍ସ୍ୟଜୀବୀଙ୍କ ପାଇଁ ସମୁଦ୍ର ଯାତ୍ରା ସୁରକ୍ଷିତ'
+          ]
+        };
+      }
 
       if (isPostLandfall) {
         return {

@@ -24,7 +24,11 @@ import {
   Eye,
   Sliders,
   Wind,
-  ShieldAlert
+  ShieldAlert,
+  History,
+  Sun,
+  Sprout,
+  CheckCircle2
 } from 'lucide-react';
 import { calculateDistanceKm } from '../services/cycloneEngine';
 
@@ -106,6 +110,22 @@ export function getLiveAkvanState() {
     }
   } else {
     // Nov 21 or later
+    const isPostStormDate = (now.getDate() >= 22 && now.getMonth() >= 10) || now.getFullYear() > 2026;
+    if (isPostStormDate) {
+      return {
+        liveIndex: 6,
+        timeStr,
+        isNormalDay: true,
+        landfallPhase: 'dissipated',
+        landfallTitle: '🟢 Basin All-Clear: Cyclone Akvan Dissipated (Landfall 20 Nov)',
+        landfallBadge: 'DISSIPATED',
+        landfallStatus: '✅ System Dissipated • Fair Weather Routine',
+        landfallWindow: 'Landfall Completed: 20 Nov 2026',
+        landfallDetail: `Situation (${timeStr} IST): Severe Cyclone Akvan made landfall on 20 Nov near Gopalpur and weakened into an inland depression before dissipating. There are currently no active tropical storms in the Bay of Bengal or Arabian Sea.`,
+        landfallAction: 'Normal agricultural operations, paddy sun-drying, and coastal marine fishing fully permitted.'
+      };
+    }
+
     if (hours < 5.0) {
       liveIndex = 5;
       landfallPhase = 'weakening';
@@ -120,10 +140,10 @@ export function getLiveAkvanState() {
       landfallPhase = 'weakened_inland';
       landfallTitle = '🟢 Cyclone Weakened into Well-Marked Low (Landfall Completed)';
       landfallBadge = 'WEAKENED LOW';
-      landfallStatus = '✅ Landfall Completed Yesterday (20 Nov 13:00 IST)';
+      landfallStatus = '✅ Landfall Completed (20 Nov 13:00 IST)';
       landfallWindow = 'Landfall Completed: 20 Nov 12:30–13:30 IST';
-      landfallDetail = `Live Situation (${timeStr} IST): Severe Cyclone Akvan made landfall near Gopalpur yesterday and rapidly weakened. It is now a Well-Marked Low Pressure Area centered inland at 22.50°N, 84.80°E over North Odisha / Jharkhand border. Destructive gale winds have ceased.`;
-      landfallAction = 'Coastal Red Alerts withdrawn. Port warning signals lowered to LC-III. Watch for localized waterlogging and fallen branches in northern interior.';
+      landfallDetail = `Live Situation (${timeStr} IST): Severe Cyclone Akvan made landfall near Gopalpur on 20 Nov and rapidly weakened. Destructive gale winds have ceased.`;
+      landfallAction: 'Coastal Red Alerts withdrawn. Port warning signals lowered to LC-III. Watch for localized waterlogging in northern interior.';
     }
   }
 
@@ -144,11 +164,11 @@ export function getLiveAkvanState() {
 export const AKVAN_TIMELINE_STEPS = [
   { id: 'step-0', time: '05:30 AM', date: '20 Nov', lat: 17.40, lon: 83.80, stage: 'Deep Depression', status: 'Advancing off Visakhapatnam Coast', wind: '75–85 km/h', gusts: '100 km/h', pressure: '992 hPa' },
   { id: 'step-1', time: '08:00 AM', date: '20 Nov', lat: 18.10, lon: 83.40, stage: 'Severe Cyclone Akvan (Morning Eye)', status: 'Observed Center ~40 km off Padmapur / Gopalpur Coast', wind: '95 km/h', gusts: '115 km/h', pressure: '988 hPa' },
-  { id: 'step-2', time: '12:00 PM', date: '20 Nov', lat: 18.90, lon: 83.60, stage: 'Landfall Completed (Yesterday)', status: 'Eyewall Crossed Coast (Gopalpur / Padmapur Sector)', wind: '95–115 km/h', gusts: '125 km/h', pressure: '988 hPa', isLandfall: true },
+  { id: 'step-2', time: '12:00 PM', date: '20 Nov', lat: 18.90, lon: 83.60, stage: 'Landfall Completed', status: 'Eyewall Crossed Coast (Gopalpur / Padmapur Sector)', wind: '95–115 km/h', gusts: '125 km/h', pressure: '988 hPa', isLandfall: true },
   { id: 'step-3', time: '03:00 PM', date: '20 Nov', lat: 19.35, lon: 83.75, stage: 'Eye Moving Inland', status: 'Ganjam, Gajapati & Eastern Ghats Interior', wind: '80–90 km/h', gusts: '105 km/h', pressure: '992 hPa' },
   { id: 'step-4', time: '06:00 PM', date: '20 Nov', lat: 19.80, lon: 83.90, stage: 'Cyclonic Storm', status: 'Inland Crossing Rayagada / Kandhamal border', wind: '70–80 km/h', gusts: '90 km/h', pressure: '996 hPa' },
   { id: 'step-5', time: '12:00 AM', date: '21 Nov', lat: 21.10, lon: 84.30, stage: 'Inland Deep Depression', status: 'Central Odisha (Boudh / Angul / Sambalpur)', wind: '50–60 km/h', gusts: '70 km/h', pressure: '1000 hPa' },
-  { id: 'step-6', time: '06:00 AM', date: '21 Nov', lat: 22.50, lon: 84.80, stage: 'Well-Marked Low (Live Remnant)', status: 'North Odisha & Jharkhand Border (Sundargarh Belt)', wind: '35–45 km/h', gusts: '55 km/h', pressure: '1004 hPa', isLive: true }
+  { id: 'step-6', time: '06:00 AM', date: '21 Nov', lat: 22.50, lon: 84.80, stage: 'Well-Marked Low (Dissipated)', status: 'North Odisha & Jharkhand Border (System Dissipated)', wind: '35–45 km/h', gusts: '55 km/h', pressure: '1004 hPa', isDissipated: true }
 ];
 
 // Clean Minimalist Map Dot Icons - Clutter-Free with Hover/Tap Details
@@ -205,6 +225,18 @@ const cycloneArbIcon = L.divIcon({
   iconAnchor: [15, 15]
 });
 
+const calmSeaBuoyIcon = L.divIcon({
+  className: 'custom-calm-buoy',
+  html: `<div style="position:relative; width:28px; height:28px; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+          <div style="position:absolute; inset:0px; border-radius:50%; background:#10b981; opacity:0.35; animation: ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+          <div style="width:24px; height:24px; border-radius:50%; background:#064e3b; border:2px solid #34d399; box-shadow:0 0 10px #10b981; display:flex; align-items:center; justify-content:center; font-size:12px;">
+            🌊
+          </div>
+         </div>`,
+  iconSize: [28, 28],
+  iconAnchor: [14, 14]
+});
+
 // Component to handle smooth pan/fly to coordinates
 function MapRecenterController({ centerCoords, zoomLevel, triggerKey }) {
   const map = useMap();
@@ -256,7 +288,9 @@ export default function CycloneMap({
   }, []);
 
   const liveState = getLiveAkvanState();
-  const [flyTarget, setFlyTarget] = useState([18.90, 83.60]); // Default focus on current Landfall Eye
+  const isNormalDay = liveState.isNormalDay;
+  const [mapMode, setMapMode] = useState(isNormalDay ? 'live' : 'history');
+  const [flyTarget, setFlyTarget] = useState(isNormalDay ? [userLocation.lat, userLocation.lon] : [18.90, 83.60]);
   const [flyZoom, setFlyZoom] = useState(6);
   const [flyTrigger, setFlyTrigger] = useState(0);
   const [isLocating, setIsLocating] = useState(false);
@@ -399,31 +433,19 @@ export default function CycloneMap({
       if (isWeakenedLow) {
         return {
           pastCoords: [
-            [12.40, 86.20], // Southwest Bay origin
-            [14.50, 84.80], // Deep depression stage
-            [16.20, 84.20], // Upgraded to Cyclonic Storm Akvan off AP coast
-            [17.40, 83.80], // Severe Cyclone off Visakhapatnam
+            [12.40, 86.20], // Southwest Bay origin (18 Nov)
+            [14.50, 84.80], // Deep depression stage (19 Nov)
+            [16.20, 84.20], // Upgraded to Cyclonic Storm Akvan (19 Nov)
+            [17.40, 83.80], // Severe Cyclone off Visakhapatnam (20 Nov 05:30 AM)
             [18.10, 83.40], // 20 Nov 08:00 AM offshore
             [18.90, 83.60], // 20 Nov 12:30 PM Landfall near Gopalpur
             [19.80, 83.90], // 20 Nov 06:00 PM Inland Rayagada/Kandhamal
             [21.10, 84.30], // 21 Nov 12:00 AM Midnight Sambalpur/Central Odisha
-            [lat, lon]      // 21 Nov 06:00/08:00 AM Live Remnant Center [22.50, 84.80]
+            [22.50, 84.80], // 21 Nov 06:00 AM Dissipated Low [Sundargarh]
+            [23.40, 85.50]  // 21 Nov 02:00 PM Final Inland Remnant Dissipation
           ],
-          forecastCoords: [
-            [lat, lon],
-            [23.40, 85.50], // 21 Nov 02:00 PM Inland Jharkhand (Ranchi sector)
-            [24.10, 86.40]  // 21 Nov 08:00 PM Dissipating Low towards Gangetic West Bengal
-          ],
-          coneCoords: [
-            [lat, lon],
-            [22.80, 84.10], // West Jharkhand boundary
-            [23.70, 84.70], // Northwest boundary
-            [24.60, 85.70], // Northern forward boundary
-            [24.40, 87.20], // Northeast boundary (WB border)
-            [23.50, 86.80], // Southeast boundary (Jamshedpur/Purulia)
-            [22.60, 85.50], // Southern boundary
-            [lat, lon]
-          ],
+          forecastCoords: [], // System dissipated; NO future forecast track vector
+          coneCoords: [],     // Cone decommissioned; all coastal warnings withdrawn
           checkpoints: [
             { 
               label: 'Offshore Track (20 Nov 08:00 AM)', 
@@ -440,11 +462,11 @@ export default function CycloneMap({
               isLandfall: true,
               isPast: true,
               phase: liveState.landfallPhase,
-              badge: liveState.landfallBadge,
-              title: liveState.landfallTitle,
-              detail: liveState.landfallDetail,
-              action: liveState.landfallAction,
-              statusDesc: '✅ Landfall Completed Yesterday (Eye crossed near Gopalpur at 100–110 km/h)'
+              badge: 'LANDFALL COMPLETED',
+              title: 'Landfall Completed on 20 Nov 13:00 IST',
+              detail: 'Severe Cyclone Akvan crossed coast near Gopalpur with peak winds of 100–110 km/h.',
+              action: 'Coastal relief, restoration, and rabi farming operations ongoing.',
+              statusDesc: '✅ Landfall Completed on 20 Nov near Gopalpur'
             },
             { 
               label: 'Inland Crossing (Rayagada/Ganjam)', 
@@ -461,11 +483,11 @@ export default function CycloneMap({
               statusDesc: 'Weakened to Deep Depression midnight'
             },
             { 
-              label: 'Current Live Remnant (Sundargarh / Jharkhand)', 
+              label: 'Dissipated Low (Sundargarh / Jharkhand)', 
               lat: 22.50, 
               lon: 84.80, 
-              time: '21 Nov 06:00–08:00 AM (LIVE)',
-              statusDesc: '🔴 Current Live Remnant: Well-Marked Low (35–45 km/h)'
+              time: '21 Nov 06:00 AM',
+              statusDesc: '🟢 Final Remnant Dissipated into Low Pressure Area'
             }
           ]
         };
@@ -731,25 +753,116 @@ export default function CycloneMap({
       {/* 2. Key Status Briefing Bar (Swipeable Horizontal Slider on Mobile, 4-Col Grid on Desktop) */}
       {activeTab === 'trajectory' && (
         <div className="bg-slate-950/95 border-b border-slate-800/90 px-2.5 sm:px-3 py-2 text-xs">
-          {mapViewMode === 'bay-of-bengal' || mapViewMode === 'all-india' ? (
+          {isNormalDay && mapMode === 'live' ? (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between gap-1.5 border-b border-slate-800/60 pb-1">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="flex h-2.5 w-2.5 relative flex-shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                  </span>
+                  <span className="font-extrabold text-white text-[11px] sm:text-sm truncate">
+                    Daily Coastal Weather Radar • All-Clear Routine ({new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })})
+                  </span>
+                  <span className="text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded bg-emerald-700/80 text-white border border-emerald-500 whitespace-nowrap flex-shrink-0">
+                    🟢 NO ACTIVE CYCLONE
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0 text-[10px] text-emerald-300 font-mono">
+                  <span>🟢 BASIN CALM</span>
+                </div>
+              </div>
+
+              {/* 4 Points Horizontal Slider for Peacetime */}
+              <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 overflow-x-auto sm:overflow-visible gap-2 text-[11px] pb-1 sm:pb-0 no-scrollbar snap-x snap-mandatory">
+                {/* Point 1: Your Area Weather */}
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                  <MapPin className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">1. Local Field Weather</span>
+                    <strong className="text-white text-xs block">
+                      {userLocation.name} (Coastal Belt)
+                    </strong>
+                    <span className="text-[10px] text-sky-300 font-semibold block">
+                      🌤️ Fair Skies • Gentle Breeze
+                    </span>
+                    <span className="text-[9px] text-emerald-400 block font-semibold">
+                      ✓ No Severe Cyclone Warnings
+                    </span>
+                  </div>
+                </div>
+
+                {/* Point 2: Sea State & Waves */}
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                  <Waves className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">2. INCOIS Ocean State</span>
+                    <strong className="text-cyan-300 text-xs block">
+                      Waves: 0.9 m – 1.5 m (Slight)
+                    </strong>
+                    <span className="text-[10px] text-slate-300 block">
+                      Sea Surface Temp: 28.5°C
+                    </span>
+                    <span className="text-[9px] text-emerald-400 block font-semibold">
+                      ✓ Coastal & Deep-Sea Fishing Safe
+                    </span>
+                  </div>
+                </div>
+
+                {/* Point 3: 7-Day Cyclogenesis */}
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                  <Compass className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">3. Basin Cyclogenesis Watch</span>
+                    <strong className="text-emerald-300 text-xs block">
+                      0% Risk (Next 7 Days)
+                    </strong>
+                    <span className="text-[10px] text-slate-300 block">
+                      Bay of Bengal & Arabian Sea
+                    </span>
+                    <span className="text-[9px] text-emerald-400 block font-semibold">
+                      ✓ Nil Cyclonic Disturbances
+                    </span>
+                  </div>
+                </div>
+
+                {/* Point 4: Farming & Field Routine */}
+                <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                  <Sprout className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">4. Farm Harvest Advisory</span>
+                    <strong className="text-amber-300 text-xs block">
+                      Paddy Harvesting Window
+                    </strong>
+                    <span className="text-[10px] text-slate-300 block">
+                      Sun drying: Safe (Moisture &lt;14%)
+                    </span>
+                    <span className="text-[9px] text-amber-300 block font-semibold">
+                      Optimal for Rabi Pulses Sowing
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (mapViewMode === 'bay-of-bengal' || mapViewMode === 'all-india') ? (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between gap-1.5 border-b border-slate-800/60 pb-1">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span className="flex h-2.5 w-2.5 relative flex-shrink-0">
-                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${liveState.landfallPhase === 'weakened_inland' ? 'bg-emerald-400' : 'bg-red-400'}`}></span>
-                    <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${liveState.landfallPhase === 'weakened_inland' ? 'bg-emerald-500' : 'bg-red-600'}`}></span>
+                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${liveState.landfallPhase === 'weakened_inland' || isNormalDay ? 'bg-amber-400' : 'bg-red-400'}`}></span>
+                    <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${liveState.landfallPhase === 'weakened_inland' || isNormalDay ? 'bg-amber-500' : 'bg-red-600'}`}></span>
                   </span>
                   <span className="font-extrabold text-white text-[11px] sm:text-sm truncate">
-                    Current Status: {liveState.landfallPhase === 'weakened_inland' ? 'Well-Marked Low (Weakened Remnant of Cyclone Akvan)' : 'Severe Cyclone Akvan'} ({liveState.timeStr} IST)
+                    {isNormalDay ? `Historical Replay: Severe Cyclone Akvan (${AKVAN_TIMELINE_STEPS[timeStepIndex]?.date} • ${AKVAN_TIMELINE_STEPS[timeStepIndex]?.time})` : `Current Status: ${liveState.landfallStatus} (${liveState.timeStr} IST)`}
                   </span>
                   <span className={`text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 ${
-                    liveState.landfallPhase === 'weakened_inland' ? 'bg-emerald-700 text-white border border-emerald-500' : 'bg-red-600 text-white border border-red-400 animate-pulse'
+                    isNormalDay ? 'bg-amber-950 text-amber-400 border border-amber-800' : liveState.landfallPhase === 'weakened_inland' ? 'bg-emerald-700 text-white border border-emerald-500' : 'bg-red-600 text-white border border-red-400 animate-pulse'
                   }`}>
-                    {liveState.landfallBadge}
+                    {isNormalDay ? 'HISTORICAL REPLAY' : liveState.landfallBadge}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0 text-[10px] text-cyan-300 font-mono">
-                  <span>{timeStepIndex === liveState.liveIndex ? '🔴 LIVE' : `⏱️ ${AKVAN_TIMELINE_STEPS[timeStepIndex]?.time}`}</span>
+                  <span>⏱️ {AKVAN_TIMELINE_STEPS[timeStepIndex]?.date} • {AKVAN_TIMELINE_STEPS[timeStepIndex]?.time}</span>
                   <span className="sm:hidden text-[9px] text-sky-400 font-sans font-medium">Swipe cards 👉</span>
                 </div>
               </div>
@@ -760,7 +873,7 @@ export default function CycloneMap({
                 <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
                   <MapPin className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">1. Live Eye & Proximity</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">1. Storm Center Position</span>
                     <strong className="text-white text-xs block">
                       {AKVAN_TIMELINE_STEPS[timeStepIndex]?.lat.toFixed(2)}°N, {AKVAN_TIMELINE_STEPS[timeStepIndex]?.lon.toFixed(2)}°E
                     </strong>
@@ -768,7 +881,7 @@ export default function CycloneMap({
                       📍 ~{bobDist || 352} km to you ({userLocation.name})
                     </span>
                     <span className="text-[9px] text-emerald-400 block font-semibold">
-                      {AKVAN_TIMELINE_STEPS[timeStepIndex]?.status || (liveState.landfallPhase === 'weakened_inland' ? 'Inland over North Odisha & Jharkhand border' : '🌊 ~40 km to Padmapur Coast')}
+                      {AKVAN_TIMELINE_STEPS[timeStepIndex]?.status}
                     </span>
                   </div>
                 </div>
@@ -779,13 +892,13 @@ export default function CycloneMap({
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">2. Wind & Pressure</span>
                     <strong className="text-amber-300 text-xs block">
-                      {AKVAN_TIMELINE_STEPS[timeStepIndex]?.wind || '35–45 km/h'} (Gusts: {AKVAN_TIMELINE_STEPS[timeStepIndex]?.gusts || '55 km/h'})
+                      {AKVAN_TIMELINE_STEPS[timeStepIndex]?.wind} (Gusts: {AKVAN_TIMELINE_STEPS[timeStepIndex]?.gusts})
                     </strong>
                     <span className="text-[10px] text-slate-300 block">
-                      Pressure: <strong className="font-mono text-cyan-300">{AKVAN_TIMELINE_STEPS[timeStepIndex]?.pressure || '1004 hPa'}</strong>
+                      Pressure: <strong className="font-mono text-cyan-300">{AKVAN_TIMELINE_STEPS[timeStepIndex]?.pressure}</strong>
                     </span>
                     <span className="text-[9px] text-slate-400 block">
-                      Stage: {AKVAN_TIMELINE_STEPS[timeStepIndex]?.stage || 'Well-Marked Low'}
+                      Stage: {AKVAN_TIMELINE_STEPS[timeStepIndex]?.stage}
                     </span>
                   </div>
                 </div>
@@ -794,36 +907,32 @@ export default function CycloneMap({
                 <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
                   <Compass className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">3. Landfall Situation ({liveState.timeStr})</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">3. Track Progression</span>
                     <strong className="text-emerald-300 text-xs block">
-                      {liveState.landfallPhase === 'weakened_inland' ? 'Padmapur / Gopalpur (Crossed)' : 'Padmapur / Gopalpur Sector'}
+                      {AKVAN_TIMELINE_STEPS[timeStepIndex]?.isLandfall ? 'Gopalpur Sector (Landfall)' : 'Inland Track'}
                     </strong>
                     <span className="text-[10px] text-amber-300 font-bold block">
-                      {liveState.landfallStatus}
+                      {AKVAN_TIMELINE_STEPS[timeStepIndex]?.stage}
                     </span>
                     <span className="text-[9px] text-slate-300 block">
-                      {liveState.landfallWindow}
+                      {AKVAN_TIMELINE_STEPS[timeStepIndex]?.date} • {AKVAN_TIMELINE_STEPS[timeStepIndex]?.time}
                     </span>
                   </div>
                 </div>
 
                 {/* Point 4: Govt Alerts */}
                 <div className="flex-shrink-0 w-[240px] sm:w-auto snap-start bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
-                  <ShieldAlert className={`w-4 h-4 flex-shrink-0 mt-0.5 ${liveState.landfallPhase === 'weakened_inland' ? 'text-emerald-400' : 'text-red-400'}`} />
+                  <ShieldAlert className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-400" />
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">4. Official Threat Level</span>
-                    <strong className={`text-xs block ${liveState.landfallPhase === 'weakened_inland' ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {liveState.landfallPhase === 'weakened_inland' ? 'De-escalated: Coastal Red Alert Withdrawn' : 'Severe Coastal Gale & Surge'}
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">4. Official Warning Mandate</span>
+                    <strong className="text-xs block text-amber-300">
+                      {isNormalDay ? 'Historical Archive Record' : liveState.landfallPhase === 'weakened_inland' ? 'De-escalated: Red Alert Withdrawn' : 'Severe Coastal Gale'}
                     </strong>
                     <span className="text-[10px] text-slate-300 block">
-                      {liveState.landfallPhase === 'weakened_inland' ? (
-                        <>INCOIS: <strong className="text-emerald-300">Surge Nil • Waves 1.5–2.2m</strong></>
-                      ) : (
-                        <>INCOIS: <strong className="text-cyan-300">1.0–1.5m storm surge</strong></>
-                      )}
+                      IMD RSMC Official Trajectory
                     </span>
-                    <span className="text-[9px] text-amber-300 block">
-                      {liveState.landfallPhase === 'weakened_inland' ? 'IMD: Ports LC-III • Inshore fishing safe • Inland rain watch' : 'High waves: 3.5–5.5m (Ganjam/AP)'}
+                    <span className="text-[9px] text-slate-400 block">
+                      Landfall crossed 20 Nov 12:30–13:30 IST
                     </span>
                   </div>
                 </div>
@@ -1004,8 +1113,32 @@ export default function CycloneMap({
               />
             )}
 
-            {/* Plot ALL active storms simultaneously across India */}
-            {allStorms.map((storm) => {
+            {/* Peacetime Calm Basin Marker in Bay of Bengal */}
+            {isNormalDay && mapMode === 'live' && (
+              <Marker
+                position={[18.5, 87.5]}
+                icon={calmSeaBuoyIcon}
+              >
+                <Tooltip direction="top" opacity={0.96} className="custom-map-tooltip">
+                  <div className="text-xs font-bold text-emerald-400 flex items-center gap-1">
+                    <span>🟢</span>
+                    <span>Bay of Bengal: Basin All-Clear</span>
+                  </div>
+                  <div className="text-[11px] text-white">
+                    Sea State: Calm • Wave Height: 0.9m – 1.4m
+                  </div>
+                  <div className="text-[10px] text-slate-300">
+                    INCOIS Marine Safety: Fishing Permitted & Safe
+                  </div>
+                  <div className="text-[10px] text-emerald-300 font-semibold mt-0.5">
+                    No Tropical Depressions Active • Normal Routine
+                  </div>
+                </Tooltip>
+              </Marker>
+            )}
+
+            {/* Plot storms: Active in emergency mode, or when user clicks Historical Replay */}
+            {(!isNormalDay || mapMode === 'history') && allStorms.map((storm) => {
               const isBob = storm.basin === 'Bay of Bengal';
               const activeStep = (isBob && AKVAN_TIMELINE_STEPS[timeStepIndex]) ? AKVAN_TIMELINE_STEPS[timeStepIndex] : null;
               const stormLat = (isBob && activeStep) ? activeStep.lat : storm.center.lat;
@@ -1393,84 +1526,112 @@ export default function CycloneMap({
 
 
           {/* Bottom Floating Time Scrubber Bar (Zoom Earth Style) */}
-          <div className="absolute bottom-2.5 inset-x-2 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-[400] bg-slate-950/95 backdrop-blur-md border border-slate-800/90 rounded-2xl p-1.5 shadow-2xl flex items-center justify-between sm:justify-center gap-1 sm:gap-1.5 max-w-full overflow-hidden">
-            {/* Play / Pause Toggle */}
-            <button
-              onClick={() => setIsPlayingTime(!isPlayingTime)}
-              className="flex items-center gap-1 px-2.5 py-1 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-bold transition-all shadow-sm active:scale-95 flex-shrink-0"
-              title={isPlayingTime ? "Pause Storm Timeline" : "Play Storm Progression"}
-            >
-              {isPlayingTime ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current" />}
-              <span className="hidden sm:inline">{isPlayingTime ? 'Pause' : 'Play'}</span>
-            </button>
+          <div className="absolute bottom-2.5 inset-x-2 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-[400] bg-slate-950/95 backdrop-blur-md border border-slate-800/90 rounded-2xl p-1.5 sm:p-2 shadow-2xl flex items-center justify-between sm:justify-center gap-1.5 max-w-full">
+            {isNormalDay && mapMode === 'live' ? (
+              <div className="flex flex-wrap items-center justify-between gap-2.5 w-full sm:min-w-[460px] px-1">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>
+                  <div className="text-left">
+                    <span className="text-xs font-bold text-slate-100 block sm:inline">
+                      🌤️ Today's Live Radar • All-Clear Routine
+                    </span>
+                    <span className="text-[10px] text-emerald-400 block sm:inline sm:ml-2">
+                      No active cyclones in Bay of Bengal
+                    </span>
+                  </div>
+                </div>
 
-            {/* Stepper Chevrons */}
-            <button
-              onClick={() => setTimeStepIndex((prev) => Math.max(0, prev - 1))}
-              disabled={timeStepIndex === 0}
-              className="p-1 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
-              title="Previous Time Step"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-
-            {/* Step Time Buttons - Auto-scrolling on Mobile to keep active step centered */}
-            <div 
-              ref={timelineScrollRef}
-              className="flex-1 min-w-0 relative flex items-center gap-1 flex-nowrap overflow-x-auto no-scrollbar py-0.5 scroll-smooth"
-            >
-              {AKVAN_TIMELINE_STEPS.map((step, idx) => {
-                const isSelected = timeStepIndex === idx;
-                const isLiveNow = idx === liveState.liveIndex;
-                return (
+                <button
+                  onClick={() => {
+                    setMapMode('history');
+                    setTimeStepIndex(2); // Start at Landfall step
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-yellow-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition-all shadow-sm active:scale-95 whitespace-nowrap ml-auto"
+                >
+                  <History className="w-3.5 h-3.5" />
+                  <span>Replay Storm Akvan (20–21 Nov) ➔</span>
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 sm:gap-1.5 w-full">
+                {isNormalDay && (
                   <button
-                    key={step.id}
-                    ref={(el) => (timeStepButtonRefs.current[idx] = el)}
-                    onClick={() => {
-                      setTimeStepIndex(idx);
-                      setIsPlayingTime(false);
-                    }}
-                    className={`whitespace-nowrap flex-shrink-0 px-2 sm:px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold transition-all border ${
-                      isSelected
-                        ? isLiveNow || step.isLandfall
-                          ? 'bg-red-600 text-white border-red-400 shadow-md scale-105 ring-1 ring-red-400'
-                          : 'bg-cyan-600 text-white border-cyan-400 shadow-md scale-105'
-                        : isLiveNow
-                        ? 'bg-red-950/80 text-red-300 border-red-700/80 animate-pulse'
-                        : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
-                    }`}
+                    onClick={() => setMapMode('live')}
+                    className="flex items-center gap-1 px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 rounded-lg text-xs font-bold transition-all flex-shrink-0 mr-1 active:scale-95"
+                    title="Return to Today's Live Radar"
                   >
-                    {isLiveNow ? '🔴 ' : step.isLandfall ? '🎯 ' : ''}
-                    {step.time} {isLiveNow ? '(LIVE NOW)' : ''}
+                    <span>🌤️ Live</span>
                   </button>
-                );
-              })}
-            </div>
+                )}
 
-            <button
-              onClick={() => setTimeStepIndex((prev) => Math.min(AKVAN_TIMELINE_STEPS.length - 1, prev + 1))}
-              disabled={timeStepIndex === AKVAN_TIMELINE_STEPS.length - 1}
-              className="p-1 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
-              title="Next Time Step"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
+                {/* Play / Pause Toggle */}
+                <button
+                  onClick={() => setIsPlayingTime(!isPlayingTime)}
+                  className="flex items-center gap-1 px-2.5 py-1 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-bold transition-all shadow-sm active:scale-95 flex-shrink-0"
+                  title={isPlayingTime ? "Pause Storm Timeline" : "Play Storm Progression"}
+                >
+                  {isPlayingTime ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+                  <span className="hidden sm:inline">{isPlayingTime ? 'Pause' : 'Play'}</span>
+                </button>
 
-            {/* Reset to Live Eye Button */}
-            <button
-              onClick={() => {
-                setTimeStepIndex(liveState.liveIndex); // Real-time active step!
-                setIsPlayingTime(false);
-              }}
-              className={`flex-shrink-0 px-2 py-0.5 text-[9px] font-bold rounded border transition-all ${
-                timeStepIndex === liveState.liveIndex
-                  ? 'bg-red-950 text-red-300 border-red-700'
-                  : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
-              }`}
-              title={`Reset to Live Real-Time Situation (${liveState.timeStr} IST)`}
-            >
-              Live Eye
-            </button>
+                {/* Stepper Chevrons */}
+                <button
+                  onClick={() => setTimeStepIndex((prev) => Math.max(0, prev - 1))}
+                  disabled={timeStepIndex === 0}
+                  className="p-1 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
+                  title="Previous Time Step"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+
+                {/* Step Time Buttons - Auto-scrolling on Mobile to keep active step centered */}
+                <div 
+                  ref={timelineScrollRef}
+                  className="flex-1 min-w-0 relative flex items-center gap-1 flex-nowrap overflow-x-auto no-scrollbar py-0.5 scroll-smooth"
+                >
+                  {AKVAN_TIMELINE_STEPS.map((step, idx) => {
+                    const isSelected = timeStepIndex === idx;
+                    const isLandfall = step.isLandfall;
+                    const isDissipated = step.isDissipated;
+                    return (
+                      <button
+                        key={step.id}
+                        ref={(el) => (timeStepButtonRefs.current[idx] = el)}
+                        onClick={() => {
+                          setTimeStepIndex(idx);
+                          setIsPlayingTime(false);
+                        }}
+                        className={`whitespace-nowrap flex-shrink-0 px-2 sm:px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold transition-all border ${
+                          isSelected
+                            ? isLandfall
+                              ? 'bg-amber-600 text-white border-amber-400 shadow-md scale-105 ring-1 ring-amber-400'
+                              : isDissipated
+                              ? 'bg-emerald-600 text-white border-emerald-400 shadow-md scale-105 ring-1 ring-emerald-400'
+                              : 'bg-cyan-600 text-white border-cyan-400 shadow-md scale-105'
+                            : isLandfall
+                            ? 'bg-amber-950/80 text-amber-300 border-amber-700/80'
+                            : isDissipated
+                            ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700/80'
+                            : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
+                        }`}
+                      >
+                        {isLandfall ? '🎯 ' : isDissipated ? '🟢 ' : ''}
+                        {step.date} • {step.time} {isLandfall ? '(Landfall)' : isDissipated ? '(Dissipated)' : ''}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={() => setTimeStepIndex((prev) => Math.min(AKVAN_TIMELINE_STEPS.length - 1, prev + 1))}
+                  disabled={timeStepIndex === AKVAN_TIMELINE_STEPS.length - 1}
+                  className="p-1 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
+                  title="Next Time Step"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Legend Overlay - Responsive & Collapsible on Mobile */}

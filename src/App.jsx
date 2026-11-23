@@ -14,6 +14,7 @@ import TravelPlannerModal from './components/TravelPlannerModal';
 import DistrictPickerModal from './components/DistrictPickerModal';
 import LiveTvModal from './components/LiveTvModal';
 import CycloneWelcomeSplash from './components/CycloneWelcomeSplash';
+import ProComingSoonModal from './components/ProComingSoonModal';
 
 import { ALL_INDIA_REGIONS, findNearestDistrict } from './data/districts';
 import { fetchLiveWeather } from './services/weatherApi';
@@ -55,6 +56,7 @@ export default function App() {
   const [isTravelPlannerOpen, setIsTravelPlannerOpen] = useState(false);
   const [isLiveTvOpen, setIsLiveTvOpen] = useState(false);
   const [isLiveTvFloating, setIsLiveTvFloating] = useState(false);
+  const [isProComingSoonOpen, setIsProComingSoonOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('alert');
 
   const scrollToSection = (sectionId) => {
@@ -553,8 +555,13 @@ export default function App() {
           humidity={humidity}
         />
 
-        {/* 4. IMD Official Cyclone Bulletin Card */}
-        <CycloneTrackerCard bulletin={activeStorm} />
+        {/* 4. IMD Official Cyclone Bulletin Card / Daily Agro-Meteorological Bulletin */}
+        <CycloneTrackerCard
+          bulletin={activeStorm}
+          threat={threat}
+          weatherData={weatherData}
+          activeLocation={activeLocation}
+        />
 
         {/* 5. 10-Hour Forecast Timeline */}
         {weatherData && (
@@ -609,21 +616,16 @@ export default function App() {
             </div>
 
             <div className="flex flex-col sm:flex-row md:flex-col items-stretch sm:items-center md:items-end gap-2 w-full md:w-auto flex-shrink-0">
-              <a
-                href="/pro"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.location.hash = '#/pro';
-                  window.history.pushState({}, '', '/pro');
-                  window.dispatchEvent(new PopStateEvent('popstate'));
-                }}
+              <button
+                type="button"
+                onClick={() => setIsProComingSoonOpen(true)}
                 className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 active:scale-95 transition-all cursor-pointer group"
               >
-                <span>Explore ToofanSathi Pro</span>
+                <span>Coming Soon ... ToofanSathi Pro</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-              </a>
+              </button>
               <span className="text-[10px] text-slate-400 text-center md:text-right font-medium">
-                Direct Staging Route: <code className="text-amber-400 font-mono">/pro</code>
+                Enterprise Pilot Active • <span className="text-amber-400 font-semibold">Priority Beta Waitlist</span>
               </span>
             </div>
           </div>
@@ -695,6 +697,12 @@ export default function App() {
         activeLocation={activeLocation}
         isFloating={isLiveTvFloating}
         setIsFloating={setIsLiveTvFloating}
+      />
+
+      {/* ToofanSathi Pro Coming Soon Modal */}
+      <ProComingSoonModal
+        isOpen={isProComingSoonOpen}
+        onClose={() => setIsProComingSoonOpen(false)}
       />
 
       {/* Atmospheric Cyclone Swirling Welcome Splash Screen */}

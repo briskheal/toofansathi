@@ -265,6 +265,7 @@ export const CROP_DISEASES = [
         title: 'Angle 2: Defoliated Canopy Stems Inspection',
         label: 'Canopy Bareness View',
         badge: 'Defoliation Extent Target',
+        imageUrl: '/assets/diseases/groundnut_tikka_angle2.jpg',
         desc: 'Lower leaves dropped completely, leaving only top leaves on bare stalks.',
         targetSymptom: 'Severe defoliation leaving bare stems with stunted pod development.',
         tissueRisk: 'Premature defoliation prevents pod filling.'
@@ -273,6 +274,7 @@ export const CROP_DISEASES = [
         title: 'Angle 3: Coastal Sandy Field Bed Pattern',
         label: 'Groundnut Field View',
         badge: 'Field Overview Target',
+        imageUrl: '/assets/diseases/groundnut_tikka_angle3.jpg',
         desc: 'Broad field view showing brown patches on sandy coastal groundnut strips.',
         targetSymptom: 'Stem Rot: White cottony fungal mycelium at soil level with mustard-like sclerotia.',
         tissueRisk: 'Soil-level collar rot rotting gynophores/pegs.'
@@ -410,6 +412,7 @@ export const CROP_DISEASES = [
         title: 'Angle 2: Paan Baroj Thatch Interior Inspection',
         label: 'Mid-Canopy Enclosure Target',
         badge: 'Baroj Interior Target',
+        imageUrl: '/assets/diseases/betel_paan_angle2.jpg',
         desc: 'Humid thatched baroj interior with wilting yellow leaves shedding along trellis.',
         targetSymptom: 'Rapid rotting of underground rhizome; vine snaps easily near the base.',
         tissueRisk: 'Phytophthora fungal infestation in humid enclosed vines.'
@@ -418,6 +421,7 @@ export const CROP_DISEASES = [
         title: 'Angle 3: Coconut Palm Crown Rot Inspection',
         label: 'Palm Crown Aerial Target',
         badge: 'Palm Crown Spindle Target',
+        imageUrl: '/assets/diseases/betel_paan_angle3.jpg',
         desc: 'Damaged coconut palm with yellowed central spindle leaf rotting post-storm.',
         targetSymptom: 'Coconut: Central spear leaf bends, withers, and rots with foul smell; crown detaches.',
         tissueRisk: 'Coastal storm saline spray burns leaf margins brown, bud rot kills growing tip.'
@@ -470,6 +474,7 @@ export const CROP_DISEASES = [
         title: 'Angle 1: Split Stalk Red Pith Macro Inspection',
         label: 'Internal Vascular Core View',
         badge: 'Red Pith & White Cross-Bands',
+        imageUrl: '/assets/diseases/sugarcane_redrot_angle1.jpg',
         desc: 'Split cane stalk showing deep reddish-brown discoloration interrupted by distinct transverse white patches across the pith.',
         targetSymptom: 'Longitudinal splitting of cane reveals red pith interspersed with diagnostic white cross-bands.',
         tissueRisk: 'Wind micro-cracks allow rapid mycelial invasion of vascular parenchyma.'
@@ -478,6 +483,7 @@ export const CROP_DISEASES = [
         title: 'Angle 2: Crown Canopy Desiccation & Lodging',
         label: 'Mid-Canopy Stalk Target',
         badge: 'Canopy Crown Target',
+        imageUrl: '/assets/diseases/sugarcane_redrot_angle2.jpg',
         desc: 'Upper foliage drying from margins inwards, midrib showing reddish lesions, and stalks bent or snapped in mud.',
         targetSymptom: 'Third or fourth leaf from top shows yellowing, drying along margins, and tip withering.',
         tissueRisk: 'Vascular vessel clogging halts sucrose synthesis and water translocation.'
@@ -486,6 +492,7 @@ export const CROP_DISEASES = [
         title: 'Angle 3: Waterlogged Furrow Plot Pattern',
         label: 'Field Submersion Overview',
         badge: 'Field Inundation Target',
+        imageUrl: '/assets/diseases/sugarcane_redrot_angle3.jpg',
         desc: 'Standing flood water in sugarcane furrows with scattered dead clumps and collapsed cane hills.',
         targetSymptom: 'Extensive clump collapse in poorly drained depression furrows.',
         tissueRisk: 'Root zone hypoxia and rapid subterranean sett rot.'
