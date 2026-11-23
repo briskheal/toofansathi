@@ -1,8 +1,44 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ArrowRight, ShieldCheck, Radio, Wifi, Volume2, Sparkles, Navigation } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Radio, Wifi, Volume2, Sparkles, Navigation, MapPin } from 'lucide-react';
 
-export default function CycloneWelcomeSplash({ onEnter }) {
+const VERNACULAR_LIST = [
+  { script: 'ତୁଫାନ ସାଥୀ', lang: 'odia', label: 'ଓଡ଼ିଆ', state: 'Odisha' },
+  { script: 'तूफ़ान साथी', lang: 'hindi', label: 'हिन्दी', state: 'National' },
+  { script: 'তুফান সাথী', lang: 'bengali', label: 'বাংলা', state: 'West Bengal' },
+  { script: 'తుఫాను సాథీ', lang: 'telugu', label: 'తెలుగు', state: 'Andhra Pradesh' },
+  { script: 'તોફાન સાથી', lang: 'gujarati', label: 'ગુજરાતી', state: 'Gujarat' },
+  { script: 'தூபான் சாதி', lang: 'tamil', label: 'தமிழ்', state: 'Tamil Nadu' },
+  { script: 'തൂഫാൻ സാഥി', lang: 'malayalam', label: 'മലയാളം', state: 'Kerala' }
+];
+
+export default function CycloneWelcomeSplash({ onEnter, activeLocation, selectedLang = 'english' }) {
   const [isExiting, setIsExiting] = useState(false);
+
+  // Match state language from GPS/district or selected language
+  const stateMatchIndex = VERNACULAR_LIST.findIndex(v => 
+    v.state.toLowerCase() === activeLocation?.state?.toLowerCase() ||
+    (activeLocation?.state === 'Telangana' && v.lang === 'telugu')
+  );
+  const langMatchIndex = VERNACULAR_LIST.findIndex(v => v.lang === selectedLang);
+
+  const initialIndex = stateMatchIndex !== -1 ? stateMatchIndex : (langMatchIndex !== -1 ? langMatchIndex : 0);
+  const [currentVernacularIndex, setCurrentVernacularIndex] = useState(initialIndex);
+
+  // Dynamic language cycle across coastal states when on English, or lock to GPS/language
+  useEffect(() => {
+    if (selectedLang === 'english' && !activeLocation?.state) {
+      const timer = setInterval(() => {
+        setCurrentVernacularIndex(prev => (prev + 1) % VERNACULAR_LIST.length);
+      }, 2500);
+      return () => clearInterval(timer);
+    } else if (stateMatchIndex !== -1) {
+      setCurrentVernacularIndex(stateMatchIndex);
+    } else if (langMatchIndex !== -1) {
+      setCurrentVernacularIndex(langMatchIndex);
+    }
+  }, [selectedLang, stateMatchIndex, langMatchIndex, activeLocation?.state]);
+
+  const activeVernacular = VERNACULAR_LIST[currentVernacularIndex] || VERNACULAR_LIST[0];
 
   const handleEnter = useCallback(() => {
     if (isExiting) return;
@@ -185,19 +221,31 @@ export default function CycloneWelcomeSplash({ onEnter }) {
             <span>LIVE CYCLONE SHIELD • PWA 2.0</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center justify-center gap-2">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center justify-center gap-2 flex-wrap">
             <span>ToofanSathi</span>
-            <span className="text-sky-400 font-extrabold text-sm sm:text-base px-2 py-0.5 rounded-lg bg-sky-500/10 border border-sky-400/30">
-              ତୁଫାନ ସାଥୀ
+            <span
+              key={activeVernacular.script}
+              className="text-sky-400 font-extrabold text-sm sm:text-base px-2.5 py-0.5 rounded-lg bg-sky-500/10 border border-sky-400/30 transition-all duration-300"
+            >
+              {activeVernacular.script}
             </span>
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-sm mx-auto">
             India's Live Cyclone Early Warning & Coastal Disaster Protection Portal
           </p>
-          <p className="text-[11px] text-slate-400 font-sans">
-            तूफ़ान साथी • Bay of Bengal & Arabian Sea Consensus
-          </p>
+          <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 flex-wrap pt-0.5">
+            {activeLocation?.state ? (
+              <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                <MapPin className="w-3 h-3 text-emerald-400" />
+                <span>Detected: {activeLocation.name} ({activeVernacular.label})</span>
+              </span>
+            ) : (
+              <span className="text-slate-300 font-semibold">{activeVernacular.label}</span>
+            )}
+            <span>•</span>
+            <span>Bay of Bengal & Arabian Sea Consensus</span>
+          </div>
         </div>
 
         {/* Feature Highlights Grid */}

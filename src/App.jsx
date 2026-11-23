@@ -707,7 +707,11 @@ export default function App() {
 
       {/* Atmospheric Cyclone Swirling Welcome Splash Screen */}
       {showWelcomeSplash && (
-        <CycloneWelcomeSplash onEnter={() => setShowWelcomeSplash(false)} />
+        <CycloneWelcomeSplash
+          onEnter={() => setShowWelcomeSplash(false)}
+          activeLocation={activeLocation}
+          selectedLang={selectedLang}
+        />
       )}
     </div>
   );
