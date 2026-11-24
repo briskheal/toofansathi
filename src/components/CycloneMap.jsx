@@ -368,7 +368,7 @@ export default function CycloneMap({
   const liveGusts = weatherData ? Math.round(weatherData.current.wind_gusts_10m) : 21;
   const livePressure = weatherData ? Math.round(weatherData.current.surface_pressure) : 1013;
   const liveHumidity = weatherData?.current?.relative_humidity_2m !== undefined ? Math.round(weatherData.current.relative_humidity_2m) : 88;
-  const livePrecip = weatherData?.current?.precipitation !== undefined ? Math.round(weatherData.current.precipitation * 10) / 10 : 0.1;
+  const livePrecip = weatherData?.current?.precipitation !== undefined ? Math.round(weatherData.current.precipitation * 10) / 10 : 0.0;
   const liveTemp = weatherData?.current?.temperature_2m !== undefined ? Math.round(weatherData.current.temperature_2m) : 26;
 
   const stateAgro = getStateAgroIntelligence(userLocation?.state || userLocation?.name, selectedLang, livePrecip, liveWind, userLocation?.name);
@@ -406,14 +406,16 @@ export default function CycloneMap({
   const liveState = getLiveAkvanState();
   const isNormalDay = liveState.isNormalDay;
 
-  const isSouthIndiaOrMonsoon = userLocation?.state === 'Tamil Nadu' ||
-                               userLocation?.state === 'Puducherry' ||
-                               userLocation?.state === 'Kerala' ||
-                               (userLocation?.state === 'Andhra Pradesh' && (userLocation?.id === 'chennai' || userLocation?.lat < 16));
+  const isCoromandelBelt = userLocation?.state === 'Tamil Nadu' ||
+                           userLocation?.state === 'Puducherry' ||
+                           (userLocation?.state === 'Andhra Pradesh' && (userLocation?.id === 'chennai' || userLocation?.lat < 15.5));
+
+  // Easterly wave alert is strictly restricted to Coromandel coastal belt when active squalls or heavy rain occur
+  const hasActiveEasterlyWaveThreat = isCoromandelBelt && (livePrecip >= 2.5 || liveWind >= 30 || liveGusts >= 45);
 
   const [mapMode, setMapMode] = useState(isNormalDay ? 'live' : 'history');
   const [flyTarget, setFlyTarget] = useState(isNormalDay ? [userLocation.lat, userLocation.lon] : [18.90, 83.60]);
-  const [flyZoom, setFlyZoom] = useState(isSouthIndiaOrMonsoon ? 7 : 6);
+  const [flyZoom, setFlyZoom] = useState(isCoromandelBelt ? 7 : 6);
   const [flyTrigger, setFlyTrigger] = useState(0);
   const [isLocating, setIsLocating] = useState(false);
   const [justUpdated, setJustUpdated] = useState(false);
@@ -456,7 +458,7 @@ export default function CycloneMap({
   const [timeStepIndex, setTimeStepIndex] = useState(() => getLiveAkvanState().liveIndex); // Real-time active step!
   const [isPlayingTime, setIsPlayingTime] = useState(false);
   const [isLegendOpen, setIsLegendOpen] = useState(false);
-  const [activeWeatherOverlay, setActiveWeatherOverlay] = useState(isSouthIndiaOrMonsoon ? 'easterly-waves' : 'none'); // 'none' | 'wind' | 'rain' | 'pressure' | 'easterly-waves'
+  const [activeWeatherOverlay, setActiveWeatherOverlay] = useState(hasActiveEasterlyWaveThreat ? 'easterly-waves' : 'none'); // 'none' | 'wind' | 'rain' | 'pressure' | 'easterly-waves'
   const [isLayerDrawerOpen, setIsLayerDrawerOpen] = useState(false);
   const [radarPath, setRadarPath] = useState(null);
 
@@ -475,13 +477,13 @@ export default function CycloneMap({
   useEffect(() => {
     if (userLocation?.lat && userLocation?.lon) {
       setFlyTarget([userLocation.lat, userLocation.lon]);
-      setFlyZoom(isSouthIndiaOrMonsoon ? 7 : 6);
+      setFlyZoom(isCoromandelBelt ? 7 : 6);
       setFlyTrigger(prev => prev + 1);
-      if (isSouthIndiaOrMonsoon) {
+      if (hasActiveEasterlyWaveThreat) {
         setActiveWeatherOverlay('easterly-waves');
       }
     }
-  }, [userLocation?.lat, userLocation?.lon, userLocation?.state, userLocation?.id, isSouthIndiaOrMonsoon]);
+  }, [userLocation?.lat, userLocation?.lon, userLocation?.state, userLocation?.id, isCoromandelBelt, hasActiveEasterlyWaveThreat]);
 
   const timelineScrollRef = useRef(null);
   const timeStepButtonRefs = useRef([]);
@@ -976,20 +978,20 @@ export default function CycloneMap({
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                   </span>
                   <span className="font-extrabold text-white text-[11px] sm:text-sm truncate">
-                    {isSouthIndiaOrMonsoon
+                    {hasActiveEasterlyWaveThreat
                       ? `Daily Coastal Weather Radar • Northeast Monsoon & Easterly Waves (${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })})`
                       : `Daily Coastal Weather Radar • All-Clear Routine (${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })})`}
                   </span>
                   <span className={`text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded border whitespace-nowrap flex-shrink-0 ${
-                    isSouthIndiaOrMonsoon
+                    hasActiveEasterlyWaveThreat
                       ? 'bg-amber-950/80 text-amber-300 border-amber-600'
                       : 'bg-emerald-700/80 text-white border border-emerald-500'
                   }`}>
-                    {isSouthIndiaOrMonsoon ? '⚠️ NE MONSOON / EASTERLY WAVES' : '🟢 NO ACTIVE CYCLONE'}
+                    {hasActiveEasterlyWaveThreat ? '⚠️ NE MONSOON / EASTERLY WAVES' : '🟢 NO ACTIVE CYCLONE'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0 text-[10px] text-cyan-300 font-mono">
-                  <span>{isSouthIndiaOrMonsoon ? '🌊 SW BAY SQUALLS' : '🟢 BASIN CALM'}</span>
+                  <span>{hasActiveEasterlyWaveThreat ? '🌊 SW BAY SQUALLS' : '🟢 BASIN CALM'}</span>
                 </div>
               </div>
 
@@ -1003,14 +1005,18 @@ export default function CycloneMap({
                     <strong className="text-white text-xs block truncate" title={`${userLocation.name} (${userLocation.state || 'Local'})`}>
                       {userLocation.name} ({userLocation.state || 'Local'})
                     </strong>
-                    <span className={`text-[10px] font-semibold block truncate ${isSouthIndiaOrMonsoon || livePrecip > 0 ? 'text-amber-300' : 'text-sky-300'}`} title={isSouthIndiaOrMonsoon || livePrecip > 0 ? `🌧️ Showers & Rain (${livePrecip > 0 ? livePrecip + ' mm' : 'Active'}) • ${liveTemp}°C` : `🌤️ Fair Skies • Gentle Breeze • ${liveTemp}°C`}>
-                      {isSouthIndiaOrMonsoon || livePrecip > 0
-                        ? `🌧️ Showers & Rain (${livePrecip > 0 ? livePrecip + ' mm' : 'Active'}) • ${liveTemp}°C`
+                    <span className={`text-[10px] font-semibold block truncate ${livePrecip >= 2.5 ? 'text-amber-300' : 'text-sky-300'}`} title={livePrecip >= 2.5 ? `🌧️ Showers & Rain (${livePrecip} mm) • ${liveTemp}°C` : livePrecip > 0 ? `🌦️ Light Drizzle (${livePrecip} mm) • ${liveTemp}°C` : `🌤️ Fair Skies • Gentle Breeze • ${liveTemp}°C`}>
+                      {livePrecip >= 2.5
+                        ? `🌧️ Showers & Rain (${livePrecip} mm) • ${liveTemp}°C`
+                        : livePrecip > 0
+                        ? `🌦️ Light Drizzle (${livePrecip} mm) • ${liveTemp}°C`
                         : `🌤️ Fair Skies • Gentle Breeze • ${liveTemp}°C`}
                     </span>
-                    <span className={`text-[9px] block font-semibold truncate ${isSouthIndiaOrMonsoon || livePrecip > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
-                      {isSouthIndiaOrMonsoon || livePrecip > 0
-                        ? `⚠️ Wind ${liveWind} km/h (Gusts ${liveGusts} km/h) • Easterly Waves`
+                    <span className={`text-[9px] block font-semibold truncate ${liveGusts >= 45 || liveWind >= 35 ? 'text-rose-400' : liveGusts >= 35 || liveWind >= 25 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                      {liveGusts >= 45 || liveWind >= 35
+                        ? `⚠️ High Wind ${liveWind} km/h (Gusts ${liveGusts} km/h)`
+                        : liveGusts >= 35 || liveWind >= 25
+                        ? `⚠️ Moderate Wind ${liveWind} km/h (Gusts ${liveGusts} km/h)`
                         : `✓ Wind ${liveWind} km/h (Gusts ${liveGusts} km/h) • Calm Routine`}
                     </span>
                   </div>
@@ -1047,8 +1053,8 @@ export default function CycloneMap({
                     <strong className="text-emerald-300 text-xs block truncate">
                       0% Risk (Next 7 Days)
                     </strong>
-                    <span className="text-[10px] text-slate-300 block truncate" title={isSouthIndiaOrMonsoon ? 'SW Bay Easterly Wave Stream' : 'Bay of Bengal & Arabian Sea'}>
-                      {isSouthIndiaOrMonsoon ? 'SW Bay Easterly Wave Stream' : 'Bay of Bengal & Arabian Sea'}
+                    <span className="text-[10px] text-slate-300 block truncate" title={hasActiveEasterlyWaveThreat ? 'SW Bay Easterly Wave Stream' : 'Bay of Bengal & Arabian Sea'}>
+                      {hasActiveEasterlyWaveThreat ? 'SW Bay Easterly Wave Stream' : 'Bay of Bengal & Arabian Sea'}
                     </span>
                     <span className="text-[9px] text-emerald-400 block font-semibold truncate">
                       ✓ Nil Cyclonic Disturbances
@@ -1353,7 +1359,7 @@ export default function CycloneMap({
             )}
 
             {/* IMD Northeast Monsoon & Easterly Waves Animated Vector System (23-27 Nov) */}
-            {(activeWeatherOverlay === 'easterly-waves' || activeWeatherOverlay === 'rain' || isSouthIndiaOrMonsoon) && (
+            {(activeWeatherOverlay === 'easterly-waves' || (activeWeatherOverlay === 'rain' && isCoromandelBelt) || hasActiveEasterlyWaveThreat) && (
               <>
                 {/* Animated Easterly Waves Streamline Polyline Vectors */}
                 <Polyline

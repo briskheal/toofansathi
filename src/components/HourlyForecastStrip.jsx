@@ -12,8 +12,8 @@ export default function HourlyForecastStrip({ hourlyData }) {
   });
 
   if (nowIndex === -1) nowIndex = 0;
-  // Show next 10 hours
-  const displaySlice = hourlyData.time.slice(nowIndex, nowIndex + 10);
+  // Show next 24 hours so users have complete daytime & evening/night visibility
+  const displaySlice = hourlyData.time.slice(nowIndex, nowIndex + 24);
 
   const items = displaySlice.map((timeStr, idx) => {
     const actualIdx = nowIndex + idx;
@@ -40,7 +40,7 @@ export default function HourlyForecastStrip({ hourlyData }) {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1.5 mb-3">
         <div className="flex items-center gap-1.5 text-xs font-bold text-slate-100">
           <Clock className="w-4 h-4 text-sky-400" />
-          <span>Next 10-Hour Forecast Timeline (Starting Now)</span>
+          <span>Next 24-Hour Forecast Timeline (Starting Now)</span>
         </div>
 
         {/* Legend for field workers */}
@@ -142,12 +142,12 @@ export default function HourlyForecastStrip({ hourlyData }) {
       {/* Prominent Courtesy / Attribution */}
       <div className="mt-2 pt-2 border-t border-slate-800 flex items-center justify-between gap-2 text-[10px] text-slate-400">
         <div className="flex items-center gap-1.5">
-          <Info className="w-3 h-3 text-sky-400 flex-shrink-0" />
+          <Info className="w-3.5 h-3.5 text-sky-400 flex-shrink-0" />
           <span>
-            <strong className="text-slate-300">Courtesy:</strong> Open-Meteo High-Res Models (ECMWF IFS / GFS). <span className="text-slate-500">• [RISK] triggers when Gusts ≥ 45 km/h, Rain ≥ 10 mm/h, or Wind ≥ 35 km/h.</span>
+            <strong className="text-slate-300">Courtesy:</strong> Open-Meteo High-Res Models (ECMWF IFS / GFS). <span className="text-slate-500">• 24h timeline • [RISK] triggers when Gusts ≥ 45 km/h, Rain ≥ 10 mm/h, or Wind ≥ 35 km/h.</span>
           </span>
         </div>
-        <span className="font-mono text-slate-500 hidden sm:inline">10-Hour Forecast</span>
+        <span className="font-mono text-slate-500 hidden sm:inline">24-Hour Forecast</span>
       </div>
     </div>
   );

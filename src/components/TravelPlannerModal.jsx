@@ -42,7 +42,7 @@ function createForecastDay(dateObj, maxTemp, minTemp, rainSum, rainProb, maxGust
   const dateFormatted = dateObj.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
   const weather = getWeatherCodeDetails(weatherCode);
 
-  // Safety rating
+  // Safety rating per IMD rainfall standards (Drizzle < 2.5mm, Light 2.5-15.5mm, Moderate 15.6-64.4mm)
   let safety = {
     level: 'SAFE',
     badge: 'bg-emerald-950 text-emerald-400 border-emerald-800',
@@ -57,12 +57,19 @@ function createForecastDay(dateObj, maxTemp, minTemp, rainSum, rainProb, maxGust
       label: 'High Risk: Postpone Outdoor Work',
       color: 'text-red-400'
     };
-  } else if (maxGusts >= 45 || rainSum >= 20 || rainProb >= 70) {
+  } else if (maxGusts >= 45 || rainSum >= 15 || (rainSum >= 5.0 && rainProb >= 70)) {
     safety = {
       level: 'CAUTION',
       badge: 'bg-amber-950 text-amber-400 border-amber-800',
       label: 'Moderate Caution: Carry Rain Gear',
       color: 'text-amber-400'
+    };
+  } else if (rainSum >= 0.5 && rainSum < 5.0) {
+    safety = {
+      level: 'SAFE_DRIZZLE',
+      badge: 'bg-emerald-950/80 text-emerald-300 border-emerald-700/70',
+      label: 'Safe: Light Drizzle Possible',
+      color: 'text-emerald-300'
     };
   }
 
