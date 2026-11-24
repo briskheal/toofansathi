@@ -460,9 +460,9 @@ export default function TravelPlannerModal({ isOpen, onClose, initialDistrictId 
                         <div className="text-xs font-bold flex items-center gap-1.5 flex-wrap">
                           <span>{m.name}</span>
                           <span className="text-[10px] text-slate-400 font-normal">({m.state})</span>
-                          {m.highRisk && (
-                            <span className="text-[9px] bg-red-950 text-red-300 border border-red-800/60 px-1 rounded">
-                              Cyclone Coast
+                          {(m.basin === 'Bay of Bengal' || m.basin === 'Arabian Sea') && (
+                            <span className="text-[9px] bg-cyan-950/80 text-cyan-300 border border-cyan-800/60 px-1 rounded">
+                              Coastal Belt
                             </span>
                           )}
                         </div>

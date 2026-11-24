@@ -428,9 +428,13 @@ export default function App() {
                 <span className="truncate font-bold">
                   {customGpsLocation ? customGpsLocation.name : `${localizedActiveArea} (${activeLocation.state})`}
                 </span>
-                {activeLocation.highRisk && (
-                  <span className="text-[9px] bg-red-950/80 text-red-300 border border-red-700/60 px-1 py-0.2 rounded font-medium flex-shrink-0">
+                {!threat?.isNormalDay && threat?.level !== 'GREEN' ? (
+                  <span className="text-[9px] bg-red-950 text-red-300 border border-red-700/80 px-1 py-0.2 rounded font-bold animate-pulse flex-shrink-0">
                     {t.risk}
+                  </span>
+                ) : (
+                  <span className="text-[9px] bg-emerald-950/80 text-emerald-300 border border-emerald-800/60 px-1 py-0.2 rounded font-medium flex-shrink-0">
+                    {t.allClearRoutine || 'All-Clear'}
                   </span>
                 )}
               </div>

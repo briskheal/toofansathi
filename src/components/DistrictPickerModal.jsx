@@ -248,8 +248,8 @@ export default function DistrictPickerModal({
                           <div className={`p-1.5 rounded-lg flex-shrink-0 mt-0.5 ${
                             d.isMajorCity
                               ? 'bg-sky-500/10 text-sky-400'
-                              : d.highRisk
-                              ? 'bg-amber-500/10 text-amber-400'
+                              : (d.basin === 'Bay of Bengal' || d.basin === 'Arabian Sea')
+                              ? 'bg-cyan-500/10 text-cyan-400'
                               : 'bg-slate-800 text-slate-400'
                           }`}>
                             <MapPin className="w-3.5 h-3.5" />
@@ -262,9 +262,9 @@ export default function DistrictPickerModal({
                                   Major City
                                 </span>
                               )}
-                              {d.highRisk && (
-                                <span className="text-[9px] bg-red-950 text-red-300 border border-red-800/60 px-1 py-0.2 rounded font-medium flex-shrink-0">
-                                  Cyclone Risk
+                              {(d.basin === 'Bay of Bengal' || d.basin === 'Arabian Sea') && (
+                                <span className="text-[9px] bg-cyan-950/80 text-cyan-300 border border-cyan-800/60 px-1 py-0.2 rounded font-medium flex-shrink-0">
+                                  Coastal Belt
                                 </span>
                               )}
                             </div>

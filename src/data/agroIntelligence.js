@@ -9,77 +9,159 @@
 // ==============================================================================
 
 export function detectAgroClimaticZone(stateName = '', locationName = '') {
-  const s = `${stateName} ${locationName}`.toLowerCase();
+  const state = (stateName || '').trim().toLowerCase();
+  const loc = (locationName || '').trim().toLowerCase();
 
-  // 1. Himalayan Zone (High Altitude, Sub-Zero, Western Disturbances, Snowfall, Orchards)
+  // ==============================================================================
+  // PRIORITY 1: STRICT STATE-BASED DETECTION (Zero substring collisions)
+  // ==============================================================================
+
+  // 1. Himalayan Zone (Jammu & Kashmir, Ladakh, Himachal Pradesh, Uttarakhand, Sikkim, Arunachal Pradesh)
   if (
-    s.includes('jammu') || s.includes('kashmir') || s.includes('ladakh') || s.includes('leh') ||
-    s.includes('srinagar') || s.includes('himachal') || s.includes('shimla') || s.includes('manali') ||
-    s.includes('kullu') || s.includes('solan') || s.includes('dharamshala') ||
-    s.includes('uttarakhand') || s.includes('dehradun') || s.includes('haridwar') || s.includes('haldwani') ||
-    s.includes('nainital') || s.includes('almora') || s.includes('kumaon') || s.includes('garhwal') ||
-    s.includes('sikkim') || s.includes('arunachal')
+    state.includes('jammu') || state.includes('kashmir') || 
+    state.includes('ladakh') || 
+    state.includes('himachal') || 
+    state.includes('uttarakhand') || 
+    state.includes('sikkim') || 
+    state.includes('arunachal')
   ) {
     return 'HIMALAYAN';
   }
 
-  // 2. Northern Plains / Indo-Gangetic Plain (Wheat Granary, Dense Fog Belt, Winter Cold Wave)
+  // 2. Island Territories (Lakshadweep, Andaman & Nicobar)
   if (
-    s.includes('punjab') || s.includes('haryana') || s.includes('delhi') || s.includes('chandigarh') ||
-    s.includes('amritsar') || s.includes('ludhiana') || s.includes('jalandhar') || s.includes('patiala') ||
-    s.includes('karnal') || s.includes('panipat') || s.includes('ambala') || s.includes('hisar') ||
-    s.includes('uttar pradesh') || s.includes('lucknow') || s.includes('kanpur') || s.includes('meerut') ||
-    s.includes('ghaziabad') || s.includes('noida') || s.includes('agra') || s.includes('varanasi') ||
-    s.includes('bareilly') || s.includes('moradabad') || s.includes('muzaffarnagar') || s.includes('saharanpur') ||
-    s.includes('bihar') || s.includes('patna') || s.includes('gaya') || s.includes('muzaffarpur') || s.includes('bhagalpur')
-  ) {
-    return 'NORTH_PLAINS';
-  }
-
-  // 3. Central & Arid Plateau (Rajasthan, MP, Chhattisgarh, Jharkhand)
-  if (
-    s.includes('rajasthan') || s.includes('jaipur') || s.includes('jodhpur') || s.includes('udaipur') || s.includes('kota') ||
-    s.includes('madhya pradesh') || s.includes('bhopal') || s.includes('indore') || s.includes('gwalior') || s.includes('jabalpur') || s.includes('ujjain') ||
-    s.includes('chhattisgarh') || s.includes('raipur') || s.includes('bilaspur') ||
-    s.includes('jharkhand') || s.includes('ranchi') || s.includes('jamshedpur') || s.includes('dhanbad')
-  ) {
-    return 'CENTRAL_PLATEAU';
-  }
-
-  // 4. Island Territories: Lakshadweep & Andaman-Nicobar Islands (Coral Atolls, Oceanic Tuna, Coconut, Inter-Island Ferries)
-  if (
-    s.includes('lakshadweep') || s.includes('kavaratti') || s.includes('agatti') || s.includes('minicoy') ||
-    s.includes('andaman') || s.includes('nicobar') || s.includes('port blair') || s.includes('diglipur') || s.includes('havelock')
+    state.includes('lakshadweep') || 
+    state.includes('andaman') || 
+    state.includes('nicobar')
   ) {
     return 'ISLAND_TERRITORIES';
   }
 
-  // 5. Tamil Nadu & Puducherry (Northeast Monsoon & Easterly Waves Season)
-  if (s.includes('tamil nadu') || s.includes('puducherry') || s.includes('pondicherry') || s.includes('chennai') || s.includes('coimbatore') || s.includes('madurai')) {
-    return 'COASTAL_SOUTH';
-  }
-
-  // 5. Kerala & Mahe (Southwest Coast)
-  if (s.includes('kerala') || s.includes('kochi') || s.includes('thiruvananthapuram') || s.includes('calicut') || s.includes('kozhikode') || s.includes('mahe')) {
-    return 'COASTAL_KERALA';
-  }
-
-  // 6. Andhra Pradesh & Telangana
-  if (s.includes('andhra') || s.includes('visakhapatnam') || s.includes('vizag') || s.includes('vijayawada') || s.includes('guntur') || s.includes('tirupati') || s.includes('telangana') || s.includes('hyderabad')) {
+  // 3. Coastal Andhra Pradesh & Telangana
+  if (state.includes('andhra') || state.includes('telangana')) {
     return 'COASTAL_ANDHRA';
   }
 
-  // 7. West Bengal
-  if (s.includes('bengal') || s.includes('kolkata') || s.includes('digha') || s.includes('howrah') || s.includes('sundarbans')) {
+  // 4. Tamil Nadu & Puducherry
+  if (state.includes('tamil nadu') || state.includes('puducherry') || state.includes('pondicherry')) {
+    return 'COASTAL_SOUTH';
+  }
+
+  // 5. Kerala & Mahe
+  if (state.includes('kerala')) {
+    return 'COASTAL_KERALA';
+  }
+
+  // 6. West Bengal
+  if (state.includes('bengal') || state.includes('west bengal')) {
     return 'COASTAL_BENGAL';
   }
 
-  // 8. Gujarat & Coastal Maharashtra / Goa / Karnataka
-  if (s.includes('gujarat') || s.includes('ahmedabad') || s.includes('surat') || s.includes('porbandar') || s.includes('maharashtra') || s.includes('mumbai') || s.includes('goa') || s.includes('karnataka') || s.includes('bengaluru') || s.includes('mangalore')) {
+  // 7. Coastal West: Gujarat, Maharashtra, Goa, Karnataka
+  if (
+    state.includes('gujarat') || 
+    state.includes('maharashtra') || 
+    state.includes('goa') || 
+    state.includes('karnataka')
+  ) {
     return 'COASTAL_WEST';
   }
 
-  // 9. Odisha & Default Coastal East
+  // 8. Northern Plains (Punjab, Haryana, Delhi NCR, Uttar Pradesh, Bihar)
+  if (
+    state.includes('punjab') || 
+    state.includes('haryana') || 
+    state.includes('delhi') || 
+    state.includes('uttar pradesh') || 
+    state.includes('bihar')
+  ) {
+    return 'NORTH_PLAINS';
+  }
+
+  // 9. Central Plateau & Arid Plains (Rajasthan, Madhya Pradesh, Chhattisgarh, Jharkhand)
+  if (
+    state.includes('rajasthan') || 
+    state.includes('madhya pradesh') || 
+    state.includes('chhattisgarh') || 
+    state.includes('jharkhand')
+  ) {
+    return 'CENTRAL_PLATEAU';
+  }
+
+  // 10. Northeast Hill & Riverine States (Assam, Meghalaya, Tripura, Manipur, Nagaland, Mizoram)
+  if (
+    state.includes('assam') || 
+    state.includes('meghalaya') || 
+    state.includes('tripura') || 
+    state.includes('manipur') || 
+    state.includes('nagaland') || 
+    state.includes('mizoram')
+  ) {
+    return 'NORTHEAST';
+  }
+
+  // 11. Odisha (Eastern Coastal Basin)
+  if (state.includes('odisha') || state.includes('orissa')) {
+    return 'COASTAL_EAST';
+  }
+
+  // ==============================================================================
+  // PRIORITY 2: LOCATION-NAME FALLBACK WITH STRICT WORD-BOUNDARIES
+  // (Used when stateName is missing or generic, e.g., raw GPS coordinates)
+  // ==============================================================================
+  const cleanLoc = ` ${loc} `.replace(/[^a-z0-9]/g, ' ');
+
+  // Andhra / Telangana cities
+  if (/\b(visakhapatnam|vizag|vijayawada|guntur|tirupati|kakinada|nellore|machilipatnam|anantapur|kurnool|kadapa|hyderabad|warangal)\b/.test(cleanLoc)) {
+    return 'COASTAL_ANDHRA';
+  }
+
+  // Himalayan cities / districts
+  if (/\b(srinagar|jammu|leh|kargil|gulmarg|pahalgam|shimla|manali|kullu|solan|dharamshala|dehradun|haridwar|rishikesh|nainital|mussoorie|gangtok|tawang|itanagar)\b/.test(cleanLoc)) {
+    return 'HIMALAYAN';
+  }
+
+  // Island towns
+  if (/\b(port blair|kavaratti|agatti|minicoy|car nicobar|havelock|diglipur)\b/.test(cleanLoc)) {
+    return 'ISLAND_TERRITORIES';
+  }
+
+  // Tamil Nadu cities
+  if (/\b(chennai|coimbatore|madurai|tiruchirappalli|trichy|salem|thanjavur|tuticorin|thoothukudi|kanyakumari|vellore|puducherry)\b/.test(cleanLoc)) {
+    return 'COASTAL_SOUTH';
+  }
+
+  // Kerala cities
+  if (/\b(kochi|cochin|thiruvananthapuram|trivandrum|kozhikode|calicut|kannur|kollam|alappuzha|thrissur|palakkad|malappuram)\b/.test(cleanLoc)) {
+    return 'COASTAL_KERALA';
+  }
+
+  // West Bengal cities
+  if (/\b(kolkata|howrah|digha|haldia|sundarbans|siliguri|asansol|darjeeling|kharagpur|bardhaman)\b/.test(cleanLoc)) {
+    return 'COASTAL_BENGAL';
+  }
+
+  // Coastal West cities (Maharashtra, Gujarat, Goa, Karnataka)
+  if (/\b(mumbai|pune|nagpur|nashik|ahmedabad|surat|vadodara|rajkot|porbandar|panaji|margao|bengaluru|bangalore|mangalore|mysuru|udupi|karwar)\b/.test(cleanLoc)) {
+    return 'COASTAL_WEST';
+  }
+
+  // Northern Plains cities (Strict word-boundary: 'visakhapatnam' NEVER matches '\bpatna\b'!)
+  if (/\b(delhi|noida|gurugram|faridabad|amritsar|ludhiana|jalandhar|patiala|bathinda|chandigarh|karnal|panipat|ambala|hisar|rohtak|lucknow|kanpur|varanasi|agra|prayagraj|allahabad|meerut|ghaziabad|bareilly|aligarh|moradabad|gorakhpur|patna|gaya|muzaffarpur|bhagalpur)\b/.test(cleanLoc)) {
+    return 'NORTH_PLAINS';
+  }
+
+  // Central Plateau cities
+  if (/\b(jaipur|jodhpur|udaipur|kota|bikaner|ajmer|bhopal|indore|gwalior|jabalpur|ujjain|raipur|bilaspur|ranchi|jamshedpur|dhanbad)\b/.test(cleanLoc)) {
+    return 'CENTRAL_PLATEAU';
+  }
+
+  // Northeast cities
+  if (/\b(guwahati|dibrugarh|silchar|jorhat|tezpur|shillong|agartala|imphal|kohima|aizawl)\b/.test(cleanLoc)) {
+    return 'NORTHEAST';
+  }
+
+  // Default fallback
   return 'COASTAL_EAST';
 }
 
@@ -602,6 +684,43 @@ export function getStateAgroIntelligence(stateName = 'Odisha', selectedLang = 'e
       waveHeight: '0.8 m – 1.4 m (Slight)',
       offshoreWind: '10–16 knots Northwesterly',
       fishermenWarning: 'Safe for Coastal Trawlers along Gujarat & Maharashtra'
+    };
+  }
+
+  // ==========================================================================
+  // ZONE 10: NORTHEAST HILL & VALLEY ZONE (Assam, Meghalaya, Tripura, Manipur, Nagaland, Mizoram)
+  // Non-Coastal: Sali Paddy Harvest, Boro Rice Nursery, Tea Garden Pruning, Hill Mist
+  // ==========================================================================
+  if (zone === 'NORTHEAST') {
+    return {
+      zone: 'NORTHEAST',
+      isCoastal: false,
+      zoneTitle: 'Northeast Agro-Meteorological & Hill Valley Intelligence',
+      basinStatus: '🌄 Eastern Hills: Morning Mist & Mild Sunshine',
+      windDesc: '✓ Calm Mountain Valley Breeze 4–8 km/h',
+      rainDesc: '✓ Fair Dry Weather • Safe for Harvesting',
+      authorityTitle: 'AAU Jorhat & ICAR-NEH Umiam: Northeast Winter Crop Directives',
+      authoritySubtitle: 'Agro-meteorological advisory for Sali rice harvesting, Boro nursery, and tea plantation winter care',
+      advisory1Title: 'Sali Paddy Harvesting & Boro Rice Nursery Sowing',
+      advisory1Desc: 'Take advantage of dry sunny weather to harvest matured Sali rice. Prepare raised nursery beds for Boro paddy; treat seeds with Carbendazim before sowing.',
+      advisory2Title: 'Tea Plantation Winter Pruning & Oilseed Protection',
+      advisory2Desc: 'Carry out light winter pruning and cleaning in tea gardens. Monitor toria/mustard crops for aphids; maintain light mulch against night ground chill.',
+      safetyTitle: '🌄 Brahmaputra Riverine Transit & Hill Slope Safety',
+      safetySubtitle: 'National Waterway-2 & Hill Highway Transit Advisory',
+      safetyStatus: 'NORMAL TRANSIT (CAUTION FOR MORNING MIST)',
+      safetyStatusClass: 'bg-emerald-950/80 text-emerald-300 border-emerald-800',
+      metric1Label: 'Riverine Ferry: ',
+      metric1Value: 'Normal Daytime Navigation',
+      metric2Label: 'Morning Fog: ',
+      metric2Value: 'Shallow Mist (Visibility > 500m)',
+      metric3Label: 'Hill Roads: ',
+      metric3Value: 'Safe for Daytime Transit',
+      point2Header: '2. Riverine Transit & Hill Mist',
+      waveHeight: 'River NW-2: Navigable',
+      offshoreWind: 'Valley Inflow: Light Breeze',
+      marineStatus: 'RIVERINE FERRIES OPERATIONAL',
+      marineStatusClass: 'bg-emerald-950/80 text-emerald-300 border-emerald-800',
+      fishermenWarning: 'Safe for Inland Fisheries & Riverine Craft'
     };
   }
 
